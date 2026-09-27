@@ -15,17 +15,19 @@
                 <li><a href="#topics">专题</a></li>
                 <li><a href="#about">关于</a></li>
             </ul>
+            <button class="menu-toggle" id="menuToggle">☰</button>
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </nav>
     </header>
-    <main><div class="topic-header">
+    <main class="page"><div class="topic-header">
   <div class="topic-header-inner">
     <div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <span>其他资源</span></div>
     <h1>其他资源</h1>
-    <p style="color:var(--text-muted);font-size:0.9rem;">Others 相关技术文档</p>
+    <div class="hero-search"><input type="text" placeholder="搜索文档..." id="searchInput"></div>
+    <p class="desc">Others 相关技术文档</p>
   </div>
 </div>
-<ul class="doc-list"><li><a href="/docs/others/openstack_OpenStack-"><span class="doc-icon">📄</span><span class="doc-title">OpenStack</span></a></li></ul></main>
+<div class="doc-list-section"><div class="doc-list-wrap"><ul class="doc-list"><li><a href="/docs/others/openstack_OpenStack-"><span class="doc-icon">📄</span><span class="doc-title">OpenStack</span></a></li></ul></div></div></main>
     <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>

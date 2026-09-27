@@ -15,13 +15,17 @@
                 <li><a href="#topics">专题</a></li>
                 <li><a href="#about">关于</a></li>
             </ul>
+            <button class="menu-toggle" id="menuToggle">☰</button>
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </nav>
     </header>
-    <main>
+    <main class="page">
     <section class="hero">
         <h1>DevOps 知识库</h1>
         <p>系统化整理 Linux 运维、容器化、数据库、自动化部署等核心技术文档</p>
+        <div class="hero-search">
+            <input type="text" placeholder="搜索专题或文档..." id="searchInput">
+        </div>
         <div class="hero-stats">
             <div class="stat"><span class="num">8</span><span class="label">技术专题</span></div>
             <div class="stat"><span class="num">44</span><span class="label">技术文档</span></div>
@@ -45,11 +49,11 @@
 </a><a href="/docs/containers/" class="topic-card">
   <div class="topic-icon">🐳</div>
   <h3>容器与编排 <span class="en">Containers & Orchestration</span> <span class="doc-count">2</span></h3>
-  <ul class="file-list"><li><a href="/docs/containers/容器">Docker 容器</a></li><li><a href="/docs/containers/镜像仓库-dockercompse">镜像仓库 Docker Compose</a></li></ul>
+  <ul class="file-list"><li><a href="/docs/containers/容器">Docker 容器</a></li><li><a href="/docs/containers/镜像仓库-docker-compose">镜像仓库 Docker Compose</a></li></ul>
 </a><a href="/docs/kubernetes/" class="topic-card">
   <div class="topic-icon">☸️</div>
   <h3>Kubernetes <span class="en">Kubernetes</span> <span class="doc-count">14</span></h3>
-  <ul class="file-list"><li><a href="/docs/kubernetes/kubernetes_kubernetes">Kubernetes 概述</a></li><li><a href="/docs/kubernetes/kubernetes_Pod 管理">Pod 管理</a></li><li><a href="/docs/kubernetes/kubernetes_kubernetes-Network">Kubernetes 网络</a></li><li><a href="/docs/kubernetes/kubernetes_k8s-基础命令">K8s 基础命令</a></li><li><a href="/docs/kubernetes/kubernetes_工作负载管理 workload manager">工作负载管理</a></li><li><a href="/docs/kubernetes/kubernetes_Storage_storage">存储管理</a></li><li><a href="/docs/kubernetes/kubernetes_security_Readme">安全</a></li><li><a href="/docs/kubernetes/kubernetes_network_ingress_readme">Ingress</a></li><li><a href="/docs/kubernetes/kubernetes_network_service_nacos_readme">Nacos 服务</a></li><li><a href="/docs/kubernetes/kubernetes_Scheduling_REDAME">调度</a></li><li><a href="/docs/kubernetes/kubernetes_config_README">配置管理</a></li><li><a href="/docs/kubernetes/kubernetes_包管理_kubernetes 的包管理器">包管理器</a></li><li><a href="/docs/kubernetes/k8s-Example_Pod_Readme">Pod 示例</a></li><li><a href="/docs/kubernetes/kubernetes_Network Policies 网络策略+promentheus">网络策略 Prometheus</a></li></ul>
+  <ul class="file-list"><li><a href="/docs/kubernetes/kubernetes_kubernetes">Kubernetes 概述</a></li><li><a href="/docs/kubernetes/kubernetes_Pod 管理">Pod 管理</a></li><li><a href="/docs/kubernetes/kubernetes_kubernetes-Network">Kubernetes 网络</a></li><li><a href="/docs/kubernetes/kubernetes_k8s-基础命令">K8s 基础命令</a></li><li><a href="/docs/kubernetes/kubernetes_工作负载管理 workload manager">工作负载管理</a></li><li><a href="/docs/kubernetes/kubernetes_Storage_storage">存储管理</a></li><li><a href="/docs/kubernetes/kubernetes_security_Readme">安全</a></li><li><a href="/docs/kubernetes/kubernetes_network_ingress_readme">Ingress</a></li><li><a href="/docs/kubernetes/kubernetes_network_service_nacos_readme">Nacos 服务</a></li><li><a href="/docs/kubernetes/kubernetes_Scheduling_README">调度</a></li><li><a href="/docs/kubernetes/kubernetes_config_README">配置管理</a></li><li><a href="/docs/kubernetes/kubernetes_包管理_kubernetes 的包管理器">包管理器</a></li><li><a href="/docs/kubernetes/k8s-Example_Pod_Readme">Pod 示例</a></li><li><a href="/docs/kubernetes/kubernetes_Network Policies 网络策略+promentheus">网络策略 Prometheus</a></li></ul>
 </a><a href="/docs/automation/" class="topic-card">
   <div class="topic-icon">⚙️</div>
   <h3>自动化与 DevOps <span class="en">Automation & DevOps</span> <span class="doc-count">7</span></h3>

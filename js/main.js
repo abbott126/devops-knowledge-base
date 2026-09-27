@@ -63,5 +63,13 @@ if (searchInput) {
       const text = card.textContent.toLowerCase();
       card.style.display = query === '' || text.includes(query) ? '' : 'none';
     });
+    document.querySelectorAll('.doc-list li').forEach(li => {
+      const text = li.textContent.toLowerCase();
+      li.style.display = query === '' || text.includes(query) ? '' : 'none';
+    });
+    document.querySelectorAll('.doc-list a').forEach(a => {
+      const li = a.closest('li');
+      if (li) li.style.display = query === '' || a.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
   });
 }

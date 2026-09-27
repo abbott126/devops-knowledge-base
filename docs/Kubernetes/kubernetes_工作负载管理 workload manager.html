@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>工作负载管理 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
-    <meta name="description" content="工作负载管理 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,14 +18,11 @@
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </nav>
     </header>
-    <main>
-        
-    <div class="doc-layout">
-        
-    <div class="doc-sidebar">
-        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>工作负载管理</span></div></div>
-        <div class="sidebar-card">
-            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#控制器的核心工作原理">### 控制器的核心工作原理</a></li>
+    <main><div class="doc-layout">
+  <div class="doc-sidebar">
+  <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>工作负载管理</span></div></div>
+  <div class="sidebar-card">
+    <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#控制器的核心工作原理">### 控制器的核心工作原理</a></li>
 <li class="toc-l3"><a href="#k8s-中常用的核心控制器">### K8s 中常用的核心控制器</a></li>
 <li class="toc-l4"><a href="#1-deployment部署控制器">#### 1. Deployment（部署控制器）</a></li>
 <li class="toc-l4"><a href="#2-statefulset有状态集控制器">#### 2. StatefulSet（有状态集控制器）</a></li>
@@ -42,11 +38,11 @@
 <li class="toc-l3"><a href="#回滚deployment">### 回滚`deployment`</a></li>
 <li class="toc-l3"><a href="#扩缩容-scaling-a-deployment">### 扩/缩容 Scaling a Deployment</a></li>
 </ul></nav>
-        </div>
-    </div>
-        <div class="doc-content">
-            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
-            <h1>工作负载管理</h1>
+  </div>
+</div>
+  <div class="doc-content">
+    <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+    <h1>工作负载管理</h1>
 <h1 id="workload-manager">工作负载管理 workload manager</h1>
 <p>在 Kubernetes（K8s）中，<strong>控制器（Controller）</strong> 是实现集群状态自动化管理的核心组件，它遵循 “声明式 API” 理念：用户通过 YAML 定义资源的 “期望状态”，控制器持续监控集群的 “实际状态”，并通过一系列操作将实际状态向期望状态推进。</p>
 <p>简单来说，控制器就是 K8s 中的 “自动化运维工具”，负责 Pod 的创建、扩缩容、自愈、更新等核心操作，避免人工干预。</p>
@@ -582,9 +578,8 @@ web-psr28<span class="w">   </span><span class="m">1</span>/1<span class="w">   
 <span class="o">[</span>root@master<span class="w"> </span>DaemonSet<span class="o">]</span><span class="c1"># kubectl  delete  ds  web   -n web-daemoset</span>
 daemonset.apps<span class="w"> </span><span class="s2">&quot;web&quot;</span><span class="w"> </span>deleted
 </code></pre></div>
-        </div>
-    </div>
-    </main>
+  </div>
+</div></main>
     <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>

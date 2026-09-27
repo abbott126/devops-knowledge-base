@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kubernetes 网络 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
-    <meta name="description" content="Kubernetes 网络 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,14 +18,11 @@
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </nav>
     </header>
-    <main>
-        
-    <div class="doc-layout">
-        
-    <div class="doc-sidebar">
-        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>Kubernetes 网络</span></div></div>
-        <div class="sidebar-card">
-            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#集群的网络">## 集群的网络</a></li>
+    <main><div class="doc-layout">
+  <div class="doc-sidebar">
+  <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>Kubernetes 网络</span></div></div>
+  <div class="sidebar-card">
+    <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#集群的网络">## 集群的网络</a></li>
 <li class="toc-l2"><a href="#kubernetes-ip地址范围">## Kubernetes IP地址范围</a></li>
 <li class="toc-l2"><a href="#cluster-networking-types">## Cluster networking types</a></li>
 <li class="toc-l2"><a href="#pod-网络">## Pod 网络</a></li>
@@ -46,11 +42,11 @@
 <li class="toc-l4"><a href="#一metallb-工作原理">#### 一、MetalLB 工作原理</a></li>
 <li class="toc-l4"><a href="#二部署-metallb-步骤以-layer-2-模式为例">#### 二、部署 MetalLB 步骤（以 Layer 2 模式为例）</a></li>
 </ul></nav>
-        </div>
-    </div>
-        <div class="doc-content">
-            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
-            <h1>Kubernetes 网络</h1>
+  </div>
+</div>
+  <div class="doc-content">
+    <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+    <h1>Kubernetes 网络</h1>
 <h1 id="kubernetes-network">kubernetes Network</h1>
 <h2 id="_1">集群的网络</h2>
 <p>网络是Kubernetes的核心部分，但要准确理解它是如何工作的可能具有挑战性。有4个不同的网络问题需要解决：</p>
@@ -417,9 +413,8 @@ kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </
 </ol>
 <h5 id="_5">六、总结</h5>
 <p>MetalLB 是本地 Kubernetes 集群实现 <code>LoadBalancer</code> 类型 Service 的最佳方案，通过 Layer 2 模式可快速部署，解决外部 IP 分配问题。只需规划好 IP 池，即可让集群中的服务像云环境一样通过固定 IP 暴露，无需手动配置 NodePort 或第三方 LB。</p>
-        </div>
-    </div>
-    </main>
+  </div>
+</div></main>
     <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>

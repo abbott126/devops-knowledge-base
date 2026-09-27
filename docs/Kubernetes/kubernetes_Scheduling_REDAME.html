@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>调度 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
-    <meta name="description" content="调度 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,14 +18,11 @@
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </nav>
     </header>
-    <main>
-        
-    <div class="doc-layout">
-        
-    <div class="doc-sidebar">
-        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>调度</span></div></div>
-        <div class="sidebar-card">
-            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#kubernetes-调度器">## Kubernetes 调度器</a></li>
+    <main><div class="doc-layout">
+  <div class="doc-sidebar">
+  <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>调度</span></div></div>
+  <div class="sidebar-card">
+    <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#kubernetes-调度器">## Kubernetes 调度器</a></li>
 <li class="toc-l3"><a href="#调度概览">### 调度概览</a></li>
 <li class="toc-l3"><a href="#kube-scheduler">### kube-scheduler</a></li>
 <li class="toc-l3"><a href="#kube-scheduler-中的节点选择">### kube-scheduler 中的节点选择</a></li>
@@ -40,11 +36,11 @@
 <li class="toc-l3"><a href="#常用命令-kubectl-taint">### 常用命令： `kubectl  taint`</a></li>
 <li class="toc-l4"><a href="#effect匹配污点的效果">#### `effect`：匹配污点的效果</a></li>
 </ul></nav>
-        </div>
-    </div>
-        <div class="doc-content">
-            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
-            <h1>调度</h1>
+  </div>
+</div>
+  <div class="doc-content">
+    <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+    <h1>调度</h1>
 <h1 id="_1">调度、抢占和驱逐</h1>
 <blockquote>
 <p>在 Kubernetes 中，调度（scheduling）指的是确保 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 匹配到合适的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>， 以便 <a href="https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet">kubelet</a> 能够运行它们。 抢占（Preemption）指的是终止低<a href="https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority">优先级</a>的 Pod 以便高优先级的 Pod 可以调度到 Node 上的过程。 驱逐（Eviction）是在资源匮乏的节点上，主动让一个或多个 Pod 失效的过程。</p>
@@ -400,9 +396,8 @@ node/work03<span class="w"> </span>untainted
 </code></pre></div>
 <p>查看节点信息：</p>
 <p><img alt="image-20251103151732352" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151732352.png" /></p>
-        </div>
-    </div>
-    </main>
+  </div>
+</div></main>
     <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>

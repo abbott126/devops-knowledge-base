@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shell 脚本 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-shell-脚本-三剑客"># shell 脚本-三剑客</a></li><li class="toc-l3"><a href="#-低级语言">### 低级语言</a></li><li class="toc-l3"><a href="#-高级语言">### 高级语言</a></li><li class="toc-l2"><a href="#-shell-概念">## shell 概念</a></li><li class="toc-l2"><a href="#-三剑客">## 三剑客</a></li><li class="toc-l2"><a href="#-grep">## grep</a></li><li class="toc-l1"><a href="#过滤过后的文件">#过滤过后的文件</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#取反">#取反</a></li><li class="toc-l1"><a href="#多次匹配">#多次匹配</a></li><li class="toc-l3"><a href="#-awk">### Awk</a></li><li class="toc-l3"><a href="#-环境变量">### 环境变量</a></li><li class="toc-l3"><a href="#-比较运算符">### 比较运算符</a></li><li class="toc-l1"><a href="#输出结果">#输出结果</a></li><li class="toc-l1"><a href="#输出结果">#输出结果</a></li><li class="toc-l1"><a href="#输出结果">#输出结果：</a></li><li class="toc-l1"><a href="#输出结果">#输出结果：</a></li><li class="toc-l1"><a href="#-自增"># 自增</a></li><li class="toc-l1"><a href="#-自减"># 自减</a></li><li class="toc-l1"><a href="#nf-调用了内置变量">#NF 调用了内置变量</a></li><li class="toc-l3"><a href="#-判断语句">### 判断语句</a></li><li class="toc-l1"><a href="#/bin/awk-告诉脚本使用什么语言解释">#!/bin/awk   #告诉脚本使用什么语言解释</a></li><li class="toc-l1"><a href="#/bin/awk-告诉脚本使用什么语言解释">#!/bin/awk   #告诉脚本使用什么语言解释</a></li><li class="toc-l3"><a href="#-sed">### sed</a></li><li class="toc-l3"><a href="#-shell-脚本">### shell 脚本</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="shell-">shell 脚本-三剑客</h1>
+<h3 id="_1">低级语言</h3>
+<p>机器语言</p>
+<p>汇编语言</p>
+<h3 id="_2">高级语言</h3>
+<p>面向对象语言：</p>
+<blockquote>
+<p>java    C  C# C++     Rust    Python  Golang </p>
+</blockquote>
+<p>面向过程(脚本语言)语言：</p>
+<blockquote>
+<p>shell  PHP perl  Python  </p>
+</blockquote>
+<p>运维工程师：</p>
+<blockquote>
+<p>******shell   Python    Golang    AI  </p>
+</blockquote>
+<h2 id="shell">shell 概念</h2>
+<blockquote>
+<p>shell 脚本将命令放到一个文件中执行；无非就是；逻辑关系 </p>
+</blockquote>
+<h2 id="_3">三剑客</h2>
+<div class="highlight"><pre><span></span><code>grep<span class="w">  </span>+<span class="w">  </span>awk<span class="w">  </span>+<span class="w"> </span>sed<span class="w"> </span>
+</code></pre></div>
+<h2 id="grep">grep</h2>
+<blockquote>
+<p>从文件中根据需求过滤关键字所在的行</p>
+</blockquote>
+<p>语法：</p>
+<div class="highlight"><pre><span></span><code>grep<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PATTERN<span class="w"> </span><span class="o">[</span>FILE...<span class="o">]</span>
+grep<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>-e<span class="w"> </span>PATTERN<span class="w"> </span><span class="p">|</span><span class="w"> </span>-f<span class="w"> </span>FILE<span class="o">]</span><span class="w"> </span><span class="o">[</span>FILE...<span class="o">]</span>
+</code></pre></div>
+<p>Example 1: 过滤<code>root</code>关键字所在的行</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep &#39;root&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+</code></pre></div>
+<p>Example 2:   <code>以^开头的行</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep   ^SELINUX  /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+<span class="nv">SELINUXTYPE</span><span class="o">=</span>targeted<span class="w"> </span>
+</code></pre></div>
+<p>Example 3: <code>以$结尾的关键所在的行</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep   enforcing$  /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+</code></pre></div>
+<p>Example 4:  </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  -E   &#39;^SE|g$&#39; /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+<span class="nv">SELINUXTYPE</span><span class="o">=</span>targeted
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  -E   &#39;^SELINUX|g$&#39; /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+<span class="nv">SELINUXTYPE</span><span class="o">=</span>targeted<span class="w"> </span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  -E   &#39;^SELINUX=|g$&#39; /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+</code></pre></div>
+<p>Example 5: <code>忽略大小写</code>  </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  -Ei   &#39;^selinux=|g$&#39; /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  -i   &#39;^selinux=|g$&#39; /etc/selinux/config </span>
+<span class="nv">SELINUX</span><span class="o">=</span>enforcing
+</code></pre></div>
+<p>Example 6: <code>取反</code></p>
+<div class="highlight"><pre><span></span><code>源文件
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># cat  /etc/fstab </span>
+/dev/mapper/rhel-root<span class="w">   </span>/<span class="w">                       </span>xfs<span class="w">     </span>defaults<span class="w">        </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+<span class="nv">UUID</span><span class="o">=</span>33763f18-f8ca-4c3d-812d-a714d85a78f4<span class="w"> </span>/boot<span class="w">                   </span>xfs<span class="w">     </span>defaults<span class="w">        </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+/dev/mapper/rhel-swap<span class="w">   </span>swap<span class="w">                    </span>swap<span class="w">    </span>defaults<span class="w">        </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+
+
+
+<span class="c1">#过滤过后的文件</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  -v  &#39;swap&#39;   /etc/fstab </span>
+
+/dev/mapper/rhel-root<span class="w">   </span>/<span class="w">                       </span>xfs<span class="w">     </span>defaults<span class="w">        </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+<span class="nv">UUID</span><span class="o">=</span>33763f18-f8ca-4c3d-812d-a714d85a78f4<span class="w"> </span>/boot<span class="w">                   </span>xfs<span class="w">     </span>defaults<span class="w">        </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+</code></pre></div>
+<p>Example: <code>匹配. * 任意字符</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;ro.t&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+
+<span class="c1">#</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep -E &#39;*fo&#39; passwd </span>
+polkitd:x:999:998:User<span class="w"> </span><span class="k">for</span><span class="w"> </span>polkitd:/:/sbin/nologin
+</code></pre></div>
+<p>Example: <code>匹配[字符｜ 数字]任一字符</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep   &#39;ro[a-z]t&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep   &#39;r[a-b][a-z]t&#39;  passwd ()</span>
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep   &#39;r[a-z][a-z]t&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  -i   &#39;r[A-Z][A-Z]t&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+
+<span class="c1">#取反</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  -i   &#39;r[A-Z][^a]t&#39;  passwd </span>
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+</code></pre></div>
+<p>Example:  <code>\ 转译</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># echo  $PATH</span>
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/mysql8/mysql/bin:/usr/local/mysql8/mysql/bin:/usr/local/percona-xtrabackup80/bin:/root/bin
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># echo  \$PATH</span>
+<span class="nv">$PATH</span>
+</code></pre></div>
+<p>Example:  <code>匹配关键中出现的次数</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># echo &quot;abbott&quot; &gt;&gt; passwd </span>
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;a{1}&#39; passwd </span>
+root:x:0:0:root:/root:/bin/bash
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP<span class="w"> </span>User:/var/ftp:/sbin/nologin
+systemd-network:x:192:192:systemd<span class="w"> </span>Network<span class="w"> </span>Management:/:/sbin/nologin
+dbus:x:81:81:System<span class="w"> </span>message<span class="w"> </span>bus:/:/sbin/nologin
+sshd:x:74:74:Privilege-separated<span class="w"> </span>SSH:/var/empty/sshd:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+mysql:x:998:1000::/home/mysql:/bin/false
+chrony:x:997:996::/var/lib/chrony:/sbin/nologin
+abbott<span class="w"> </span>
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;a{2}&#39; passwd </span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;ab{2}ott&#39; passwd </span>
+abbott
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;ab{1,2}ott&#39; passwd </span>
+abbott
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;ab{1,3}ott&#39; passwd </span>
+abbott
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  &#39;ab{3,3}ott&#39; passwd </span>
+
+<span class="c1">#多次匹配</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># egrep  -e  &#39;ab{3,3}ott&#39; -e &#39;ab{1,3}ott&#39; passwd </span>
+abbott
+</code></pre></div>
+<h3 id="awk">Awk</h3>
+<blockquote>
+<p>文本和数据进行处理的编程语言</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;     </span>
+<span class="w">    </span>inet<span class="w"> </span><span class="m">192</span>.168.122.134/24<span class="w"> </span>brd<span class="w"> </span><span class="m">192</span>.168.122.255<span class="w"> </span>scope<span class="w"> </span>global<span class="w"> </span>noprefixroute<span class="w"> </span>dynamic<span class="w"> </span>eth0
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;      | awk  &#39;{print  $1}&#39;</span>
+inet
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;      | awk  &#39;{print  $2}&#39;</span>
+<span class="m">192</span>.168.122.134/24
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;      | awk  &#39;{print  $2}&#39;  | awk  -F/  &#39;{print $1}&#39;</span>
+<span class="m">192</span>.168.122.134
+
+
+
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;      | awk  &#39;{print  $2}&#39;  | awk  -F/  &#39;{print &quot;总行:&quot; NR}{print NF}{print $1}{print $2}{print  $0}&#39; </span>
+总行:1
+<span class="m">2</span>
+<span class="m">192</span>.168.122.134
+<span class="m">24</span>
+<span class="m">192</span>.168.122.134/24
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># ip ad | grep -E &#39;eth0$&#39;      | awk  &#39;{print  $2}&#39;  | awk  -F/  &#39;{print &quot;总行:&quot; NR}{print &quot;字段数:&quot; NF}{print &quot;第一个字段:&quot; $1}{print &quot;第二个字段:&quot;$2}{print &quot;所有字段:&quot; $0}&#39; </span>
+总行:1
+字段数:2
+第一个字段:192.168.122.134
+第二个字段:24
+所有字段:192.168.122.134/24
+</code></pre></div>
+<p>Example：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF}&#39; | awk &#39;{print $1}&#39;</span>
+<span class="m">7</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $1}&#39;</span>
+
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $NF}&#39;</span>
+<span class="m">7</span>
+/sbin/nologin
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $NF-1}&#39;</span>
+<span class="m">7</span>
+-1
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $(NF-1)}&#39;</span>
+<span class="m">7</span>
+/var/spool/lpd
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $(NF-2)}&#39;</span>
+<span class="m">7</span>
+lp
+</code></pre></div>
+<h3 id="_4">环境变量</h3>
+<ul>
+<li>内部/置变量</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># grep  &#39;lp&#39;   passwd  |  awk  -F: &#39;{print NF} {print $NF}&#39;</span>
+</code></pre></div>
+<ul>
+<li>外部/置变量</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># name=小四</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># echo  $name</span>
+小四
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># awk  -v  name=$name  &#39;{print  name}&#39;</span>
+^C
+<span class="o">[</span>root@mysql-master<span class="w"> </span>opt<span class="o">]</span><span class="c1"># echo | awk  -v  name=$name  &#39;{print  name}&#39;</span>
+小四
+</code></pre></div>
+<h3 id="_5">比较运算符</h3>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>free<span class="w">   </span>-h<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w">  </span>Mem<span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-FG<span class="w"> </span><span class="s1">&#39;$1 == 31 {print &quot;相等&quot;}&#39;</span>
+相等
+
+abbott@fedora:~$<span class="w"> </span>free<span class="w">   </span>-h<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w">  </span>Mem<span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-FG<span class="w"> </span><span class="s1">&#39;$1 == 30 {print &quot;相等&quot;}&#39;</span><span class="w"> </span>
+
+
+abbott@fedora:~$<span class="w"> </span>free<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>mem<span class="w">  </span><span class="p">|</span>awk<span class="w"> </span><span class="s1">&#39;{print $0}&#39;</span><span class="w">  </span><span class="p">|</span>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span>-FGi<span class="w"> </span><span class="s1">&#39;{print $1,$2,$3}&#39;</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;($1 &gt; 30){print &quot;hello&quot;}&#39;</span>
+<span class="c1">#输出结果</span>
+hello
+abbott@fedora:~$<span class="w"> </span>free<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>mem<span class="w">  </span><span class="p">|</span>awk<span class="w"> </span><span class="s1">&#39;{print $0}&#39;</span><span class="w">  </span><span class="p">|</span>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span>-FGi<span class="w"> </span><span class="s1">&#39;{print $1,$2,$3}&#39;</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;($1 &gt; 30) &amp;&amp; ($2 &lt; 10) {print &quot;hello&quot;}&#39;</span>
+<span class="c1">#输出结果</span>
+hello
+
+abbott@fedora:~$<span class="w"> </span>free<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>mem<span class="w">  </span><span class="p">|</span>awk<span class="w"> </span><span class="s1">&#39;{print $0}&#39;</span><span class="w">  </span><span class="p">|</span>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span>-FGi<span class="w"> </span><span class="s1">&#39;{print $1,$2,$3}&#39;</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;($1 &gt; 30) &amp;&amp; ($2 &lt; 10) {print $0}&#39;</span>
+<span class="c1">#输出结果：</span>
+<span class="w">            </span><span class="m">31</span><span class="w">        </span><span class="m">7</span>.9<span class="w">        </span><span class="m">9</span>.0
+
+
+abbott@fedora:~$<span class="w"> </span>free<span class="w"> </span>-h<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>mem<span class="w">  </span><span class="p">|</span>awk<span class="w"> </span><span class="s1">&#39;{print $0}&#39;</span><span class="w">  </span><span class="p">|</span>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span>-FGi<span class="w"> </span><span class="s1">&#39;{print $1,$2,$3}&#39;</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;($1 &gt; 32) || ($2 &lt; 10) {print $0}&#39;</span>
+<span class="c1">#输出结果：</span>
+<span class="w">            </span><span class="m">31</span><span class="w">        </span><span class="m">7</span>.9<span class="w">        </span><span class="m">9</span>.0
+</code></pre></div>
+<p>循环语句</p>
+<ul>
+<li>while</li>
+<li>for</li>
+</ul>
+<p>For 循环</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="o">(</span>预设变量；条件；变量自增/自减<span class="o">)</span>
+<span class="w">        </span>代码块
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{for (; ; ) print  &quot;hello world&quot;}&#39;</span><span class="w">  </span>filename<span class="w"> </span>
+</code></pre></div>
+<p>案例文件：<code>成绩表</code></p>
+<div class="highlight"><pre><span></span><code>xiaozhang<span class="w">   </span><span class="m">10</span><span class="w">  </span><span class="m">20</span><span class="w"> </span><span class="m">30</span><span class="w"> </span>
+xiaoli<span class="w">      </span><span class="m">16</span><span class="w">  </span><span class="m">26</span><span class="w"> </span><span class="m">40</span><span class="w"> </span>
+xiaobai<span class="w">     </span><span class="m">10</span><span class="w">  </span><span class="m">25</span><span class="w"> </span><span class="m">30</span><span class="w"> </span>
+xiaomao<span class="w">     </span><span class="m">18</span><span class="w">  </span><span class="m">20</span><span class="w"> </span><span class="m">45</span><span class="w"> </span>
+xiaogou<span class="w">     </span><span class="m">12</span><span class="w">  </span><span class="m">38</span><span class="w"> </span><span class="m">42</span><span class="w"> </span>
+</code></pre></div>
+<p>Exmaple 1:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 自增</span>
+abbott@fedora:~$<span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{for (i=1; i&lt;=NF; i++) print $i }&#39;</span><span class="w"> </span>filename
+xiaozhang
+<span class="m">10</span>
+<span class="m">20</span>
+<span class="m">30</span>
+xiaoli
+<span class="m">16</span>
+<span class="m">26</span>
+<span class="m">40</span>
+xiaobai
+<span class="m">10</span>
+<span class="m">25</span>
+<span class="m">30</span>
+xiaomao
+<span class="m">18</span>
+<span class="m">20</span>
+<span class="m">45</span>
+xiaogou
+<span class="m">12</span>
+<span class="m">38</span>
+<span class="m">42</span>
+
+<span class="c1"># 自减</span>
+abbott@fedora:~$<span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{for (i=4; i&lt;=NF; --i) print $i}&#39;</span><span class="w"> </span>filename
+<span class="m">30</span>
+<span class="m">20</span>
+<span class="m">10</span>
+xiaozhang
+xiaozhang<span class="w">   </span><span class="m">10</span><span class="w">  </span><span class="m">20</span><span class="w"> </span><span class="m">30</span><span class="w"> </span>
+
+
+
+abbott@fedora:~$<span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{for (i=4; i &lt; NF; --i) print $i}&#39;</span><span class="w"> </span>abc<span class="w"> </span>
+散
+远
+永
+你
+你<span class="w"> </span>永<span class="w"> </span>远<span class="w"> </span>散<span class="w"> </span>发<span class="w"> </span>着<span class="w"> </span>迷<span class="w"> </span>人<span class="w"> </span>的<span class="w"> </span>魅<span class="w"> </span>力
+
+abbott@fedora:~$<span class="w"> </span>cat<span class="w">  </span>abc
+你<span class="w"> </span>永<span class="w"> </span>远<span class="w"> </span>散<span class="w"> </span>发<span class="w"> </span>着<span class="w"> </span>迷<span class="w"> </span>人<span class="w"> </span>的<span class="w"> </span>魅<span class="w"> </span>力
+未<span class="w"> </span>来<span class="w"> </span>的<span class="w"> </span>征<span class="w"> </span>程<span class="w"> </span>必<span class="w"> </span>将<span class="w"> </span>续<span class="w"> </span>写<span class="w"> </span>更<span class="w"> </span>辉
+
+<span class="c1">#NF 调用了内置变量</span>
+abbott@fedora:~$<span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{for (i=NF;i&lt;=NF; --i) print $i}&#39;</span><span class="w"> </span>abc
+力
+魅
+的
+人
+迷
+着
+发
+散
+远
+永
+你
+你<span class="w"> </span>永<span class="w"> </span>远<span class="w"> </span>散<span class="w"> </span>发<span class="w"> </span>着<span class="w"> </span>迷<span class="w"> </span>人<span class="w"> </span>的<span class="w"> </span>魅<span class="w"> </span>力
+</code></pre></div>
+<h3 id="_6">判断语句</h3>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="o">(</span>条件<span class="o">)</span>
+代码块
+<span class="k">else</span>
+代码块
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{if ($4 &gt;=40) print $1 &quot;:优秀&quot; ; else  print $1 &quot;:你真是棒槌&quot;}&#39;</span><span class="w"> </span>filename<span class="w"> </span>
+xiaozhang:你真是棒槌
+xiaoli:优秀
+xiaobai:你真是棒槌
+xiaomao:优秀
+xiaogou:优秀
+</code></pre></div>
+<p>Example:<br />
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>cat<span class="w">  </span>abc
+你<span class="w"> </span>永<span class="w"> </span>远<span class="w"> </span>散<span class="w"> </span>发<span class="w"> </span>着<span class="w"> </span>迷<span class="w"> </span>人<span class="w"> </span>的<span class="w"> </span>魅<span class="w"> </span>力
+
+
+abbott@fedora:~$<span class="w"> </span>cat<span class="w"> </span>abc-num<span class="w"> </span>
+<span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="m">7</span><span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="m">9</span><span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="m">11</span>
+</code></pre></div></p>
+<blockquote>
+<p>如果遇到倒数第四个字符；输出hello world</p>
+</blockquote>
+<p>Awk脚本</p>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>cat<span class="w"> </span>testawk<span class="w"> </span>
+<span class="c1">#!/bin/awk   #告诉脚本使用什么语言解释</span>
+<span class="o">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>NF<span class="p">;</span><span class="w"> </span>i<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>NF<span class="p">;</span><span class="w"> </span>i--<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="o">(</span><span class="nv">$i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;人&quot;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w">  </span><span class="c1"># 注意这里应该用==做比较，而不是=赋值</span>
+<span class="w">            </span>print<span class="w"> </span><span class="s2">&quot;hello world&quot;</span>
+<span class="w">            </span><span class="k">break</span><span class="w">  </span><span class="c1"># 找到后可以退出循环</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="o">{</span>
+<span class="w">                    </span>print<span class="w"> </span><span class="nv">$i</span>
+<span class="w">                </span><span class="o">}</span><span class="w">   </span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+
+
+
+<span class="c1">#!/bin/awk   #告诉脚本使用什么语言解释</span>
+<span class="o">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="o">(</span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>NF<span class="p">;</span><span class="w"> </span>i<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>NF<span class="p">;</span><span class="w"> </span>i--<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="o">(</span><span class="nv">$i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w">  </span><span class="c1"># 注意这里应该用==做比较，而不是=赋值</span>
+<span class="w">            </span>print<span class="w"> </span><span class="s2">&quot;hello world&quot;</span>
+<span class="w">            </span><span class="k">break</span><span class="w">  </span><span class="c1"># 找到后可以退出循环</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="o">{</span>
+<span class="w">                    </span>print<span class="w"> </span><span class="nv">$i</span>
+<span class="w">                </span><span class="o">}</span><span class="w">   </span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>执行脚本</p>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>awk<span class="w"> </span>-f<span class="w"> </span>testawk<span class="w">  </span>abc
+</code></pre></div>
+<p>输出结果：</p>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>awk<span class="w"> </span>-f<span class="w"> </span>testawk<span class="w">  </span>abc
+力
+魅
+的
+hello<span class="w"> </span>world
+辉
+更
+写
+续
+将
+必
+程
+征
+的
+来
+未
+未<span class="w"> </span>来<span class="w"> </span>的<span class="w"> </span>征<span class="w"> </span>程<span class="w"> </span>必<span class="w"> </span>将<span class="w"> </span>续<span class="w"> </span>写<span class="w"> </span>更<span class="w"> </span>辉
+</code></pre></div>
+<p>!image-20250908170700907](/images/image-20250908170700907.png)</p>
+<p>分析日志的案例：</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$1</span><span class="w"> </span><span class="nv">$4</span><span class="w"> </span>
+<span class="m">192</span>.168.1.132<span class="w"> </span>-<span class="w"> </span>-<span class="w"> </span><span class="o">[</span><span class="m">08</span>/Sep/2025:17:08:04<span class="w"> </span>+0800<span class="o">]</span><span class="w"> </span><span class="s2">&quot;GET /icons/folder.gif HTTP/1.1&quot;</span><span class="w"> </span><span class="m">200</span><span class="w"> </span><span class="m">225</span><span class="w"> </span><span class="s2">&quot;http://192.168.1.111/shiping/&quot;</span><span class="w"> </span><span class="s2">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>abbott@fedora:~$<span class="w"> </span>sudo<span class="w">  </span>awk<span class="w">  </span><span class="s1">&#39;{print &quot;客户端的IP地址:&quot; $1, &quot;请求时间:&quot; $4,$5, &quot;状态码:&quot; $9}&#39;</span><span class="w"> </span>/var/log/httpd/access_log<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">&#39;{print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span><span class="s1">&#39;{print $1}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w">  </span>-F.<span class="w"> </span><span class="s1">&#39;{print $4}&#39;</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>uniq<span class="w">  </span>-c<span class="w"> </span>
+
+
+abbott@fedora:~$<span class="w"> </span>sudo<span class="w">  </span>awk<span class="w">  </span><span class="s1">&#39;{print &quot;客户端的IP地址:&quot; $1, &quot;请求时间:&quot; $4,$5, &quot;状态码:&quot; $9}&#39;</span><span class="w"> </span>/var/log/httpd/access_log<span class="w"> </span><span class="p">|</span><span class="w">  </span>sort<span class="w">  </span><span class="p">|</span><span class="w">  </span>uniq<span class="w">  </span>-c<span class="w">  </span>
+</code></pre></div>
+<h3 id="sed">sed</h3>
+<blockquote>
+<p>文本处理</p>
+</blockquote>
+<p>!image-20250909105841007](/images/image-20250909105841007.png)</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w">    </span>-e<span class="w"> </span><span class="s1">&#39;/^Listen/a\Listen 81&#39;</span><span class="w">  </span>-e<span class="w"> </span><span class="s1">&#39;$a incloude /var/httpd/*.conf&#39;</span><span class="w"> </span>/opt/httpd.conf<span class="w"> </span>
+</code></pre></div>
+<h3 id="shell_1">shell 脚本</h3></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机端页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .device-indicator {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #ff6b6b;
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card h2 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .mobile-only {
+            display: block;
+        }
+        
+        .tablet-only, .desktop-only {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>手机端页面</h1>
+            <p class="subtitle">专为移动设备优化设计</p>
+            <div class="device-indicator">
+                手机端视图
+            </div>
+        </header>
+        
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <div class="nav-icon">🏠</div>
+                <div>首页</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">🔍</div>
+                <div>搜索</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <div>设置</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">👤</div>
+                <div>我的</div>
+            </div>
+        </nav>
+        
+        <div class="content">
+            <div class="card">
+                <h2>移动端特性</h2>
+                <p>专为小屏幕设备设计的界面，提供最佳触摸体验。</p>
+                <ul class="feature-list">
+                    <li>大按钮和触摸友好的界面</li>
+                    <li>单列布局优化阅读</li>
+                    <li>快速加载和性能优化</li>
+                    <li>移动端专属功能</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>用户体验</h2>
+                <p>针对移动设备优化的交互设计和内容布局。</p>
+                <ul class="feature-list">
+                    <li>直观的滑动手势</li>
+                    <li>简化的导航结构</li>
+                    <li>适合小屏幕的内容</li>
+                    <li>快速响应的界面</li>
+                </ul>
+            </div>
+            
+            <div class="card mobile-only">
+                <h2>移动专属功能</h2>
+                <p>这些功能仅在手机端显示，为移动用户提供特别价值。</p>
+                <ul class="feature-list">
+                    <li>扫码功能</li>
+                    <li>位置服务</li>
+                    <li>移动支付</li>
+                    <li>一键分享</li>
+                </ul>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 手机端专属页面 | 专为移动设备设计</p>
+        </footer>
+    </div>
+</body>
+</html>

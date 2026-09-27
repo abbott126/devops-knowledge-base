@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志系统 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-日志系统"># 日志系统</a></li><li class="toc-l2"><a href="#-el/fk">## EL/FK</a></li><li class="toc-l3"><a href="#-elasticsearch">### Elasticsearch</a></li><li class="toc-l3"><a href="#-kibana">### Kibana</a></li><li class="toc-l3"><a href="#-logstash">### Logstash</a></li><li class="toc-l3"><a href="#-beats">### Beats</a></li><li class="toc-l3"><a href="#-采集日志的架构">### 采集日志的架构</a></li><li class="toc-l4"><a href="#-image-20250926095147136/images/image-20250926095147136.pnglogstash">#### !image-20250926095147136](/images/image-20250926095147136.png)Logstash</a></li><li class="toc-l3"><a href="#-inputs-filters-outputs">### Inputs, filters & outputs</a></li><li class="toc-l4"><a href="#-部署方式">#### 部署方式：</a></li><li class="toc-l4"><a href="#-elasticsearch">#### Elasticsearch</a></li><li class="toc-l4"><a href="#-部署kibana">#### 部署Kibana</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#-this-is-an-auto-generated-file-"># ** THIS IS AN AUTO-GENERATED FILE **</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#-default-kibana-configuration-for-docker-target"># Default Kibana configuration for docker target</a></li><li class="toc-l1"><a href="#-指定es地址"># 指定es地址</a></li><li class="toc-l1"><a href="#elasticsearch.hosts-http//elasticsearch9200-">#elasticsearch.hosts: [ "http://elasticsearch:9200" ]</a></li><li class="toc-l1"><a href="#指定kibana连接es的用户">#指定kibana连接es的用户</a></li><li class="toc-l1"><a href="#指定kibana连接es的用户的密码">#指定kibana连接es的用户的密码</a></li><li class="toc-l1"><a href="#禁用ssl验证">#禁用SSL验证</a></li><li class="toc-l1"><a href="#持久化">#持久化</a></li><li class="toc-l1"><a href="#-type-messages"># type => "messages"</a></li><li class="toc-l1"><a href="#-user-elastic"># user => "elastic"</a></li><li class="toc-l1"><a href="#-password-zpfdn9b45d48eckxxuc"># password => "ZPFdn9B45d48ec=kxXuc"</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">日志系统</h1>
+<blockquote>
+<p>帮助我们很直观的分析日志  日志监控系统   </p>
+</blockquote>
+<p>应用类及网络类型硬件：<code>zabbix</code>   <code>prometheus</code></p>
+<p>日志监控系统：ELFK 系统</p>
+<ul>
+<li>tail  -f 查看</li>
+</ul>
+<p>系统上管理日志的目录：</p>
+<ul>
+<li><code>/var/log/messages</code></li>
+<li>应用上的日志</li>
+<li>syslog </li>
+</ul>
+<h2 id="elfk">EL/FK</h2>
+<blockquote>
+<p>核心产品包括 Elasticsearch、Kibana、Beats 和 Logstash（也称为 ELK Stack）等等。能够安全可靠地从任何来源获取任何格式的数据，然后对数据进行搜索、分析和可视化。</p>
+</blockquote>
+<h3 id="elasticsearch">Elasticsearch</h3>
+<blockquote>
+<p>向量数据库</p>
+</blockquote>
+<h3 id="kibana">Kibana</h3>
+<blockquote>
+<p>WebUI  图形方式展示日志</p>
+</blockquote>
+<h3 id="logstash">Logstash</h3>
+<blockquote>
+<p>在所有的节点上采集日志</p>
+</blockquote>
+<h3 id="beats">Beats</h3>
+<blockquote>
+<p>采集日志</p>
+</blockquote>
+<h3 id="_2">采集日志的架构</h3>
+<h4 id="image-20250926095147136imagesimage-20250926095147136pnglogstash">!image-20250926095147136](/images/image-20250926095147136.png)Logstash</h4>
+<blockquote>
+<p>Logstash 是一个开源服务器端数据处理管道，它从多个来源获取数据，对其进行转换，然后将其发送到您最喜欢的“存储”。</p>
+</blockquote>
+<h3 id="inputs-filters-outputs">Inputs, filters &amp; outputs</h3>
+<blockquote>
+<p>Logstash 可以动态地提取、转换和传输您的数据，无论其格式或复杂程度如何。使用 Grok 从非结构化数据中提取结构，从 IP 地址中解析地理坐标，匿名化或排除敏感字段，并简化整体处理。</p>
+</blockquote>
+<p>input  提取各种形状、大小和来源的数据</p>
+<blockquote>
+<p>数据通常以多种格式分散或孤立地分布在多个系统中。Logstash 支持<a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html">多种输入方式 </a>，可同时从多个常见来源提取事件。您可以轻松地从日志、指标、Web 应用程序、数据存储和各种 AWS 服务中提取数据，并且全部以连续、流式传输的方式进行。</p>
+</blockquote>
+<p>filter 即时解析和转换您的数据</p>
+<blockquote>
+<p>当数据从源传输到存储时，Logstash 过滤器会解析每个事件，识别命名字段以构建结构，并将它们转换为通用格式，以实现更强大的分析和商业价值。</p>
+</blockquote>
+<p>Output  选择您的存储，传输您的数据</p>
+<blockquote>
+<p>虽然 Elasticsearch 是我们首选的输出，它为我们打开了搜索和分析的可能性，但它并不是唯一可用的。</p>
+</blockquote>
+<h4 id="_3">部署方式：</h4>
+<p>官方文档：<code>https://www.elastic.co/docs/reference/logstash/installing-logstash</code> </p>
+<ul>
+<li>传统形式</li>
+<li>容器化<code>docker</code></li>
+<li>Helm</li>
+</ul>
+<p>课堂案例：以容器化方案</p>
+<ol>
+<li>拉取镜像</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>docker.elastic.co/logstash/logstash:9.1.4
+</code></pre></div>
+<ol>
+<li>docker  run 运行测试()</li>
+</ol>
+<blockquote>
+<p>持久化： 1. 使用volume命令创建存储  2.  直接使用：创建管理目录</p>
+</blockquote>
+<p>创建持久化目录：</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w">   </span>/logstash_data
+<span class="o">[</span>root@docker<span class="w"> </span>config<span class="o">]</span><span class="c1"># mkdir -p /logstash_data/{pipeline,config,logs}</span>
+</code></pre></div>
+<p>获取配置文件</p>
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="m">972</span><span class="w">  </span><span class="nb">cd</span><span class="w"> </span>config/
+<span class="w">  </span><span class="m">973</span><span class="w">  </span>ls
+<span class="w">  </span><span class="m">974</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/*<span class="w">  </span>.
+<span class="w">  </span><span class="m">975</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/logstash.yml<span class="w">  </span>.
+<span class="w">  </span><span class="m">976</span><span class="w">  </span>ls
+
+<span class="w">  </span><span class="m">981</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/pipeline/logstash.conf<span class="w">  </span>.
+<span class="w">  </span><span class="m">988</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/jvm.options<span class="w">  </span>.
+<span class="w">  </span><span class="m">989</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/log4j2.properties<span class="w">  </span>.
+<span class="w">  </span><span class="m">990</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/startup.options<span class="w">  </span>.
+<span class="w">  </span><span class="m">991</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/log4j2.file.properties<span class="w">  </span>.
+<span class="w">  </span><span class="m">992</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/logstash-sample.conf<span class="w">  </span>.
+<span class="w">  </span><span class="m">993</span><span class="w">  </span>docker<span class="w">  </span>cp<span class="w">  </span>b6a9379c8de4:/usr/share/logstash/config/pipelines.yml<span class="w">  </span>.
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>config<span class="o">]</span><span class="c1"># docker  run  -it -d  -p9600:9600  --name logstash_server02  \</span>
+-v<span class="w">  </span>/logstash_data/pipeline:/usr/share/logstash/pipeline<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/logstash_data/config:/usr/share/logstash/config<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/logstash_data/logs:/usr/share/logstash/logs<span class="w"> </span><span class="se">\ </span>docker.elastic.co/logstash/logstash:9.1.4
+bd8a5e8981836cc296561911b93b1eff6d150c0d78b1e27b7d663c76b6f23505
+</code></pre></div>
+<ol>
+<li>检查服务的端口号</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>config<span class="o">]</span><span class="c1"># docker  ps</span>
+CONTAINER<span class="w"> </span>ID<span class="w">   </span>IMAGE<span class="w">                                       </span>COMMAND<span class="w">                         </span>CREATED<span class="w">         </span>STATUS<span class="w">         </span>PORTS<span class="w">                                                                                      </span>NAMES
+bd8a5e898183<span class="w">   </span>docker.elastic.co/logstash/logstash:9.1.4<span class="w">   </span><span class="s2">&quot;/usr/local/bin/dock…&quot;</span><span class="w">   </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w">   </span><span class="m">0</span>.0.0.0:32773-&gt;5044/tcp,<span class="w"> </span>:::32773-&gt;5044/tcp,<span class="w"> </span><span class="m">0</span>.0.0.0:32772-&gt;9600/tcp,<span class="w"> </span>:::32772-&gt;9600/tcp<span class="w">   </span>logstash_server
+</code></pre></div>
+<p>测试：</p>
+<p>!image-20250926114327816](/images/image-20250926114327816.png)</p>
+<p>配置logstash </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat   /logstash_data/pipeline/logstash.conf </span>
+input<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>beats<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">port</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="m">5044</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;secure_log&quot;</span>
+<span class="w">    </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;/var/log/secure&quot;</span>
+<span class="w">    </span><span class="nv">start_position</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;beginning&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;messages&quot;</span>
+<span class="w">    </span><span class="nv">path</span><span class="w">  </span><span class="o">=</span>&gt;<span class="w">  </span><span class="s2">&quot;/var/log/messages&quot;</span>
+<span class="w">    </span><span class="nv">start_position</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;beginning&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
+
+output<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>elasticsearch<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">hosts</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span><span class="s2">&quot;https://192.168.1.105:32776&quot;</span><span class="o">]</span>
+<span class="w">    </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;test-index&quot;</span>
+<span class="w">    </span><span class="nv">user</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;elastic&quot;</span>
+<span class="w">    </span><span class="nv">password</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;ZPFdn9B45d48ec=kxXuc&quot;</span>
+<span class="w">    </span><span class="nv">ssl_verification_mode</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="w">    </span>
+<span class="w">  </span><span class="o">}</span>
+<span class="w">  </span>stdout<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">codec</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span>rubydebug
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>注意： </p>
+<div class="highlight"><pre><span></span><code>Logstash<span class="w"> </span>配置错误：ssl_certificate_verification<span class="w"> </span>已过时
+
+你遇到的错误是因为<span class="w"> </span>Logstash<span class="w"> </span><span class="m">8</span>.x<span class="w"> </span>版本中，ssl_certificate_verification<span class="w"> </span>参数已被废弃，需要使用新的参数<span class="w"> </span>ssl_verification_mode。
+</code></pre></div>
+<h4 id="elasticsearch_1">Elasticsearch</h4>
+<blockquote>
+<p>数据库</p>
+</blockquote>
+<ol>
+<li>拉取镜像</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:9.1.4
+</code></pre></div>
+<ol>
+<li>运行容器</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>创建持久化
+abbott@es-servser:~$<span class="w"> </span>sudo<span class="w">  </span>mkdir<span class="w">  </span>/es_data
+abbott@es-servser:/es_data$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>cp<span class="w"> </span>e0178d546fb3:/usr/share/elasticsearch/config<span class="w">  </span>.
+Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">70</span>.7kB<span class="w"> </span>to<span class="w"> </span>/es_data/.
+abbott@es-servser:/es_data$<span class="w"> </span>ls
+config<span class="w">  </span>
+
+abbott@es-servser:/es_data$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>cp<span class="w"> </span>e0178d546fb3:/usr/share/elasticsearch/data<span class="w"> </span>.
+
+abbott@es-servser:/es_data$<span class="w"> </span>ll
+total<span class="w"> </span><span class="m">16</span>
+drwxr-xr-x<span class="w">  </span><span class="m">4</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">26</span><span class="w"> </span><span class="m">07</span>:13<span class="w"> </span>./
+drwxr-xr-x<span class="w"> </span><span class="m">27</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">26</span><span class="w"> </span><span class="m">06</span>:52<span class="w"> </span>../
+drwxrwxr-x<span class="w">  </span><span class="m">4</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">26</span><span class="w"> </span><span class="m">06</span>:53<span class="w"> </span>config/
+drwxrwxr-x<span class="w">  </span><span class="m">5</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">26</span><span class="w"> </span><span class="m">07</span>:11<span class="w"> </span>data/
+
+<span class="m">2</span>.<span class="w"> </span>运行容器
+sudo<span class="w"> </span>docker<span class="w">  </span>run<span class="w"> </span>-d<span class="w">  </span>--name<span class="w"> </span>es01<span class="w">  </span>-p9200:9200<span class="w"> </span>-p9300:9300<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/es_data/config:/usr/share/elasticsearch/config<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/es_data/data:/usr/share/elasticsearch/data<span class="w"> </span><span class="se">\</span>
+elasticsearch:9.1.4
+</code></pre></div>
+<ol>
+<li>测试 <code>https://serverip:端口</code></li>
+</ol>
+<p>登陆命令：</p>
+<p>!image-20250926153745331](/images/image-20250926153745331.png)</p>
+<p>!image-20250926153831964](/images/image-20250926153831964.png)</p>
+<p>测试：<code>https://dockit.geekfun.club/zh/download.html</code></p>
+<h4 id="kibana_1">部署Kibana</h4>
+<p>创建持久化：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>kibana_data<span class="o">]</span><span class="c1"># docker  cp  kibana:/usr/share/kibana/data .  </span>
+<span class="w">                                               </span>Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">3</span>.58kB<span class="w"> </span>to<span class="w"> </span>/kibana_data/.
+<span class="o">[</span>root@docker<span class="w"> </span>kibana_data<span class="o">]</span><span class="c1"># docker  cp  kibana:/usr/share/kibana/config .  </span>
+<span class="w">                                               </span>Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">3</span>.58kB<span class="w"> </span>to<span class="w"> </span>/kibana_data/.
+<span class="o">[</span>root@docker<span class="w"> </span>kibana_data<span class="o">]</span><span class="c1"># docker  cp  kibana:/usr/share/kibana/logs .  </span>
+<span class="w">                                               </span>Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">1</span>.54kB<span class="w"> </span>to<span class="w"> </span>/kibana_data/.
+<span class="o">[</span>root@docker<span class="w"> </span>kibana_data<span class="o">]</span><span class="c1"># ls</span>
+config<span class="w">  </span>data<span class="w">  </span>logs
+</code></pre></div>
+<p>修改配置文件：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /kibana_data/config/kibana.yml </span>
+<span class="c1">#</span>
+<span class="c1"># ** THIS IS AN AUTO-GENERATED FILE **</span>
+<span class="c1">#</span>
+
+<span class="c1"># Default Kibana configuration for docker target</span>
+server.host:<span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span>
+server.shutdownTimeout:<span class="w"> </span><span class="s2">&quot;5s&quot;</span>
+<span class="c1"># 指定es地址</span>
+<span class="c1">#elasticsearch.hosts: [ &quot;http://elasticsearch:9200&quot; ]</span>
+elasticsearch.hosts:<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;https://192.168.1.105:32776&quot;</span><span class="w"> </span><span class="o">]</span>
+monitoring.ui.container.elasticsearch.enabled:<span class="w"> </span><span class="nb">true</span>
+<span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<p>运行容器：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker run  -d  \</span>
+--name<span class="w"> </span>kibana02<span class="w">  </span>-p<span class="w"> </span><span class="m">5601</span>:5601<span class="w"> </span><span class="se">\</span>
+<span class="c1">#指定kibana连接es的用户</span>
+-e<span class="w"> </span><span class="nv">ELASTICSEARCH_USERNAME</span><span class="o">=</span>kibana_system<span class="w"> </span><span class="se">\</span>
+<span class="c1">#指定kibana连接es的用户的密码</span>
+-e<span class="w"> </span><span class="nv">ELASTICSEARCH_PASSWORD</span><span class="o">=</span><span class="s2">&quot;ErPj=v=3Mzjc+Psq7U3n&quot;</span><span class="w">  </span><span class="se">\</span>
+<span class="c1">#禁用SSL验证</span>
+-e<span class="w"> </span><span class="nv">ELASTICSEARCH_SSL_VERIFICATIONMODE</span><span class="o">=</span>none<span class="w"> </span><span class="se">\</span>
+<span class="c1">#持久化</span>
+-v<span class="w"> </span>/kibana_data/config:/usr/share/kibana/config<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/kibana_data/data:/usr/share/kibana/data<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/kibana_data/logs:/usr/share/kibana/logs<span class="w"> </span><span class="se">\</span>
+kibana:9.1.4
+</code></pre></div>
+<p>注意： <code>需要在es容器中生成密码</code></p>
+<div class="highlight"><pre><span></span><code>abbott@es-servser:/es_data$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w">  </span>af661509614c<span class="w"> </span>/bin/bash
+
+<span class="o">[</span>elasticsearch@af661509614c<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>bin/elasticsearch-reset-password<span class="w"> </span>-u<span class="w"> </span>kibana_system<span class="w"> </span>-b
+Password<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span><span class="o">[</span>kibana_system<span class="o">]</span><span class="w"> </span>user<span class="w"> </span>successfully<span class="w"> </span>reset.
+New<span class="w"> </span>value:<span class="w"> </span><span class="nv">ErPj</span><span class="o">=</span><span class="nv">v</span><span class="o">=</span>3Mzjc+Psq7U3n
+</code></pre></div>
+<p>!image-20250926171757858](/images/image-20250926171757858.png)</p>
+<p>!image-20250926173747497](/images/image-20250926173747497.png)</p>
+<div class="highlight"><pre><span></span><code>登陆用户：kibana_user
+密码：上面生成的密码
+</code></pre></div>
+<p>查看<code>es</code>用户信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl -k -u elastic:ZPFdn9B45d48ec=kxXuc \</span>
+&gt;<span class="w">   </span><span class="s2">&quot;https://192.168.1.105:32776/_security/user&quot;</span>
+<span class="o">{</span><span class="s2">&quot;elastic&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;elastic&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;superuser&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;kibana&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;kibana&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;kibana_system&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_deprecated_reason&quot;</span>:<span class="s2">&quot;Please use the [kibana_system] user instead.&quot;</span>,<span class="s2">&quot;_reserved&quot;</span>:true,<span class="s2">&quot;_deprecated&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;kibana_system&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;kibana_system&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;kibana_system&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;logstash_system&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;logstash_system&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;logstash_system&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;beats_system&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;beats_system&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;beats_system&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;apm_system&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;apm_system&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;apm_system&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;remote_monitoring_user&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;remote_monitoring_user&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;remote_monitoring_collector&quot;</span>,<span class="s2">&quot;remote_monitoring_agent&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:null,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{</span><span class="s2">&quot;_reserved&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}</span>,<span class="s2">&quot;kibana_user&quot;</span>:<span class="o">{</span><span class="s2">&quot;username&quot;</span>:<span class="s2">&quot;kibana_user&quot;</span>,<span class="s2">&quot;roles&quot;</span>:<span class="o">[</span><span class="s2">&quot;kibana_admin&quot;</span><span class="o">]</span>,<span class="s2">&quot;full_name&quot;</span>:<span class="s2">&quot;kibana_system&quot;</span>,<span class="s2">&quot;email&quot;</span>:null,<span class="s2">&quot;metadata&quot;</span>:<span class="o">{}</span>,<span class="s2">&quot;enabled&quot;</span>:true<span class="o">}}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.1.121<span class="w"> </span>kibana-server
+<span class="m">192</span>.168.1.118<span class="w"> </span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>docker<span class="w">  </span>run<span class="w"> </span>-it<span class="w">  </span>-d<span class="w">   </span>--name<span class="w"> </span>es01<span class="w">  </span>-P<span class="w"> </span>-v<span class="w"> </span>/es_data/config:/usr/share/elasticsearch/config<span class="w"> </span>-v<span class="w"> </span>/es_data/data:/usr/share/elasticsearch/data<span class="w">  </span>elasticsearch:9.1.4
+
+
+
+
+docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w">  </span><span class="se">\</span>
+--name<span class="w"> </span>kibana02<span class="w">  </span>-p<span class="w"> </span><span class="m">5601</span>:5601<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/kibana_data/config:/usr/share/kibana/config<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/kibana_data/data:/usr/share/kibana/data<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/kibana_data/logs:/usr/share/kibana/logs<span class="w"> </span><span class="se">\</span>
+kibana:9.1.4
+
+
+
+docker<span class="w">  </span>run<span class="w">  </span>-it<span class="w"> </span>-d<span class="w">  </span>-P<span class="w">  </span>--name<span class="w"> </span>logstash_server<span class="w">  </span>-v<span class="w"> </span>/logstash_data/pipeline:/usr/share/logstash/pipeline<span class="w"> </span>-v<span class="w"> </span>/logstash_data/config:/usr/share/logstash/config<span class="w"> </span>-v<span class="w"> </span>/logstash_data/logs:/usr/share/logstash/logs<span class="w"> </span>docker.elastic.co/logstash/logstash:9.1.4
+
+
+
+
+docker<span class="w">  </span>run<span class="w">  </span>-it<span class="w"> </span>-d<span class="w">  </span>-P<span class="w">  </span>--name<span class="w"> </span>logstash_server03<span class="w">  </span>-v<span class="w"> </span>/logstash/pipeline:/usr/share/logstash/pipeline<span class="w"> </span>-v<span class="w"> </span>/logstash/config:/usr/share/logstash/config<span class="w"> </span>-v<span class="w"> </span>/logstash/logs:/usr/share/logstash/logs<span class="w"> </span>docker.elastic.co/logstash/logstash:9.1.4
+
+
+
+input<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>beats<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">port</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="m">5044</span>
+<span class="w">  </span><span class="o">}</span>
+
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="c1"># type =&gt; &quot;messages&quot;</span>
+<span class="w">    </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;/var/log/messages&quot;</span>
+<span class="w">    </span><span class="nv">start_position</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;beginning&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
+
+output<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>elasticsearch<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">hosts</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span><span class="s2">&quot;http://192.168.1.118:9200&quot;</span><span class="o">]</span>
+<span class="w">    </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;messages-%{+YYYY.MM.dd}&quot;</span>
+<span class="w">   </span><span class="c1"># user =&gt; &quot;elastic&quot;</span>
+<span class="w">   </span><span class="c1"># password =&gt; &quot;ZPFdn9B45d48ec=kxXuc&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+
+<span class="w">  </span>stdout<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">codec</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span>rubydebug
+<span class="w">  </span><span class="o">}</span>
+
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;/tmp/logstash_output.log&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
+
+
+
+curl<span class="w"> </span>-u<span class="w"> </span>elastic:密码<span class="w"> </span>-XPOST<span class="w"> </span>http://192.168.1.118:9200/_xpack/security/user/logstash_user<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;password&quot; : &quot;logstash_password&quot;,&quot;roles&quot; : [&quot;logstash_system&quot;],&quot;full_name&quot; : &quot;Logstash User&quot;}&#39;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>pipeline<span class="o">]</span><span class="c1"># cat logstash.conf </span>
+input<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span>
+<span class="w">      </span><span class="s2">&quot;/var/log/*.log&quot;</span>,
+<span class="w">      </span><span class="s2">&quot;/var/log/syslog&quot;</span>,
+<span class="w">      </span><span class="s2">&quot;/var/log/auth.log&quot;</span>
+<span class="w">    </span><span class="o">]</span>
+<span class="w">    </span><span class="nv">start_position</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;beginning&quot;</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;system-logs&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="w">  </span>file<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span><span class="s2">&quot;/var/log/nginx/access.log&quot;</span><span class="o">]</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;nginx&quot;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
+
+output<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="c1"># 系统日志发送到系统数据流</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">[</span>type<span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>elasticsearch<span class="w"> </span><span class="o">{</span>
+<span class="w">      </span><span class="nv">hosts</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span><span class="s2">&quot;192.168.1.118:9200&quot;</span><span class="o">]</span>
+<span class="w">      </span><span class="nv">data_stream</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="nb">true</span>
+<span class="w">      </span><span class="nv">data_stream_type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;logs&quot;</span>
+<span class="w">      </span><span class="nv">data_stream_dataset</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;system&quot;</span>
+<span class="w">      </span><span class="nv">data_stream_namespace</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;production&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">  </span><span class="o">}</span>
+
+<span class="w">  </span><span class="c1"># Nginx 访问日志发送到 nginx 数据流</span>
+<span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="o">[</span>type<span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;nginx-access&quot;</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>elasticsearch<span class="w"> </span><span class="o">{</span>
+<span class="w">      </span><span class="nv">hosts</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">[</span><span class="s2">&quot;192.168.1.118:9200&quot;</span><span class="o">]</span>
+<span class="w">      </span><span class="nv">data_stream</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="nb">true</span>
+<span class="w">      </span><span class="nv">data_stream_type</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;logs&quot;</span>
+<span class="w">      </span><span class="nv">data_stream_dataset</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;nginx&quot;</span>
+<span class="w">      </span><span class="nv">data_stream_namespace</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="s2">&quot;production&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="w">  </span>stdout<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="nv">codec</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span>rubydebug<span class="w"> </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<h1 id="_4">准备环境</h1>
+<p>一台：<code>基于docker</code></p>
+<p>获取：</p>
+<p>准备好镜像</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker images</span>
+REPOSITORY<span class="w">                            </span>TAG<span class="w">       </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">       </span>SIZE
+elasticsearch<span class="w">                         </span><span class="m">9</span>.1.4<span class="w">     </span>2d8a06e4e4ee<span class="w">   </span><span class="m">9</span><span class="w"> </span>days<span class="w"> </span>ago<span class="w">    </span><span class="m">1</span>.39GB
+kibana<span class="w">                                </span><span class="m">9</span>.1.4<span class="w">     </span>bc25709ad108<span class="w">   </span><span class="m">9</span><span class="w"> </span>days<span class="w"> </span>ago<span class="w">    </span><span class="m">1</span>.32GB
+docker.elastic.co/logstash/logstash<span class="w">   </span><span class="m">9</span>.1.4<span class="w">     </span>03f96722730d<span class="w">   </span><span class="m">2</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">   </span>835MBc
+</code></pre></div>
+<p>创建logstash</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w">  </span>run<span class="w">  </span>-it<span class="w"> </span>-d<span class="w">  </span>-p<span class="w"> </span><span class="m">9600</span>:9600<span class="w">  </span>--name<span class="w"> </span>logstash_server<span class="w">  </span>-v<span class="w"> </span>/elk_data/logstash/pipeline:/usr/share/logstash/pipeline<span class="w"> </span>-v<span class="w"> </span>/elk_data/logstash/config:/usr/share/logstash/config<span class="w"> </span>-v<span class="w"> </span>docker.elastic.co/logstash/logstash:9.1.4
+</code></pre></div>
+<p>测试：</p>
+<p>!image-20250928152223299](/images/image-20250928152223299.png)</p>
+<h2 id="es">Es</h2>
+<p>创建ES</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w">  </span>run<span class="w"> </span>-it<span class="w">  </span>-d<span class="w">   </span>--name<span class="w"> </span>es<span class="w">  </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-v<span class="w"> </span>/elk_data/es_data/config:/usr/share/elasticsearch/config<span class="w">  </span>elasticsearch:9.1.4
+</code></pre></div>
+<blockquote>
+<p>8 以后的版本增加安装</p>
+</blockquote>
+<p>修改配置关闭安全认证：</p>
+<p>验证：</p>
+<p>!image-20250928153404205](/images/image-20250928153404205.png)</p>
+<h3 id="kibana_2">Kibana</h3>
+<p>创建kb</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w">  </span><span class="se">\</span>
+--name<span class="w"> </span>kibana<span class="w">  </span>-p<span class="w"> </span><span class="m">5601</span>:5601<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/elk_data/kibana_data/config:/usr/share/kibana/config<span class="w"> </span><span class="se">\</span>
+kibana:9.1.4
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

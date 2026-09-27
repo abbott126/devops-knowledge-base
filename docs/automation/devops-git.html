@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Git - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-devops"># DevOps</a></li><li class="toc-l2"><a href="#-前一天问题">## 前一天问题</a></li><li class="toc-l2"><a href="#-今日目标">## 今日目标</a></li><li class="toc-l2"><a href="#-自动化">## 自动化</a></li><li class="toc-l2"><a href="#-实现自动化的落地方式应用上线的一种文化">## 实现自动化的落地方式(应用上线的一种文化)</a></li><li class="toc-l2"><a href="#-devops-文化">## DevOps 文化</a></li><li class="toc-l2"><a href="#-版本控制系统">## 版本控制系统</a></li><li class="toc-l2"><a href="#-git-分布式版本控制系统">## git 分布式版本控制系统</a></li><li class="toc-l3"><a href="#-git-版本控制系统的工作原理">### Git 版本控制系统的工作原理</a></li><li class="toc-l4"><a href="#-初始化一个本地仓库-git-init">#### 初始化一个本地仓库 `git init`</a></li><li class="toc-l4"><a href="#-查看仓库的状态">#### 查看仓库的状态</a></li><li class="toc-l4"><a href="#-添加到暂存区">#### 添加到暂存区</a></li><li class="toc-l4"><a href="#-提交到本地仓库中">#### 提交到本地仓库中</a></li><li class="toc-l4"><a href="#-查看日志代码提交日志">#### 查看日志（代码提交日志）</a></li><li class="toc-l4"><a href="#-重置head">#### 重置`HEAD`</a></li><li class="toc-l4"><a href="#-回退到原来的初始版本">#### 回退到原来的初始版本</a></li><li class="toc-l3"><a href="#-分支">### 分支:</a></li><li class="toc-l4"><a href="#-创建分支">#### 创建分支</a></li><li class="toc-l4"><a href="#-查看分支">#### 查看分支</a></li><li class="toc-l4"><a href="#-切换分支">#### 切换分支：</a></li><li class="toc-l4"><a href="#-删除分支">#### 删除分支：</a></li><li class="toc-l4"><a href="#-example">#### Example:</a></li><li class="toc-l2"><a href="#-代码仓库">## 代码仓库</a></li><li class="toc-l3"><a href="#-私有仓库-gitlab">### 私有仓库 gitlab</a></li><li class="toc-l3"><a href="#-部署">### 部署</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="devops">DevOps</h1>
+<ul>
+<li>
+<p>[ ] 前一天问题</p>
+</li>
+<li>
+<p>[ ] 今日目标</p>
+</li>
+</ul>
+<h2 id="_1">前一天问题</h2>
+<p>没有问题</p>
+<h2 id="_2">今日目标</h2>
+<ul>
+<li>[ ] 自动化</li>
+<li>[ ] 围绕组件</li>
+<li>[ ] 代码发布 --&gt; 仓库</li>
+</ul>
+<h2 id="_3">自动化</h2>
+<blockquote>
+<p>释放人力；解决人可能导致的错误；</p>
+<p>标准化</p>
+</blockquote>
+<h2 id="_4">实现自动化的落地方式(应用上线的一种文化)</h2>
+<ul>
+<li>DevOps</li>
+<li>GitOps</li>
+<li>AiOps  </li>
+</ul>
+<p>职位： DevOps 工程师      SRE 工程师 </p>
+<h2 id="devops_1">DevOps 文化</h2>
+<p>!image-20250917100617790](/images/image-20250917100617790.png)</p>
+<h2 id="_5">版本控制系统</h2>
+<p>!image-20250917103455308](/images/image-20250917103455308.png)</p>
+<h2 id="git">git 分布式版本控制系统</h2>
+<ul>
+<li>下载安装 win linux   Mac  unix </li>
+<li>https://git.com</li>
+</ul>
+<p>Linux 操作系统安装git</p>
+<ul>
+<li>操作系统<code>ubuntu</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>apt<span class="w"> </span>update
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>apt<span class="w"> </span>upgrade<span class="w"> </span>
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>apt-get<span class="w">  </span>install<span class="w">  </span>git<span class="w"> </span>
+🟰
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>apt<span class="w">  </span>install<span class="w"> </span>git
+</code></pre></div>
+<h3 id="git_1">Git 版本控制系统的工作原理</h3>
+<p><img alt="Git版本控制器_git远端有记录项目版本吗-CSDN博客" src="https://img-blog.csdnimg.cn/fdc7757ce86f418f8eb173071443a11d.png" /></p>
+<ol>
+<li>克隆远程到本地</li>
+<li>将本地的工作文件，暂存区；提交本地仓库 </li>
+<li>推送到远程仓库</li>
+<li>拉去远程仓库到本地</li>
+</ol>
+<p>!image-20250917105836144](/images/image-20250917105836144.png)</p>
+<h4 id="git-init">初始化一个本地仓库 <code>git init</code></h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>git<span class="w">  </span>init<span class="w">  </span><span class="nb">test</span>
+</code></pre></div>
+<h4 id="_6">查看仓库的状态</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>status<span class="w"> </span>
+</code></pre></div>
+<h4 id="_7">添加到暂存区</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>.<span class="w"> </span><span class="c1"># 将工作区的所有文件添加到暂存区中</span>
+</code></pre></div>
+<p>输出结果：</p>
+<p>!image-20250917110621846](/images/image-20250917110621846.png)</p>
+<h4 id="_8">提交到本地仓库中</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;udate abc  bc file&quot;</span><span class="w"> </span>
+</code></pre></div>
+<p>第一次提交<code>作者及联系方式</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.email<span class="w"> </span><span class="s2">&quot;abbott68@126.com&quot;</span>
+abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;abbott68&quot;</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>status<span class="w">  </span>
+On<span class="w"> </span>branch<span class="w"> </span>master
+nothing<span class="w"> </span>to<span class="w"> </span>commit,<span class="w"> </span>working<span class="w"> </span>tree<span class="w"> </span>clean
+</code></pre></div>
+<h4 id="_9">查看日志（代码提交日志）</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>log<span class="w">  </span>
+commit<span class="w"> </span>6a92514ef2cab14959347cceb912a32a736af1ce<span class="w"> </span><span class="o">(</span>HEAD<span class="w"> </span>-&gt;<span class="w"> </span>master<span class="o">)</span>
+Author:<span class="w"> </span>abbott68<span class="w"> </span>&lt;abbott68@126.com&gt;
+Date:<span class="w">   </span>Wed<span class="w"> </span>Sep<span class="w"> </span><span class="m">17</span><span class="w"> </span><span class="m">03</span>:12:58<span class="w"> </span><span class="m">2025</span><span class="w"> </span>+0000
+
+<span class="w">    </span>update<span class="w"> </span>abc
+
+commit<span class="w"> </span>71344eb906427cb14c0eef46aaa19e8e72659de8
+Author:<span class="w"> </span>abbott68<span class="w"> </span>&lt;abbott68@126.com&gt;
+Date:<span class="w">   </span>Wed<span class="w"> </span>Sep<span class="w"> </span><span class="m">17</span><span class="w"> </span><span class="m">03</span>:08:32<span class="w"> </span><span class="m">2025</span><span class="w"> </span>+0000
+
+<span class="w">    </span>udate<span class="w"> </span>abc<span class="w">  </span>bc<span class="w"> </span>file
+</code></pre></div>
+<h4 id="head">重置<code>HEAD</code></h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>reset<span class="w"> </span>71344eb9064
+Unstaged<span class="w"> </span>changes<span class="w"> </span>after<span class="w"> </span>reset:
+M<span class="w">   </span>abc
+</code></pre></div>
+<h4 id="_10">回退到原来的初始版本</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>restore<span class="w"> </span>abc
+</code></pre></div>
+<h3 id="_11">分支:</h3>
+<blockquote>
+<p>作用： 需要每个功能创建一个分支；实现协同开发；还可以实现每个分支的隔离；请求主分支</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>---
+title: Example Git diagram
+---
+gitGraph
+   commit
+   branch dev01
+   commit
+   merge main
+   checkout main
+   branch dev02
+   commit
+   checkout main
+   branch dev03
+   commit
+</code></pre></div>
+<h4 id="_12">创建分支</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>branch<span class="w">  </span>dev01
+abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>branch<span class="w">  </span>dev02
+abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>branch<span class="w">  </span>dev03
+</code></pre></div>
+<h4 id="_13">查看分支</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>branch<span class="w"> </span>
+<span class="w">  </span>dev01
+<span class="w">  </span>dev02
+<span class="w">  </span>dev03
+*<span class="w"> </span>master<span class="w"> </span><span class="c1">#你所在的分支</span>
+</code></pre></div>
+<h4 id="_14">切换分支：</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w">  </span>switch<span class="w"> </span>dev01
+Switched<span class="w"> </span>to<span class="w"> </span>branch<span class="w"> </span><span class="s1">&#39;dev01&#39;</span>
+abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>branch<span class="w"> </span>
+*<span class="w"> </span>dev01
+<span class="w">  </span>dev02
+<span class="w">  </span>dev03
+<span class="w">  </span>master
+</code></pre></div>
+<h4 id="_15">删除分支：</h4>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>branch<span class="w">   </span>-D<span class="w">  </span>dev02
+Deleted<span class="w"> </span>branch<span class="w"> </span>dev02<span class="w"> </span><span class="o">(</span>was<span class="w"> </span>71344eb<span class="o">)</span>.
+abbott@abbott:~/test$<span class="w"> </span>git<span class="w"> </span>branch<span class="w">  </span>-l<span class="w"> </span>
+*<span class="w"> </span>dev01
+<span class="w">  </span>dev03
+<span class="w">  </span>master
+</code></pre></div>
+<p>合并分支：</p>
+<div class="highlight"><pre><span></span><code>git<span class="w">  </span>merge
+</code></pre></div>
+<h4 id="example">Example:</h4>
+<div class="highlight"><pre><span></span><code>gitGraph
+       commit id: &quot;index.html&quot;
+       branch dev01
+       commit id: &quot;dev01.html&quot;
+       checkout main
+       branch  dev02
+       commit id: &quot;dev02.html&quot;
+       checkout main
+       branch dev03
+       commit id: &quot;dev03.html&quot;
+       checkout main
+       merge dev01 id: &quot;dev01&quot; tag: &quot;merge dev01&quot;
+       merge dev02 id: &quot;dev02&quot; tag: &quot;merge dev02&quot;
+       merge dev03 id: &quot;dev03&quot; tag: &quot;merge dev03&quot;
+       commit id: &quot;发布&quot; tag: &quot;v1&quot;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~/project$<span class="w"> </span>git<span class="w">  </span>merge<span class="w"> </span>dev01
+Updating<span class="w"> </span>d40c03e..2b57ceb
+Fast-forward
+<span class="w"> </span>dev01.html<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w"> </span>+
+<span class="w"> </span><span class="m">1</span><span class="w"> </span>file<span class="w"> </span>changed,<span class="w"> </span><span class="m">1</span><span class="w"> </span>insertion<span class="o">(</span>+<span class="o">)</span>
+<span class="w"> </span>create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644</span><span class="w"> </span>dev01.html
+abbott@abbott:~/project$<span class="w"> </span>ls
+dev01.html<span class="w">  </span>master_index.html
+abbott@abbott:~/project$<span class="w"> </span>git<span class="w">  </span>merge<span class="w"> </span>dev02
+Merge<span class="w"> </span>made<span class="w"> </span>by<span class="w"> </span>the<span class="w"> </span><span class="s1">&#39;ort&#39;</span><span class="w"> </span>strategy.
+<span class="w"> </span>dev02.html<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w"> </span>+
+<span class="w"> </span><span class="m">1</span><span class="w"> </span>file<span class="w"> </span>changed,<span class="w"> </span><span class="m">1</span><span class="w"> </span>insertion<span class="o">(</span>+<span class="o">)</span>
+<span class="w"> </span>create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644</span><span class="w"> </span>dev02.html
+abbott@abbott:~/project$<span class="w"> </span>ls
+dev01.html<span class="w">  </span>dev02.html<span class="w">  </span>master_index.html
+abbott@abbott:~/project$<span class="w"> </span>git<span class="w">  </span>merge<span class="w"> </span>dev03
+Merge<span class="w"> </span>made<span class="w"> </span>by<span class="w"> </span>the<span class="w"> </span><span class="s1">&#39;ort&#39;</span><span class="w"> </span>strategy.
+<span class="w"> </span>dev03.html<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w"> </span>+
+<span class="w"> </span><span class="m">1</span><span class="w"> </span>file<span class="w"> </span>changed,<span class="w"> </span><span class="m">1</span><span class="w"> </span>insertion<span class="o">(</span>+<span class="o">)</span>
+<span class="w"> </span>create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644</span><span class="w"> </span>dev03.html
+abbott@abbott:~/project$<span class="w"> </span>
+abbott@abbott:~/project$<span class="w"> </span>s
+s:<span class="w"> </span><span class="nb">command</span><span class="w"> </span>not<span class="w"> </span>found
+abbott@abbott:~/project$<span class="w"> </span>ls
+dev01.html<span class="w">  </span>dev02.html<span class="w">  </span>dev03.html<span class="w">  </span>master_index.html
+</code></pre></div>
+<h2 id="_16">代码仓库</h2>
+<p>!image-20250917145658667](/images/image-20250917145658667.png)</p>
+<p>克隆仓库：</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://gitee.com/abbott68_admin/rust.git
+</code></pre></div>
+<p>同步远程仓库：</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/work_dir/gitee.com/rust/<span class="w"> </span><span class="o">[</span>dev01<span class="o">]</span><span class="w"> </span>git<span class="w"> </span>pull
+</code></pre></div>
+<p>推送远程仓库：</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/work_dir/gitee.com/rust/<span class="w"> </span><span class="o">[</span>dev01<span class="o">]</span><span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>
+</code></pre></div>
+<h3 id="gitlab">私有仓库 gitlab</h3>
+<p>Gitlab 概述：</p>
+<blockquote>
+<p>代码管理仓库；</p>
+<p>支持企业版和社区版</p>
+<p>支持GitOps CI/CD</p>
+</blockquote>
+<h3 id="_17">部署</h3>
+<h4 id="gitlab_1">gitlab部署要求：</h4>
+<ul>
+<li>需要一台Linux主机 unix/Linux  子系统</li>
+<li>内存 <code>&gt;=4</code></li>
+<li>存储 <code>&gt;=20</code></li>
+<li>cpu <code>&gt;=2</code></li>
+</ul>
+<h4 id="redhat-8-install">redhat  8 install</h4>
+<div class="highlight"><pre><span></span><code>https://docs.gitlab.com/install/package/almalinux/
+</code></pre></div>
+<h4 id="install-gitlab-ce">install gitlab-ce</h4>
+<ol>
+<li>添加防火墙规则(关闭可以略过)</li>
+</ol>
+<p>Ubuntu </p>
+<ol>
+<li>
+<p><code>shell
+   sudo systemctl enable --now sshsudo ufw allow 22/tcp
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw enable</code></p>
+</li>
+<li>
+<p>Redhat</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--now<span class="w"> </span>sshd
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-service<span class="o">=</span>http
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-service<span class="o">=</span>https
+sudo<span class="w"> </span>firewall-cmd<span class="w"> </span>--permanent<span class="w"> </span>--add-service<span class="o">=</span>ssh
+sudo<span class="w"> </span>systemctl<span class="w"> </span>reload<span class="w"> </span>firewalld
+</code></pre></div>
+<p>安装gitlab-ce 源</p>
+<ul>
+<li>ubuntu</li>
+</ul>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
+</code></pre></div>
+<ul>
+<li>Redhat </li>
+</ul>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
+</code></pre></div>
+<p>安装gitlab-ce</p>
+<p>Ubuntu </p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>gitlab-ce
+</code></pre></div>
+<p>redhat</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>gitlab-ce
+sudo<span class="w"> </span>dnf<span class="w">  </span>install<span class="w">  </span>--download-only<span class="w">  </span>gitlab-ce
+</code></pre></div>
+<p>离线安装：</p>
+<ul>
+<li>获取软件包</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">#redhat 7 </span>
+https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/yum/el7/gitlab-ce-17.1.1-ce.0.el7.x86_64.rpm
+<span class="c1">#ubuntu</span>
+https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/apt/packages.gitlab.com/gitlab/gitlab-ce/ubuntu/pool/noble/main/g/gitlab-ce/gitlab-ce_18.3.2-ce.0_amd64.deb
+</code></pre></div>
+<ul>
+<li>install</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y localinstall  gitlab-ce-17.1.1-ce.0.el7.x86_64.rpm </span>
+</code></pre></div>
+<p>!image-20250917164733736](/images/image-20250917164733736.png)</p>
+<h4 id="gitlab-ce">初始化Gitlab-ce</h4>
+<p>修改配置</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># egrep  &#39;^external_url&#39; /etc/gitlab/gitlab.rb </span>
+external_url<span class="w"> </span><span class="s1">&#39;http://192.168.1.110&#39;</span><span class="w">  </span><span class="c1">#修改为服务器的IP地址或者域名</span>
+</code></pre></div>
+<p>重新配置</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># gitlab-ctl  reconfigure</span>
+</code></pre></div>
+<blockquote>
+<p>自动安装/启动 redis  Prometheus   pg  </p>
+</blockquote>
+<p>登陆使用浏览器： <code>http://server_ip</code></p>
+<p>默认密码： <code>/etc/gitlab/initial_root_password</code>   临时（24）</p>
+<h3 id="gitlab_2">熟悉<code>gitlab</code></h3>
+<p>修改root管理的密码</p>
+<p>192.168.1.110</p>
+<ul>
+<li>
+<p>用户： <code>root</code></p>
+</li>
+<li>
+<p>命令：<code>WdnUGpbuhm4EjEnpKE8t</code></p>
+</li>
+</ul>
+<h3 id="_18">创建项目</h3>
+<ul>
+<li>基于<code>root</code>创建一个test项目</li>
+</ul>
+<p>Example: <code>完整实例</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>创建一个组：<span class="w"> </span>dev-group
+<span class="m">2</span>.<span class="w"> </span>创建用户：<span class="w"> </span><span class="sb">`</span>dev-xiaowang<span class="sb">`</span><span class="w"> </span><span class="sb">`</span>dev-xiaobai<span class="sb">`</span><span class="w">   </span>密码：<span class="w"> </span>Asdf@008<span class="p">&amp;</span>
+<span class="m">3</span>.<span class="w"> </span>web项目
+<span class="m">4</span>.<span class="w"> </span>创建分支<span class="w"> </span>
+</code></pre></div>
+<p>Gitlab 架构图</p>
+<p>!image-20250918110734930](/images/image-20250918110734930.png)</p>
+<h3 id="gitlab_3">关于gitlab命令</h3>
+<div class="highlight"><pre><span></span><code>gitlab-ctl<span class="w"> </span>--help
+gitlab<span class="w"> </span>--&gt;<span class="w"> </span>tab<span class="w"> </span>补全
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

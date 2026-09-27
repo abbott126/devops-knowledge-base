@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>包管理器 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-kubernetes-的包管理器"># kubernetes 的包管理器</a></li><li class="toc-l3"><a href="#-一helm-的核心价值解决-k8s-应用管理痛点">### 一、Helm 的核心价值：解决 K8s 应用管理痛点</a></li><li class="toc-l3"><a href="#-二helm-的核心概念">### 二、Helm 的核心概念</a></li><li class="toc-l3"><a href="#-用二进制版本安装">### 用二进制版本安装</a></li><li class="toc-l3"><a href="#-三helm-3-常用命令核心操作">### 三、Helm 3 常用命令（核心操作）</a></li><li class="toc-l4"><a href="#-1.-基础配置添加仓库">#### 1. 基础配置：添加仓库</a></li><li class="toc-l1"><a href="#-添加-nginx-官方-chart-仓库"># 添加 Nginx 官方 Chart 仓库</a></li><li class="toc-l1"><a href="#-更新仓库"># 更新仓库</a></li><li class="toc-l1"><a href="#-列出仓库"># 列出仓库</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="kubernetes">kubernetes 的包管理器</h1>
+<p><strong>Helm</strong> 是 Kubernetes 生态中最核心的<strong>包管理器</strong>，它能将 Kubernetes 应用的所有资源（如 Deployment、Service、ConfigMap 等）打包成统一的 “Chart”，实现应用的快速部署、版本管理、升级与回滚，极大简化了 K8s 应用的运维流程。</p>
+<h3 id="helm-k8s">一、Helm 的核心价值：解决 K8s 应用管理痛点</h3>
+<p>在没有 Helm 时，部署一个复杂 K8s 应用（如 Nginx + MySQL + Redis）需要手动编写多个 YAML 文件，存在以下问题：</p>
+<ol>
+<li><strong>资源分散</strong>：一个应用对应多个 YAML（Deployment、Service 等），管理和分发困难；</li>
+<li><strong>版本混乱</strong>：应用升级 / 回滚时，需手动修改多个 YAML 版本，易出错；</li>
+<li><strong>环境适配差</strong>：开发 / 测试 / 生产环境的配置（如数据库地址、资源配额）需手动替换，效率低。</li>
+</ol>
+<p>Helm 通过以下特性解决这些问题：</p>
+<ul>
+<li><strong>Chart 打包</strong>：将应用所有资源和配置模板打包成 “Chart”，可跨集群复用；</li>
+<li><strong>版本控制</strong>：为每个应用版本生成 “Release”（部署实例），支持一键升级、回滚；</li>
+<li><strong>配置模板化</strong>：通过 “Values.yaml” 分离配置与模板，支持不同环境动态注入配置（如 <code>--set env=prod</code>）。</li>
+</ul>
+<h3 id="helm">二、Helm 的核心概念</h3>
+<p>Helm 3 之后移除了中心化的 “Tiller” 组件，架构更轻量，核心概念有 3 个：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Chart</strong></td>
+<td>应用的 “安装包”，包含应用的所有 K8s 资源模板（YAML）和配置模板（Values.yaml），可存储在本地或远程仓库（如 Helm Hub）。</td>
+</tr>
+<tr>
+<td><strong>Release</strong></td>
+<td>Chart 部署到 K8s 集群后的 “实例”，每个 Chart 可多次部署（如部署 <code>nginx-dev</code> 和 <code>nginx-prod</code> 两个 Release），每个 Release 有独立版本。</td>
+</tr>
+<tr>
+<td><strong>Repository</strong></td>
+<td>Chart 的 “仓库”，用于存储和分发 Chart（类似 Docker Hub），支持公开仓库（如 <a href="https://artifacthub.io/">Artifact Hub</a>）或私有仓库。</td>
+</tr>
+</tbody>
+</table>
+<p>三、安装 helm 命令</p>
+<p>官方文档：https://helm.sh/zh/docs/intro/install/</p>
+<h3 id="_1">用二进制版本安装</h3>
+<p>每个Helm<a href="https://github.com/helm/helm/releases">版本</a>都提供了各种操作系统的二进制版本，这些版本可以手动下载和安装。</p>
+<ol>
+<li>下载<a href="https://github.com/helm/helm/releases">需要的版本</a></li>
+<li>解压(<code>tar -zxvf helm-v3.0.0-linux-amd64.tar.gz</code>)</li>
+<li>在解压目录中找到<code>helm</code>程序，移动到需要的目录中(<code>mv linux-amd64/helm /usr/local/bin/helm</code>)</li>
+</ol>
+<p>测试是否可以使用<code>helm</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>linux-amd64<span class="o">]</span><span class="c1"># helm</span>
+The<span class="w"> </span>Kubernetes<span class="w"> </span>package<span class="w"> </span>manager
+
+Common<span class="w"> </span>actions<span class="w"> </span><span class="k">for</span><span class="w"> </span>Helm:
+
+-<span class="w"> </span>helm<span class="w"> </span>search:<span class="w">    </span>search<span class="w"> </span><span class="k">for</span><span class="w"> </span>charts
+-<span class="w"> </span>helm<span class="w"> </span>pull:<span class="w">      </span>download<span class="w"> </span>a<span class="w"> </span>chart<span class="w"> </span>to<span class="w"> </span>your<span class="w"> </span><span class="nb">local</span><span class="w"> </span>directory<span class="w"> </span>to<span class="w"> </span>view
+-<span class="w"> </span>helm<span class="w"> </span>install:<span class="w">   </span>upload<span class="w"> </span>the<span class="w"> </span>chart<span class="w"> </span>to<span class="w"> </span>Kubernetes
+-<span class="w"> </span>helm<span class="w"> </span>list:<span class="w">      </span>list<span class="w"> </span>releases<span class="w"> </span>of<span class="w"> </span>charts
+</code></pre></div>
+<p>子命令的帮助：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm  repo --help </span>
+<span class="w">  </span>add<span class="w">         </span>add<span class="w"> </span>a<span class="w"> </span>chart<span class="w"> </span>repository
+<span class="w">  </span>index<span class="w">       </span>generate<span class="w"> </span>an<span class="w"> </span>index<span class="w"> </span>file<span class="w"> </span>given<span class="w"> </span>a<span class="w"> </span>directory<span class="w"> </span>containing<span class="w"> </span>packaged<span class="w"> </span>charts
+<span class="w">  </span>list<span class="w">        </span>list<span class="w"> </span>chart<span class="w"> </span>repositories
+<span class="w">  </span>remove<span class="w">      </span>remove<span class="w"> </span>one<span class="w"> </span>or<span class="w"> </span>more<span class="w"> </span>chart<span class="w"> </span>repositories
+<span class="w">  </span>update<span class="w">      </span>update<span class="w"> </span>information<span class="w"> </span>of<span class="w"> </span>available<span class="w"> </span>charts<span class="w"> </span>locally<span class="w"> </span>from<span class="w"> </span>chart<span class="w"> </span>repositories
+</code></pre></div>
+<h3 id="helm-3">三、Helm 3 常用命令（核心操作）</h3>
+<p>Helm 命令遵循 “<code>helm 子命令 [参数]</code>” 格式，以下是日常高频操作：</p>
+<h4 id="1">1. 基础配置：添加仓库</h4>
+<p>先添加公开仓库（如官方 Nginx 仓库），才能拉取 Chart：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 添加 Nginx 官方 Chart 仓库</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm repo add nginx-stable https://helm.nginx.com/stable </span>
+<span class="c1"># 更新仓库</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm  repo  update  nginx-stable</span>
+<span class="c1"># 列出仓库</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm  repo list </span>
+NAME<span class="w">            </span>URL<span class="w">                          </span>
+nginx-stable<span class="w">    </span>https://helm.nginx.com/stable
+</code></pre></div>
+<ol>
+<li>安装应用：<code>nginx</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm  search  repo nginx-stable</span>
+NAME<span class="w">                                            </span>CHART<span class="w"> </span>VERSION<span class="w">   </span>APP<span class="w"> </span>VERSION<span class="w">     </span>DESCRIPTION<span class="w">                                      </span>
+nginx-stable/nginx-appprotect-dos-arbitrator<span class="w">    </span><span class="m">0</span>.2.0<span class="w">           </span><span class="m">1</span>.2.0<span class="w">           </span>NGINX<span class="w"> </span>App<span class="w"> </span>Protect<span class="w"> </span>Dos<span class="w"> </span>Arbitrator<span class="w">                 </span>
+nginx-stable/nginx-devportal<span class="w">                    </span><span class="m">1</span>.7.2<span class="w">           </span><span class="m">1</span>.7.2<span class="w">           </span>A<span class="w"> </span>Helm<span class="w"> </span>chart<span class="w"> </span><span class="k">for</span><span class="w"> </span>deploying<span class="w"> </span>ACM<span class="w"> </span>Developer<span class="w"> </span>Portal<span class="w"> </span>
+
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># helm  install  {name} nginx-stable/nginx-ingress  --generate-name</span>
+</code></pre></div>
+<blockquote>
+<p><strong>安装 Helm Chart 时必须提供一个 Release 名称，或者通过 <code>--generate-name</code> 让 Helm 自动生成名称</strong>。</p>
+</blockquote>
+<ol>
+<li>安装<code>traefik</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>traefik<span class="o">]</span><span class="c1"># helm install my-release stable/traefik --namespace kube-system</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

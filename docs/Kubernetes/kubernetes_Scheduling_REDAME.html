@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调度 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-调度抢占和驱逐"># 调度、抢占和驱逐</a></li><li class="toc-l2"><a href="#-kubernetes-调度器">## Kubernetes 调度器</a></li><li class="toc-l3"><a href="#-调度概览">### 调度概览</a></li><li class="toc-l3"><a href="#-kube-scheduler">### kube-scheduler</a></li><li class="toc-l3"><a href="#-kube-scheduler-中的节点选择">### kube-scheduler 中的节点选择</a></li><li class="toc-l1"><a href="#-将-pod-指派给节点"># 将 Pod 指派给节点</a></li><li class="toc-l3"><a href="#-nodelabel-节点标签">### nodelabel 节点标签</a></li><li class="toc-l1"><a href="#disktype-ssd">#disktype: ssd</a></li><li class="toc-l4"><a href="#-指定节点调度很少">#### 指定节点调度（很少）</a></li><li class="toc-l3"><a href="#-node亲和力">### `node`亲和力：</a></li><li class="toc-l1"><a href="#-定义亲和力"># 定义亲和力</a></li><li class="toc-l4"><a href="#-操作符">#### 操作符</a></li><li class="toc-l4"><a href="#-说明">#### 说明：</a></li><li class="toc-l4"><a href="#-调度策略">#### 调度策略</a></li><li class="toc-l4"><a href="#-调度器配置">#### 调度器配置</a></li><li class="toc-l1"><a href="#-污点和容忍度"># 污点和容忍度</a></li><li class="toc-l3"><a href="#-常用命令-kubectl-taint">### 常用命令： `kubectl  taint`</a></li><li class="toc-l4"><a href="#-effect匹配污点的效果">#### `effect`：匹配污点的效果</a></li><li class="toc-l1"><a href="#-定义-pod-的-api-版本和资源类型固定为-v1-和-pod"># 定义 Pod 的 API 版本和资源类型（固定为 v1 和 Pod）</a></li><li class="toc-l1"><a href="#-亲和力配置控制-pod-倾向于调度到哪些节点此处为节点亲和性"># 亲和力配置：控制 Pod 倾向于调度到哪些节点（此处为节点亲和性）</a></li><li class="toc-l1"><a href="#-调度时必须满足的条件硬亲和性忽略运行时变化"># 调度时必须满足的条件（硬亲和性），忽略运行时变化</a></li><li class="toc-l1"><a href="#-含义调度阶段必须满足以下节点选择条件否则-pod-无法调度运行中节点标签变化不影响已调度的-pod"># 含义：调度阶段必须满足以下节点选择条件，否则 Pod 无法调度；运行中节点标签变化不影响已调度的 Pod</a></li><li class="toc-l1"><a href="#-容器配置pod-中运行的容器列表"># 容器配置：Pod 中运行的容器列表</a></li><li class="toc-l1"><a href="#-容忍配置允许-pod-调度到带有特定污点的节点"># 容忍配置：允许 Pod 调度到带有特定污点的节点</a></li><li class="toc-l1"><a href="#-含义允许-pod-调度到带有污点-keyaeffectnoschedule-的节点无论该污点的-value-是什么"># 含义：允许 Pod 调度到带有污点 key=a、effect=NoSchedule 的节点（无论该污点的 value 是什么）</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">调度、抢占和驱逐</h1>
+<blockquote>
+<p>在 Kubernetes 中，调度（scheduling）指的是确保 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 匹配到合适的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>， 以便 <a href="https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet">kubelet</a> 能够运行它们。 抢占（Preemption）指的是终止低<a href="https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority">优先级</a>的 Pod 以便高优先级的 Pod 可以调度到 Node 上的过程。 驱逐（Eviction）是在资源匮乏的节点上，主动让一个或多个 Pod 失效的过程。</p>
+</blockquote>
+<h2 id="kubernetes">Kubernetes 调度器</h2>
+<p>在 Kubernetes 中，<strong>调度</strong>是指将 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 放置到合适的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>上，以便对应节点上的<font color=red> <a href="https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet">Kubelet</a> </font>能够运行这些 Pod。</p>
+<h3 id="_2">调度概览</h3>
+<p>调度器通过 Kubernetes 的监测（Watch）机制来发现集群中新创建且尚未被调度到节点上的 Pod。 调度器会将所发现的每一个未调度的 Pod 调度到一个合适的节点上来运行。 调度器会依据下文的调度原则来做出调度选择。</p>
+<p>如果你想要理解 Pod 为什么会被调度到特定的节点上， 或者你想要尝试实现一个自定义的调度器，这篇文章将帮助你了解调度。</p>
+<h3 id="kube-scheduler">kube-scheduler</h3>
+<p><a href="https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-scheduler/">kube-scheduler</a> 是 Kubernetes 集群的默认调度器，并且是集群 <a href="https://kubernetes.io/zh-cn/docs/reference/glossary/?all=true#term-control-plane">控制面</a> 的一部分。 如果你真的希望或者有这方面的需求，kube-scheduler 在设计上允许你自己编写一个调度组件并替换原有的 kube-scheduler。</p>
+<p><font color=bleen>Kube-scheduler 选择一个最佳节点来运行新创建的或尚未调度（unscheduled）的 Pod。</font> 由于 Pod 中的容器和 Pod 本身可能有不同的要求，调度程序会过滤掉任何不满足 Pod 特定调度需求的节点。 或者，<font color=red>API 允许你在创建 Pod 时为它指定一个节点，</font>但这并不常见，并且仅在特殊情况下才会这样做。</p>
+<p>在一个集群中，满足一个 Pod 调度请求的所有节点称之为<strong>可调度节点</strong>。 如果没有任何一个节点能满足 Pod 的资源请求， 那么这个 Pod 将一直停留在未调度状态直到调度器能够找到合适的 Node。</p>
+<p><font color=red>调度器先在集群中找到一个 Pod 的所有可调度节点，然后根据一系列函数对这些可调度节点打分， 选出其中得分最高的节点来运行 Pod。之后，调度器将这个调度决定通知给 kube-apiserver，这个过程叫做<strong>绑定</strong>。</font></p>
+<p>在做调度决定时需要考虑的因素包括：单独和整体的<font color=red>资源请求、硬件/软件/策略限制、 亲和以及反亲和要求、数据局部性、负载间的干扰</font>等等。</p>
+<h3 id="kube-scheduler_1">kube-scheduler 中的节点选择</h3>
+<p>kube-scheduler 给一个 Pod 做调度选择时包含两个步骤：</p>
+<ol>
+<li><font  color=＃FFD700>过滤</font></li>
+<li><font  color=＃FFD700>打分</font></li>
+</ol>
+<p><font  color=＃FFD700>过滤阶段会将所有满足 Pod 调度需求的节点选出来：</font></p>
+<blockquote>
+<p>例如: <code>PodFitsResources</code>过滤函数会检查候选节点的可用资源能否满足 Pod 的资源请求。 在过滤之后，得出一个节点列表，里面包含了所有可调度节点；通常情况下， 这个节点列表包含不止一个节点。如果这个列表是空的，代表这个 Pod 不可调度。</p>
+</blockquote>
+<p>在打分阶段，调度器会为 Pod 从所有可调度节点中选取一个最合适的节点。 根据当前启用的打分规则，调度器会给每一个可调度节点进行打分。</p>
+<p>最后，kube-scheduler 会将 Pod 调度到得分最高的节点上。 如果存在多个得分最高的节点，kube-scheduler 会从中随机选取一个。˜</p>
+<p>支持以下两种方式配置调度器的过滤和打分行为：</p>
+<ol>
+<li><a href="https://kubernetes.io/zh-cn/docs/reference/scheduling/policies">调度策略</a> 允许你配置过滤所用的 <strong>断言（Predicates）</strong> 和打分所用的 <strong>优先级（Priorities）</strong>。</li>
+<li><a href="https://kubernetes.io/zh-cn/docs/reference/scheduling/config/#profiles">调度配置</a> 允许你配置实现不同调度阶段的插件， 包括：<code>QueueSort</code>、<code>Filter</code>、<code>Score</code>、<code>Bind</code>、<code>Reserve</code>、<code>Permit</code> 等等。 你也可以配置 kube-scheduler 运行不同的配置文件。</li>
+</ol>
+<h1 id="pod">将 Pod 指派给节点</h1>
+<blockquote>
+<p>你可以约束一个 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 以便<strong>限制</strong>其只能在特定的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>上运行， 或优先在特定的节点上运行。有几种方法可以实现这点， 推荐的方法都是用<a href="https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/">标签选择算符</a>来进行选择。 通常这样的约束不是必须的，因为调度器将自动进行合理的放置（比如，将 Pod 分散到节点上， 而不是将 Pod 放置在可用资源不足的节点上等等）。但在某些情况下，你可能需要进一步控制 Pod 被部署到哪个节点。例如，确保 Pod 最终落在连接了 SSD 的机器上， 或者将来自两个不同的服务且有大量通信的 Pod 被放置在同一个可用区。</p>
+</blockquote>
+<h3 id="nodelabel">nodelabel 节点标签</h3>
+<p>与很多其他 Kubernetes 对象类似，节点也有<a href="https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/">标签</a>。 你可以<a href="https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node">手动地添加标签</a>。 Kubernetes 也会为集群中所有节点添加一些<a href="https://kubernetes.io/zh-cn/docs/reference/node/node-labels/">标准的标签</a>。</p>
+<p>web界面：非常直观</p>
+<p>k8s命令行：</p>
+<p>查看标签：节点<img alt="image-20251103104457649" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103104457649.png" /></p>
+<p>列出你的集群中的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>， 包括这些节点上的标签：</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>--show-labels
+</code></pre></div>
+<p>添加标签：</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>label<span class="w"> </span>nodes<span class="w"> </span>&lt;your-node-n&gt;<span class="w"> </span><span class="nv">disktype</span><span class="o">=</span>ssd
+
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   label nodes  work01  env01=db</span>
+node/work01<span class="w"> </span>labeled
+</code></pre></div>
+<blockquote>
+<p>标签：env01:db 的标签</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx-db-work01</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-db</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+<span class="w">    </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IfNotPresent</span>
+<span class="w">  </span><span class="nt">nodeSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">env01</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span>
+<span class="w">    </span><span class="c1">#disktype: ssd</span>
+</code></pre></div>
+<p>使用该配置文件创建一个 Pod，该 Pod 将被调度到你选择的节点上：</p>
+<div class="highlight"><pre><span></span><code>ka<span class="w">  </span>-f<span class="w">  </span>example-01.yaml
+</code></pre></div>
+<p>验证 Pod 确实运行在你选择的节点上：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>Scheduling<span class="o">]</span><span class="c1"># kubectl get pods --output=wide  -l   env=test-db</span>
+NAME<span class="w">              </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE<span class="w">    </span>IP<span class="w">               </span>NODE<span class="w">     </span>NOMINATED<span class="w"> </span>NODE<span class="w">   </span>READINESS<span class="w"> </span>GATES
+nginx-db-work01<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>6m4s<span class="w">   </span><span class="m">172</span>.16.205.204<span class="w">   </span>work01<span class="w">   </span>&lt;none&gt;<span class="w">           </span>&lt;none&gt;
+</code></pre></div>
+<h4 id="_3">指定节点调度（很少）</h4>
+<blockquote>
+<p>你也可以通过设置 <code>nodeName</code> 将某个 Pod 调度到特定的节点。</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nodeName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo-node</span><span class="w"> </span><span class="c1"># 调度 Pod 到特定的节点</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IfNotPresent</span>
+</code></pre></div>
+<h3 id="node"><code>node</code>亲和力：</h3>
+<blockquote>
+<p>节点亲和性概念上类似于 <code>nodeSelector</code>， 它使你可以根据节点上的标签来约束 Pod 可以调度到哪些节点上。 节点亲和性有两种：</p>
+<ul>
+<li><code>requiredDuringSchedulingIgnoredDuringExecution</code>： 调度器只有在规则被满足的时候才能执行调度。此功能类似于 <code>nodeSelector</code>， 但其语法表达能力更强。</li>
+<li><code>preferredDuringSchedulingIgnoredDuringExecution</code>： 调度器会尝试寻找满足对应规则的节点。如果找不到匹配的节点，调度器仍然会调度该 Pod。</li>
+</ul>
+</blockquote>
+<p>代码示例：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">with-node-affinity</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="c1"># 定义亲和力</span>
+<span class="w">  </span><span class="nt">affinity</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">nodeAffinity</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchExpressions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/hostname</span>
+<span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">In</span>
+<span class="w">            </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">master</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work04</span>
+<span class="w">      </span><span class="nt">preferredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">        </span><span class="nt">preference</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matchExpressions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/hostname</span>
+<span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">In</span>
+<span class="w">            </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work04</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">with-node-affinity</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+</code></pre></div>
+<p><img alt="image-20251103113806379" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103113806379.png" /></p>
+<p>在这一示例中，所应用的规则如下：</p>
+<ul>
+<li>节点<strong>必须</strong>包含一个键名为 <code>topology.kubernetes.io/zone</code> 的标签， 并且该标签的取值<strong>必须</strong>为 <code>antarctica-east1</code> 或 <code>antarctica-west1</code>。</li>
+<li>节点<strong>最好</strong>具有一个键名为 <code>another-node-label-key</code> 且取值为 <code>another-node-label-value</code> 的标签。</li>
+</ul>
+<p>你可以使用 <code>operator</code> 字段来为 Kubernetes 设置在解释规则时要使用的逻辑操作符。 你可以使用 <code>In</code>、<code>NotIn</code>、<code>Exists</code>、<code>DoesNotExist</code>、<code>Gt</code> 和 <code>Lt</code> 之一作为操作符。</p>
+<h4 id="_4">操作符</h4>
+<p>下面是你可以在上述 <code>nodeAffinity</code> 和 <code>podAffinity</code> 的 <code>operator</code> 字段中可以使用的所有逻辑运算符。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">操作符</th>
+<th style="text-align: center;">行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>In</code></td>
+<td style="text-align: center;">标签值存在于提供的字符串集中</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>NotIn</code></td>
+<td style="text-align: center;">标签值不包含在提供的字符串集中</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>Exists</code></td>
+<td style="text-align: center;">对象上存在具有此键的标签</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>DoesNotExist</code></td>
+<td style="text-align: center;">对象上不存在具有此键的标签</td>
+</tr>
+</tbody>
+</table>
+<p>以下操作符只能与 <code>nodeAffinity</code> 一起使用。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">操作符</th>
+<th style="text-align: center;">行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>Gt</code></td>
+<td style="text-align: center;">字段值将被解析为整数，并且该整数小于通过解析此选择算符命名的标签的值所得到的整数</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>Lt</code></td>
+<td style="text-align: center;">字段值将被解析为整数，并且该整数大于通过解析此选择算符命名的标签的值所得到的整数</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_5">说明：</h4>
+<p><code>Gt</code> 和 <code>Lt</code> 操作符不能与非整数值一起使用。 如果给定的值未解析为整数，则该 Pod 将无法被调度。 另外，<code>Gt</code> 和 <code>Lt</code> 不适用于 <code>podAffinity</code>。</p>
+<h4 id="_6">调度策略</h4>
+<blockquote>
+<p>在 <font color=bleen>Kubernetes v1.23 版本之前</font>，可以使用调度策略来指定 <strong>predicates</strong> 和 <strong>priorities</strong> 进程。 例如，可以通过运行 <code>kube-scheduler --policy-config-file &lt;filename&gt;</code> 或者 <code>kube-scheduler --policy-configmap &lt;ConfigMap&gt;</code> 设置调度策略。</p>
+</blockquote>
+<p>但是从 <font color=bllen>Kubernetes v1.23 版本开始</font>，不再支持这种调度策略。 同样地也不支持相关的 <code>policy-config-file</code>、<code>policy-configmap</code>、<code>policy-configmap-namespace</code> 和 <code>use-legacy-policy-config</code> 标志。 你可以通过使用<a href="https://kubernetes.io/zh-cn/docs/reference/scheduling/config/">调度配置</a>来实现类似的行为。</p>
+<h4 id="_7">调度器配置</h4>
+<p>https://kubernetes.io/zh-cn/docs/reference/scheduling/config/</p>
+<h1 id="_8">污点和容忍度</h1>
+<p><a href="https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity">节点亲和性</a> 是 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 的一种属性，它使 Pod 被吸引到一类特定的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a> （这可能出于一种偏好，也可能是硬性要求）。 <strong>污点（Taint）</strong> 则相反——它使节点能够排斥一类特定的 Pod。</p>
+<p><strong>容忍度（Toleration）</strong> 是应用于 Pod 上的。容忍度允许调度器调度带有对应污点的 Pod。 容忍度允许调度但并不保证调度：作为其功能的一部分， 调度器也会<a href="https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/">评估其他参数</a>。</p>
+<p>污点和容忍度（Toleration）相互配合，可以用来避免 Pod 被分配到不合适的节点上。 每个节点上都可以应用一个或多个污点，这表示对于那些不能容忍这些污点的 Pod， 是不会被该节点接受的。</p>
+<h3 id="kubectl-taint">常用命令： <code>kubectl  taint</code></h3>
+<p>增加污点</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>亲和力<span class="o">]</span><span class="c1"># kubectl  taint  node  workd03 a=test:NoSchedule</span>
+</code></pre></div>
+<p>去除污点</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>taint<span class="w"> </span>nodes<span class="w"> </span>workd03<span class="w"> </span><span class="nv">a</span><span class="o">=</span>test:NoSchedule-
+</code></pre></div>
+<p>容忍度：</p>
+<div class="highlight"><pre><span></span><code>tolerations:
+-<span class="w"> </span>key:<span class="w"> </span><span class="s2">&quot;污点的key&quot;</span><span class="w">          </span><span class="c1"># 匹配污点的键（如 &quot;dedicated&quot;）</span>
+<span class="w">  </span>operator:<span class="w"> </span><span class="s2">&quot;Equal&quot;</span>或<span class="s2">&quot;Exists&quot;</span><span class="w">  </span><span class="c1"># 匹配方式（等于/存在）</span>
+<span class="w">  </span>value:<span class="w"> </span><span class="s2">&quot;污点的value&quot;</span><span class="w">      </span><span class="c1"># 当 operator 为 Equal 时需指定，匹配污点的值</span>
+<span class="w">  </span>effect:<span class="w"> </span><span class="s2">&quot;NoSchedule&quot;</span>或<span class="s2">&quot;NoExecute&quot;</span>或<span class="s2">&quot;PreferNoSchedule&quot;</span><span class="w">  </span><span class="c1"># 匹配污点的效果</span>
+<span class="w">  </span>tolerationSeconds:<span class="w"> </span><span class="m">300</span><span class="w">    </span><span class="c1"># 仅对 NoExecute 有效，Pod 被驱逐前的宽限期（秒）</span>
+</code></pre></div>
+<h4 id="effect"><code>effect</code>：匹配污点的效果</h4>
+<p>污点的 <code>effect</code> 决定了对 Pod 的排斥行为，容忍策略需指定对应的 <code>effect</code> 才能匹配。常见 <code>effect</code> 及容忍逻辑：</p>
+<table>
+<thead>
+<tr>
+<th>污点 effect</th>
+<th>含义（节点对未容忍 Pod 的行为）</th>
+<th>容忍后 Pod 的行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NoSchedule</code></td>
+<td>禁止新 Pod 调度到节点（已运行的 Pod 不受影响）</td>
+<td>允许新 Pod 调度到节点</td>
+</tr>
+<tr>
+<td><code>PreferNoSchedule</code></td>
+<td>尽量不调度新 Pod 到节点（非强制，调度器会优先选择无此污点的节点）</td>
+<td>调度器可将 Pod 调度到节点（无强制限制）</td>
+</tr>
+<tr>
+<td><code>NoExecute</code></td>
+<td>立即驱逐节点上已运行的未容忍 Pod，且禁止新 Pod 调度（最严格）</td>
+<td>允许 Pod 调度到节点，且已运行的 Pod 不会被驱逐</td>
+</tr>
+</tbody>
+</table>
+<p><code>operator</code> 的默认值是 <code>Equal</code>。</p>
+<p>一个容忍度和一个污点相“匹配”是指它们有一样的键名和效果，并且：</p>
+<ul>
+<li>如果 <code>operator</code> 是 <code>Exists</code>（此时容忍度不能指定 <code>value</code>），或者</li>
+<li>如果 <code>operator</code> 是 <code>Equal</code>，则它们的值应该相等。</li>
+</ul>
+<p><code>effect</code> 使用的值为 <code>NoSchedule</code>，你也可以使用另外一个值 <code>PreferNoSchedule</code>。</p>
+<p><code>effect</code> 字段的允许值包括：</p>
+<ul>
+<li><code>NoExecute</code></li>
+</ul>
+<p>这会影响已在节点上运行的 Pod，具体影响如下：如果 Pod 不能容忍这类污点，会马上被驱逐。如果 Pod 能够容忍这类污点，但是在容忍度定义中没有指定 <code>tolerationSeconds</code>， 则 Pod 还会一直在这个节点上运行。如果 Pod 能够容忍这类污点，而且指定了 <code>tolerationSeconds</code>， 则 Pod 还能在这个节点上继续运行这个指定的时间长度。 这段时间过去后，节点生命周期控制器从节点驱除这些 Pod。</p>
+<ul>
+<li><code>NoSchedule</code></li>
+</ul>
+<p>除非具有匹配的容忍度规约，否则新的 Pod 不会被调度到带有污点的节点上。 当前正在节点上运行的 Pod <strong>不会</strong>被驱逐。</p>
+<ul>
+<li><code>PreferNoSchedule</code></li>
+</ul>
+<p><code>PreferNoSchedule</code> 是“偏好”或“软性”的 <code>NoSchedule</code>。 控制平面将<strong>尝试</strong>避免将不能容忍污点的 Pod 调度到的节点上，但不能保证完全避免。</p>
+<p>Example 1: 操作的字段Exists</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">[</span><span class="nv">root@master 亲和力</span><span class="p p-Indicator">]</span><span class="c1"># cat  pod-with-toleration.yaml </span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">with-node-affinity-totaint</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">affinity</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">nodeAffinity</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchExpressions</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/hostname</span>
+<span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">In</span>
+<span class="w">            </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work03</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">with-node-affinity-totaint</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+<span class="w">  </span><span class="nt">tolerations</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;a&quot;</span>
+<span class="w">    </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Exists&quot;</span>
+<span class="w">    </span><span class="nt">effect</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;NoSchedule&quot;</span>
+</code></pre></div>
+<p>字段注释： </p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 定义 Pod 的 API 版本和资源类型（固定为 v1 和 Pod）</span>
+apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Pod
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>with-node-affinity-totaint<span class="w">  </span><span class="c1"># Pod 的名称，用于标识该资源</span>
+spec:
+<span class="w">  </span><span class="c1"># 亲和力配置：控制 Pod 倾向于调度到哪些节点（此处为节点亲和性）</span>
+<span class="w">  </span>affinity:
+<span class="w">    </span>nodeAffinity:
+<span class="w">      </span><span class="c1"># 调度时必须满足的条件（硬亲和性），忽略运行时变化</span>
+<span class="w">      </span><span class="c1"># 含义：调度阶段必须满足以下节点选择条件，否则 Pod 无法调度；运行中节点标签变化不影响已调度的 Pod</span>
+<span class="w">      </span>requiredDuringSchedulingIgnoredDuringExecution:
+<span class="w">        </span>nodeSelectorTerms:<span class="w">  </span><span class="c1"># 节点选择条件列表（满足任意一个条件即可）</span>
+<span class="w">        </span>-<span class="w"> </span>matchExpressions:<span class="w">  </span><span class="c1"># 匹配表达式（通过节点标签筛选节点）</span>
+<span class="w">          </span>-<span class="w"> </span>key:<span class="w"> </span>kubernetes.io/hostname<span class="w">  </span><span class="c1"># 匹配的节点标签键（节点主机名标签，K8s 自动为节点添加）</span>
+<span class="w">            </span>operator:<span class="w"> </span>In<span class="w">  </span><span class="c1"># 匹配运算符（In 表示标签值需在 values 列表中）</span>
+<span class="w">            </span>values:
+<span class="w">            </span>-<span class="w"> </span>work03<span class="w">  </span><span class="c1"># 标签值列表：仅匹配主机名为 work03 的节点</span>
+<span class="w">  </span><span class="c1"># 容器配置：Pod 中运行的容器列表</span>
+<span class="w">  </span>containers:
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>with-node-affinity-totaint<span class="w">  </span><span class="c1"># 容器名称（需唯一）</span>
+<span class="w">    </span>image:<span class="w"> </span>nginx:latest<span class="w">  </span><span class="c1"># 容器使用的镜像（此处为最新版 Nginx）</span>
+<span class="w">  </span><span class="c1"># 容忍配置：允许 Pod 调度到带有特定污点的节点</span>
+<span class="w">  </span>tolerations:
+<span class="w">  </span>-<span class="w"> </span>key:<span class="w"> </span><span class="s2">&quot;a&quot;</span><span class="w">  </span><span class="c1"># 匹配的污点键（需与节点上的污点 key 一致）</span>
+<span class="w">    </span>operator:<span class="w"> </span><span class="s2">&quot;Exists&quot;</span><span class="w">  </span><span class="c1"># 匹配方式（Exists 表示只要节点存在 key 为 &quot;a&quot; 的污点即可，不校验 value）</span>
+<span class="w">    </span>effect:<span class="w"> </span><span class="s2">&quot;NoSchedule&quot;</span><span class="w">  </span><span class="c1"># 匹配的污点效果（仅容忍效果为 NoSchedule 的污点）</span>
+<span class="w">    </span><span class="c1"># 含义：允许 Pod 调度到带有污点 key=a、effect=NoSchedule 的节点（无论该污点的 value 是什么）</span>
+</code></pre></div>
+<p><img alt="image-20251103144726898" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103144726898.png" /></p>
+<p>Example 1: 操作的字段<code>Equal</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>亲和力<span class="o">]</span><span class="c1"># cat pod-with-toleration-equal.yaml </span>
+apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Pod
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>with-node-affinity-totaint-equal
+spec:
+<span class="w">  </span>affinity:
+<span class="w">    </span>nodeAffinity:
+<span class="w">      </span>requiredDuringSchedulingIgnoredDuringExecution:
+<span class="w">        </span>nodeSelectorTerms:
+<span class="w">        </span>-<span class="w"> </span>matchExpressions:
+<span class="w">          </span>-<span class="w"> </span>key:<span class="w"> </span>kubernetes.io/hostname
+<span class="w">            </span>operator:<span class="w"> </span>In
+<span class="w">            </span>values:
+<span class="w">            </span>-<span class="w"> </span>work03
+<span class="w">  </span>containers:
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>with-node-affinity-totaint-equal
+<span class="w">    </span>image:<span class="w"> </span>nginx:latest
+<span class="w">  </span>tolerations:
+<span class="w">  </span>-<span class="w"> </span>key:<span class="w"> </span><span class="s2">&quot;a&quot;</span>
+<span class="w">    </span>value:<span class="w"> </span><span class="s2">&quot;test02&quot;</span>
+<span class="w">    </span>operator:<span class="w"> </span><span class="s2">&quot;Equal&quot;</span>
+<span class="w">    </span>effect:<span class="w"> </span><span class="s2">&quot;NoSchedule&quot;</span>
+</code></pre></div>
+<p><img alt="image-20251103145918281" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103145918281.png" /></p>
+<p>Example3：<code>NoExecute</code></p>
+<blockquote>
+<p>没有设置pod容忍度，都会被驱逐</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>亲和力<span class="o">]</span><span class="c1"># kubectl taint nodes work03 key1=value1:NoExecute</span>
+</code></pre></div>
+<p>设置前：</p>
+<p><img alt="image-20251103151340392" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151340392.png" /></p>
+<p>设置后：</p>
+<p><img alt="image-20251103151403795" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151403795.png" /></p>
+<p>移除：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>亲和力<span class="o">]</span><span class="c1"># kubectl taint nodes work03 key1=value1:NoExecute-</span>
+node/work03<span class="w"> </span>untainted
+</code></pre></div>
+<p>查看节点信息：</p>
+<p><img alt="image-20251103151732352" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151732352.png" /></p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

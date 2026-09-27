@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>容器与编排 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main><article class="doc-section" id="容器"><h2>Docker 容器</h2><h1 id="_1">容器</h1>
+<p>云计算的底座是基于虚拟产品；</p>
+<blockquote>
+<p>硬件层 网络层面 存储层</p>
+</blockquote>
+<p>虚拟化发展阶段（传统阶段）</p>
+<p>!image-20250922103450907](/images/image-20250922103450907.png)</p>
+<p>虚拟化发展阶段（虚拟化阶段及常见的产品）</p>
+<p>!image-20250922103613111](/images/image-20250922103613111.png)</p>
+<p>虚拟化发展阶段（容器阶段）</p>
+<p>!image-20250922104124903](/images/image-20250922104124903.png)</p>
+<p>!image-20250922115646083](/images/image-20250922115646083.png)</p>
+<h2 id="_2">容器</h2>
+<blockquote>
+<p>容器就是装载一种物品 比如：水杯 </p>
+<p>对于计算机而言：只管理一个<code>service</code></p>
+</blockquote>
+<h2 id="_3">容器的产品：</h2>
+<p>最初： <code>LXC</code> <code>docker</code> <code>podman</code>  <code>containerd</code></p>
+<h2 id="_4">容器的架构：</h2>
+<p>docker 概述</p>
+<p>Docker 架构</p>
+<p>部署docker </p>
+<p>桌面版本：</p>
+<blockquote>
+<p>支持的平台： <code>windows 类unix mac</code></p>
+</blockquote>
+<p>服务版本：</p>
+<blockquote>
+<p>类unix  windows server </p>
+</blockquote>
+<p>Ubuntu </p>
+<div class="highlight"><pre><span></span><code><span class="c1"># step 1: 安装必要的一些系统工具</span>
+sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>ca-certificates<span class="w"> </span>curl<span class="w"> </span>gnupg
+
+<span class="c1"># step 2: 信任 Docker 的 GPG 公钥</span>
+sudo<span class="w"> </span>install<span class="w"> </span>-m<span class="w"> </span><span class="m">0755</span><span class="w"> </span>-d<span class="w"> </span>/etc/apt/keyrings
+curl<span class="w"> </span>-fsSL<span class="w"> </span>https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>gpg<span class="w"> </span>--dearmor<span class="w"> </span>-o<span class="w"> </span>/etc/apt/keyrings/docker.gpg
+sudo<span class="w"> </span>chmod<span class="w"> </span>a+r<span class="w"> </span>/etc/apt/keyrings/docker.gpg
+
+<span class="c1"># Step 3: 写入软件源信息</span>
+<span class="nb">echo</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;deb [arch=</span><span class="k">$(</span>dpkg<span class="w"> </span>--print-architecture<span class="k">)</span><span class="s2"> signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \</span>
+<span class="s2">  &quot;</span><span class="k">$(</span>.<span class="w"> </span>/etc/os-release<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$VERSION_CODENAME</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot; stable&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/apt/sources.list.d/docker.list<span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+
+<span class="c1"># Step 4: 安装Docker</span>
+sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>docker-ce<span class="w"> </span>docker-ce-cli<span class="w"> </span>containerd.io<span class="w"> </span>docker-buildx-plugin<span class="w"> </span>docker-compose-plugin
+
+<span class="c1"># 安装指定版本的Docker-CE:</span>
+<span class="c1"># Step 1: 查找Docker-CE的版本:</span>
+<span class="c1"># apt-cache madison docker-ce</span>
+<span class="c1">#   docker-ce | 17.03.1~ce-0~ubuntu-xenial | https://mirrors.aliyun.com/docker-ce/linux/ubuntu xenial/stable amd64 Packages</span>
+<span class="c1">#   docker-ce | 17.03.0~ce-0~ubuntu-xenial | https://mirrors.aliyun.com/docker-ce/linux/ubuntu xenial/stable amd64 Packages</span>
+<span class="c1"># Step 2: 安装指定版本的Docker-CE: (VERSION例如上面的17.03.1~ce-0~ubuntu-xenial)</span>
+<span class="c1"># sudo apt-get -y install docker-ce=[VERSION]</span>
+</code></pre></div>
+<p>启动docker进程</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>systemctl<span class="w">  </span><span class="nb">enable</span><span class="w">  </span>--now<span class="w"> </span>docker<span class="w"> </span>
+</code></pre></div>
+<p>验证是否安装成功：</p>
+<p>查看<code>docker</code>版本</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>docker<span class="w"> </span>--version<span class="w"> </span>
+Docker<span class="w"> </span>version<span class="w"> </span><span class="m">28</span>.4.0,<span class="w"> </span>build<span class="w"> </span>d8eb465
+</code></pre></div>
+<p>查看<code>docker</code>详细信息</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>info<span class="w"> </span>
+Client:<span class="w"> </span>Docker<span class="w"> </span>Engine<span class="w"> </span>-<span class="w"> </span>Community
+<span class="w"> </span>Version:<span class="w">    </span><span class="m">28</span>.4.0
+<span class="w"> </span>Context:<span class="w">    </span>default
+<span class="w"> </span>Debug<span class="w"> </span>Mode:<span class="w"> </span><span class="nb">false</span>
+<span class="w"> </span>Plugins:
+<span class="w">  </span>buildx:<span class="w"> </span>Docker<span class="w"> </span>Buildx<span class="w"> </span><span class="o">(</span>Docker<span class="w"> </span>Inc.<span class="o">)</span>
+<span class="w">    </span>Version:<span class="w">  </span>v0.28.0
+<span class="w">    </span>Path:<span class="w">     </span>/usr/libexec/docker/cli-plugins/docker-buildx
+<span class="w">  </span>compose:<span class="w"> </span>Docker<span class="w"> </span>Compose<span class="w"> </span><span class="o">(</span>Docker<span class="w"> </span>Inc.<span class="o">)</span>
+<span class="w">    </span>Version:<span class="w">  </span>v2.39.4
+<span class="w">    </span>Path:<span class="w">     </span>/usr/libexec/docker/cli-plugins/docker-compose<span class="w"> </span>
+</code></pre></div>
+<p>运行的示例：<code>hello world</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>hello-world
+</code></pre></div>
+<p>!image-20250922145533545](/images/image-20250922145533545.png)</p>
+<blockquote>
+<p>因为： dockerhub的镜像仓库无法访问；</p>
+</blockquote>
+<p>配置加速器：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#配置加速器</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat &gt; /etc/docker/daemon.json &lt;&lt;EOF</span>
+<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="s2">&quot;registry-mirrors&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">    </span><span class="s2">&quot;https://docker.m.daocloud.io&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.imgdb.de&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker-0.unsee.tech&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.hlmirror.com&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.1ms.run&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://func.ink&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://lispy.org&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.xiaogenban1993.com&quot;</span>
+<span class="w">  </span><span class="o">]</span>
+<span class="o">}</span>
+EOF
+</code></pre></div>
+<p>重启docker</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>systemctl<span class="w"> </span>daemon-reload<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>docker
+</code></pre></div>
+<p>再次测试：</p>
+<p>!image-20250922150437414](/images/image-20250922150437414.png)</p>
+<h3 id="docker">docker 基础命令</h3>
+<ul>
+<li>
+<p>镜像管理</p>
+</li>
+<li>
+<p>容器管理</p>
+</li>
+</ul>
+<p>Docker 的命令语法：</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w">  </span><span class="o">{</span>子命令<span class="o">}</span><span class="w"> </span><span class="o">[</span>option<span class="o">]</span><span class="w">  </span><span class="o">[</span>image<span class="o">]</span><span class="w"> </span>
+</code></pre></div>
+<p>Docker 命令的帮助手册</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w">  </span>--help<span class="w">                 </span>
+Usage:<span class="w">  </span>docker<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND
+
+docker<span class="w"> </span><span class="o">{</span>子命令<span class="o">}</span><span class="w"> </span>--help
+<span class="c1">## 示例</span>
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--help<span class="w">                                                                           </span>
+Usage:<span class="w">  </span>docker<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>IMAGE<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span><span class="w"> </span><span class="o">[</span>ARG...<span class="o">]</span>
+</code></pre></div>
+<h4 id="_5">镜像管理</h4>
+<ol>
+<li>查看本地镜像</li>
+</ol>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>images
+<span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>password<span class="w"> </span><span class="k">for</span><span class="w"> </span>abbott:<span class="w"> </span>
+<span class="c1">#仓库名称        #镜像版本      #镜像ID       #镜像创建的时间  #镜像的大小</span>
+REPOSITORY<span class="w">    </span>TAG<span class="w">       </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">       </span>SIZE
+hello-world<span class="w">   </span>latest<span class="w">    </span>1b44b5a3e06a<span class="w">   </span><span class="m">6</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">   </span><span class="m">10</span>.1kB
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>image<span class="w"> </span>list<span class="w"> </span>
+REPOSITORY<span class="w">    </span>TAG<span class="w">       </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">       </span>SIZE
+hello-world<span class="w">   </span>latest<span class="w">    </span>1b44b5a3e06a<span class="w">   </span><span class="m">6</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">   </span><span class="m">10</span>.1kB
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>image<span class="w"> </span>ls
+REPOSITORY<span class="w">    </span>TAG<span class="w">       </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">       </span>SIZE
+hello-world<span class="w">   </span>latest<span class="w">    </span>1b44b5a3e06a<span class="w">   </span><span class="m">6</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">   </span><span class="m">10</span>.1kB
+</code></pre></div>
+<ol>
+<li>查找一个镜像</li>
+</ol>
+<blockquote>
+<p>去远程仓库中查找镜像 <code>yum search</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/<span class="w"> </span>docker<span class="w"> </span>search<span class="w"> </span>nginx<span class="w">  </span>
+NAME<span class="w">                                     </span>DESCRIPTION<span class="w">                                      </span>STARS<span class="w">     </span>OFFICIAL
+nginx<span class="w">                                    </span>Official<span class="w"> </span>build<span class="w"> </span>of<span class="w"> </span>Nginx.<span class="w">                         </span><span class="m">20989</span><span class="w">     </span><span class="o">[</span>OK<span class="o">]</span>
+nginx/nginx-ingress<span class="w">                      </span>NGINX<span class="w"> </span>and<span class="w">  </span>NGINX<span class="w"> </span>Plus<span class="w"> </span>Ingress<span class="w"> </span>Controllers<span class="w"> </span>fo…<span class="w">   </span><span class="m">110</span><span class="w">       </span>
+nginx/nginx-prometheus-exporter<span class="w">          </span>NGINX<span class="w"> </span>Prometheus<span class="w"> </span>Exporter<span class="w"> </span><span class="k">for</span><span class="w"> </span>NGINX<span class="w"> </span>and<span class="w"> </span>NGIN…<span class="w">   </span><span class="m">50</span><span class="w">        </span>
+nginx/unit<span class="w">                               </span>This<span class="w"> </span>repository<span class="w"> </span>is<span class="w"> </span>retired,<span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>Docker<span class="w"> </span>o…<span class="w">   </span><span class="m">66</span><span class="w">        </span>
+nginx/nginx-ingress-operator<span class="w">             </span>NGINX<span class="w"> </span>Ingress<span class="w"> </span>Operator<span class="w"> </span><span class="k">for</span><span class="w"> </span>NGINX<span class="w"> </span>and<span class="w"> </span>NGINX<span class="w"> </span>P…<span class="w">   </span><span class="m">2</span><span class="w">      </span>
+</code></pre></div>
+<ol>
+<li>拉取镜像</li>
+</ol>
+<p>命令： <code>docker pull</code> </p>
+<p>语法： <code>docker pull  {images:tag}</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>pull<span class="w"> </span>rabbitmq:management
+</code></pre></div>
+<ol>
+<li>推送镜像</li>
+</ol>
+<p>命令：<code>doker push</code></p>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<ol>
+<li>删除镜像 </li>
+</ol>
+<p>命令：<code>docker  rm</code> </p>
+<p>语法：<code>docker rmi [OPTIONS] IMAGE [IMAGE...]</code></p>
+<p>选项：<code>-f 强制删除</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>rmi<span class="w"> </span>1b44b5a3e06a
+Untagged:<span class="w"> </span>hello-world:latest
+Untagged:<span class="w"> </span>hello-world@sha256:54e66cc1dd1fcb1c3c58bd8017914dbed8701e2d8c74d9262e26bd9cc1642d31
+Deleted:<span class="w"> </span>sha256:1b44b5a3e06a9aae883e7bf25e45c100be0bb81a0e01b32de604f3ac44711634
+Deleted:<span class="w"> </span>sha256:53d204b3dc5ddbc129df4ce71996b8168711e211274c785de5e0d4eb68ec3851
+</code></pre></div>
+<ol>
+<li>保存镜像</li>
+</ol>
+<p>命令: <code>docker save</code></p>
+<p>语法：<code>docker save [OPTIONS] IMAGE [IMAGE...]</code></p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w">  </span>-o<span class="w"> </span>nginx.tar<span class="w">  </span>docker.1ms.run/nginx:latest<span class="w"> </span>
+</code></pre></div>
+<blockquote>
+<p>-o： output </p>
+</blockquote>
+<ol>
+<li>加载镜像到服务器</li>
+</ol>
+<p>命令：<code>docker load</code></p>
+<p>语法： <code>docker load [OPTIONS]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>load<span class="w"> </span>-i<span class="w">  </span>nginx.tar<span class="w"> </span>
+36f5f951f60a:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">  </span><span class="m">77</span>.89MB/77.89MB
+c855abf10cdc:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">  </span><span class="m">118</span>.6MB/118.6MB
+8e7d6b511078:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">  </span><span class="m">3</span>.584kB/3.584kB
+50da593f6222:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">  </span><span class="m">4</span>.608kB/4.608kB
+72fa904a482c:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">   </span><span class="m">2</span>.56kB/2.56kB
+7d95a4a72e11:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">   </span><span class="m">5</span>.12kB/5.12kB
+3ce214e9ebc5:<span class="w"> </span>Loading<span class="w"> </span>layer<span class="w">  </span><span class="m">7</span>.168kB/7.168kB
+Loaded<span class="w"> </span>image:<span class="w"> </span>docker.1ms.run/nginx:latest
+</code></pre></div>
+<h4 id="_6">容器管理</h4>
+<ol>
+<li>创建容器</li>
+</ol>
+<p>命令： <code>docker create</code></p>
+<p>语法：<code>docker create [OPTIONS] IMAGE [COMMAND] [ARG...]</code></p>
+<p>alias: <code>docker container create, docker create</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span>create<span class="w">  </span>docker.1ms.run/nginx:latest
+857fd9f837f709eb8c205e12ce2a331f12b106dbb2d22f4802e87a1dea4bbb10
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>create<span class="w">  </span>--name<span class="w"> </span>test_nginx<span class="w"> </span>docker.1ms.run/nginx:latest
+b3ccb2053f2f89a8d3edc317f403871f0a22f89df29f3fcc89104c82b4400d71
+</code></pre></div>
+<ol>
+<li>列出容器</li>
+</ol>
+<p>命令：<code>docker  container/docekr ps</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1">#显示所有的容器</span>
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>container<span class="w"> </span>ls<span class="w"> </span>-a<span class="w"> </span><span class="c1">#只显示正在运行and 终止的container</span>
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>ps<span class="w"> </span>-a<span class="w">  </span><span class="c1">#只显示正在运行and 终止的container</span>
+
+
+<span class="c1">#显示运行的容器</span>
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>container<span class="w"> </span>ls<span class="w"> </span><span class="c1">#只显示正在运行的container</span>
+CONTAINER<span class="w"> </span>ID<span class="w">   </span>IMAGE<span class="w">     </span>COMMAND<span class="w">   </span>CREATED<span class="w">   </span>STATUS<span class="w">    </span>PORTS<span class="w">     </span>NAMES
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>ps<span class="w"> </span><span class="c1">#只显示正在运行的container</span>
+CONTAINER<span class="w"> </span>ID<span class="w">   </span>IMAGE<span class="w">     </span>COMMAND<span class="w">   </span>CREATED<span class="w">   </span>STATUS<span class="w">    </span>PORTS<span class="w">     </span>NAMES
+</code></pre></div>
+<p>描述：</p>
+<div class="highlight"><pre><span></span><code>CONTAINER<span class="w"> </span>ID<span class="w">    </span><span class="c1">#容器ID</span>
+IMAGE<span class="w">           </span><span class="c1">#镜像ID</span>
+COMMAND<span class="w">         </span><span class="c1">#容器中执行的命令</span>
+CREATED<span class="w">         </span><span class="c1">#容器创建的时间</span>
+STATUS<span class="w">          </span><span class="c1">#容器状态</span>
+PORTS<span class="w">           </span><span class="c1">#容器中的端口号/公开端口号</span>
+NAMES<span class="w">           </span><span class="c1">#容器的名称</span>
+</code></pre></div>
+<ol>
+<li>运行容器</li>
+</ol>
+<p>命令：<code>docker run</code></p>
+<p>语法： <code>docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</code></p>
+<p>描述：<code>Create and run a new container from an image</code></p>
+<p>Example: <code>在前台运行一个container</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>run<span class="w">  </span>--name<span class="w"> </span>test_nginx01<span class="w">  </span>docker.1ms.run/nginx:latest<span class="w"> </span>
+</code></pre></div>
+<p>Example:  <code>以守护进程的方式运行</code></p>
+<blockquote>
+<p>-d, --detach              Run container in background and print container ID</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w">   </span>--name<span class="w"> </span>test_nginx02<span class="w">  </span>docker.1ms.run/nginx:latest<span class="w"> </span>
+635a6a0e1ec4a4a643ec77dbe12725a9a7633882252b6cfc5dcc4ebab2b50600
+</code></pre></div>
+<p>Example:  <code>暴露端口号</code></p>
+<blockquote>
+<p>-p, --publish list            Publish a container's port(s) to the host</p>
+<p>-P, --publish-all             Publish all exposed ports to random ports</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># 指定端口</span>
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">80</span>:80<span class="w"> </span>--name<span class="w"> </span>test_nginx03<span class="w">  </span>docker.1ms.run/nginx:latest
+512efd21510323b533a28f3ee503192d0ac54bdcaf9d34bee5a623c968991569
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">81</span>:80<span class="w"> </span>--name<span class="w"> </span>test_nginx04<span class="w">  </span>docker.1ms.run/nginx:latest
+5ced011ecb11c89299a93473c4630f0c9837958d0201f16ccff8bfcbf981e2fa
+
+<span class="c1">#随机映射端口</span>
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>run<span class="w">  </span>-d<span class="w"> </span>-P<span class="w"> </span>--name<span class="w"> </span>test_nginx05<span class="w">  </span>docker.1ms.run/nginx:latest
+8b36e73e9e22c8b97fff9500fd4f24a04bc6448de2ee3936db55e1f0a481db18
+</code></pre></div>
+<p>:warning:端口范围定义：</p>
+<div class="highlight"><pre><span></span><code>IANA（互联网号码分配机构）<span class="w"> </span>
+规定<span class="w"> </span><span class="m">0</span>-1023<span class="w"> </span>为特权端口（需<span class="w"> </span>root<span class="w"> </span>权限），
+<span class="m">1024</span>-49151<span class="w"> </span>为注册端口（分配给特定服务），
+<span class="m">49152</span>-65535<span class="w"> </span>为动态端口（供临时使用）。容器随机端口使用动态端口范围，符合规范且不占用系统关键端口
+
+Docker:<span class="w"> </span>随机端口的默认范围是<span class="w"> </span><span class="m">32768</span>-60999
+kubernetes:<span class="w"> </span>nodeport随机端口的默认范围是<span class="w"> </span><span class="m">30000</span>-32767
+</code></pre></div>
+<p>Example: <code>重启策略</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w">  </span>run<span class="w"> </span>-d<span class="w"> </span>--restart<span class="w"> </span>always<span class="w"> </span>--name<span class="w"> </span>nginx_restart<span class="w">   </span>41f689c20910<span class="w">  </span>
+a8fb7acf5f7f1341f2b80788d6fd80cda950e2c02f29049fe97bfc9ae2e94679
+</code></pre></div>
+<p>Example: <code>容器停止就删除</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w">   </span>run<span class="w">  </span>-d<span class="w">   </span>--rm<span class="w">   </span>--name<span class="w"> </span>nginx_rm<span class="w"> </span>41f689c20910
+023e1b0fdcfc562f176ab7401bb294bb43dcacb896a0862b86e00c9c31adacf1
+</code></pre></div>
+<p>Example: <code>注入主机名</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w">   </span>run<span class="w">  </span>-d<span class="w">   </span>--rm<span class="w">  </span>-h<span class="w"> </span>nginx_rm<span class="w">  </span>--name<span class="w"> </span>nginx_rm<span class="w"> </span>41f689c20910
+</code></pre></div>
+<p>Example：<code>持久化</code></p>
+<div class="highlight"><pre><span></span><code>graph
+
+vloume(数据持久化)
+
+c1(container01)
+c2(container01)
+vloume -.挂载&lt;br&gt; -v.-&gt; c1 &amp; c2
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w">  </span>run<span class="w">  </span>-d<span class="w">  </span>-P<span class="w"> </span>-v<span class="w"> </span>/data/nginx_data/html/:/usr/share/nginx/html/<span class="w"> </span>--name<span class="w"> </span>nginx_vloume<span class="w">  </span>docker.1ms.run/nginx:latest
+8f61f941c71019cc888419055f7faecf31b8c625b9448c5f8c781ad761338d13
+</code></pre></div>
+<p>验证：<code>docker inspect</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>inspect<span class="w">  </span>nginx_vloume02<span class="w"> </span>
+</code></pre></div>
+<p>!image-20250923104237771](/images/image-20250923104237771.png)</p>
+<ol>
+<li>进入容器：</li>
+</ol>
+<p>命令：<code>docker  exec</code></p>
+<p>语法：<code>docker exec [OPTIONS] CONTAINER COMMAND [ARG...]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">  </span><span class="nb">exec</span><span class="w">  </span>-i<span class="w"> </span>-t<span class="w"> </span>8b36e73e9e22<span class="w"> </span>/bin/bash
+<span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>password<span class="w"> </span><span class="k">for</span><span class="w"> </span>abbott:<span class="w"> </span>
+root@8b36e73e9e22:/#<span class="w"> </span>
+root@8b36e73e9e22:/#<span class="w"> </span><span class="nb">echo</span><span class="w">  </span><span class="s2">&quot;container nginx&quot;</span><span class="w"> </span>&gt;<span class="w">  </span>/usr/share/nginx/html/index.html
+root@8b36e73e9e22:/#<span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>重启容器</li>
+</ol>
+<p>命令：<code>docker retart</code></p>
+<p>语法：<code>docker restart [container_ID || Container_Name]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>restart<span class="w">  </span>8b36e73e9e22
+8b36e73e9e22
+</code></pre></div>
+<ol>
+<li>停止容器</li>
+</ol>
+<p>命令：<code>docekr stop</code></p>
+<p>语法 ：<code>docker stop  [container_ID || Container_Name]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>stop<span class="w">  </span>8b36e73e9e22<span class="w"> </span>
+8b36e73e9e22
+</code></pre></div>
+<ol>
+<li>启动容器</li>
+</ol>
+<p>命令：<code>doker start</code></p>
+<p>语法：<code>docker start  [container_ID || Container_Name]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>start<span class="w">  </span>test_nginx05
+test_nginx05
+</code></pre></div>
+<ol>
+<li>删除容器</li>
+</ol>
+<p>命令：<code>docker rm</code></p>
+<p>语法： <code>docker rm  [container_ID || Container_Name]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>rm<span class="w"> </span>b3ccb2053f2f
+b3ccb2053f2f
+</code></pre></div>
+<ol>
+<li>基于容器制作镜像</li>
+</ol>
+<blockquote>
+<p>现在需要在不同的环境下运行相同的容器<code>nginx</code>--&gt;page</p>
+</blockquote>
+<p>命令：<code>docker commit</code></p>
+<p>语法：<code>docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>commit<span class="w">  </span>-a<span class="w"> </span><span class="s2">&quot;abbott&quot;</span><span class="w">  </span>-m<span class="w"> </span><span class="s2">&quot;modify page&quot;</span><span class="w"> </span>-p<span class="w"> </span>nginx_proxy<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>nginx-proxy:v1
+sha256:f6c08a3ba702c59cb9000f7857063a4b4dc2a8a2dacfa377ba28891f2d027af7
+</code></pre></div>
+<ol>
+<li>
+<p>查看容器的详细信息</p>
+<p>命令：<code>docker inspect</code></p>
+<p>语法： <code>docker  inspect [container_id or container_name]</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w">   </span>inspect<span class="w"> </span>635a6a0e
+<span class="o">[</span>
+<span class="w">    </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;Id&quot;</span>:<span class="w"> </span><span class="s2">&quot;635a6a0e1ec4a4a643ec77dbe12725a9a7633882252b6cfc5dcc4ebab2b50600&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Created&quot;</span>:<span class="w"> </span><span class="s2">&quot;2025-09-22T08:34:19.606272921Z&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/docker-entrypoint.sh&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Args&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">            </span><span class="s2">&quot;nginx&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;-g&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;daemon off;&quot;</span>
+<span class="w">        </span><span class="o">]</span>,
+<span class="w">        </span><span class="s2">&quot;State&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span><span class="s2">&quot;Status&quot;</span>:<span class="w"> </span><span class="s2">&quot;running&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;Running&quot;</span>:<span class="w"> </span>true,
+<span class="w">            </span><span class="s2">&quot;Paused&quot;</span>:<span class="w"> </span>false,
+<span class="w">            </span><span class="s2">&quot;Restarting&quot;</span>:<span class="w"> </span>false,
+<span class="w">            </span><span class="s2">&quot;OOMKilled&quot;</span>:<span class="w"> </span>false,
+<span class="w">            </span><span class="s2">&quot;Dead&quot;</span>:<span class="w"> </span>false,
+<span class="w">            </span><span class="s2">&quot;Pid&quot;</span>:<span class="w"> </span><span class="m">68559</span>,
+<span class="w">            </span><span class="s2">&quot;ExitCode&quot;</span>:<span class="w"> </span><span class="m">0</span>,
+<span class="w">            </span><span class="s2">&quot;Error&quot;</span>:<span class="w"> </span><span class="s2">&quot;&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;StartedAt&quot;</span>:<span class="w"> </span><span class="s2">&quot;2025-09-22T08:34:19.680515395Z&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;FinishedAt&quot;</span>:<span class="w"> </span><span class="s2">&quot;0001-01-01T00:00:00Z&quot;</span>
+<span class="w">        </span><span class="o">}</span>,
+</code></pre></div>
+</li>
+<li>
+<p>暂停/取消暂停</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>pause<span class="w"> </span>8ff829190788
+8ff829190788
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>unpause<span class="w"> </span>8ff829190788
+8ff829190788
+</code></pre></div>
+</li>
+<li>
+<p>日志</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>8ff829190788
+</code></pre></div>
+</li>
+<li>
+<p>拷贝</p>
+<p>命令：<code>docker cp</code></p>
+<p>语法： </p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>cp<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>CONTAINER:SRC_PATH<span class="w"> </span>DEST_PATH<span class="p">|</span>-
+docker<span class="w"> </span>cp<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SRC_PATH<span class="p">|</span>-<span class="w"> </span>CONTAINER:DEST_PATH
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>cp<span class="w">  </span>nginx_proxy:/etc/nginx/nginx.conf<span class="w">   </span>.
+Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">2</span>.56kB<span class="w"> </span>to<span class="w"> </span>/home/abbott/.
+
+abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>cp<span class="w">  </span>index.html<span class="w"> </span>nginx_proxy:/usr/share/nginx/html/
+Successfully<span class="w"> </span>copied<span class="w"> </span><span class="m">2</span>.05kB<span class="w"> </span>to<span class="w"> </span>nginx_proxy:/usr/share/nginx/html/
+</code></pre></div>
+</li>
+</ol>
+<p>Example: <code>案例rabbitmq</code></p>
+<p>Example: <code>nginx</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w">  </span>run<span class="w">  </span>-d<span class="w">  </span>-P<span class="w"> </span>-v<span class="w"> </span>/data/nginx_data/html/:/usr/share/nginx/html/<span class="w"> </span>--name<span class="w"> </span>nginx_vloume<span class="w">  </span>docker.1ms.run/nginx:latest
+8f61f941c71019cc888419055f7faecf31b8c625b9448c5f8c781ad761338d13
+</code></pre></div>
+<h2 id="docker_1">docker 网络</h2>
+<p>Docker-Proxy</p>
+<blockquote>
+<p>端口的映射； 用户请求宿主机端 通过<code>doker-proxy</code> 状态容器内</p>
+<p>转发的规则： 是有默认的<code>iptables</code> 负责管理</p>
+<p>默认docker 提供三种网络模式</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker  network ls</span>
+NETWORK<span class="w"> </span>ID<span class="w">     </span>NAME<span class="w">      </span>DRIVER<span class="w">    </span>SCOPE
+b84930027dbc<span class="w">   </span>bridge<span class="w">    </span>bridge<span class="w">    </span><span class="nb">local</span>
+09be20b2bb1c<span class="w">   </span>host<span class="w">      </span>host<span class="w">      </span><span class="nb">local</span>
+09efb809f790<span class="w">   </span>none<span class="w">      </span>null<span class="w">      </span><span class="nb">local</span>
+</code></pre></div>
+<p>!image-20250923151933400](/images/image-20250923151933400.png)</p>
+<p>创建网络</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker  network create  lnmp</span>
+9a8ddf0d3487b639ac5a46768ebaa605328a0684c3708d294cd17c1ce33e7499
+<span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker network  ls</span>
+NETWORK<span class="w"> </span>ID<span class="w">     </span>NAME<span class="w">      </span>DRIVER<span class="w">    </span>SCOPE
+b84930027dbc<span class="w">   </span>bridge<span class="w">    </span>bridge<span class="w">    </span><span class="nb">local</span>
+09be20b2bb1c<span class="w">   </span>host<span class="w">      </span>host<span class="w">      </span><span class="nb">local</span>
+9a8ddf0d3487<span class="w">   </span>lnmp<span class="w">      </span>bridge<span class="w">    </span><span class="nb">local</span>
+09efb809f790<span class="w">   </span>none<span class="w">      </span>null<span class="w">      </span><span class="nb">local</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>graph
+lnmp(网络模型) 
+
+c1(container)
+c2(container)
+c3(container)
+
+c1 -.使用DNS解析&lt;br&gt;容器的名称到容器.-&gt; lnmp
+c2 --&gt; lnmp
+c3 --&gt; lnmp
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker run -d  --name  nginx-lnmp  --network  lnmp  nginx-proxy:v1</span>
+</code></pre></div>
+<p>测试：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker  run  -it  --name centos  --network lnmp  5d0da3dc9764  /bin/bash</span>
+
+<span class="o">[</span>root@281743ee4f70<span class="w"> </span>/<span class="o">]</span><span class="c1"># ping nginx-lnmp</span>
+PING<span class="w"> </span>nginx-lnmp<span class="w"> </span><span class="o">(</span><span class="m">172</span>.18.0.2<span class="o">)</span><span class="w"> </span><span class="m">56</span><span class="o">(</span><span class="m">84</span><span class="o">)</span><span class="w"> </span>bytes<span class="w"> </span>of<span class="w"> </span>data.
+<span class="m">64</span><span class="w"> </span>bytes<span class="w"> </span>from<span class="w"> </span>nginx-lnmp.lnmp<span class="w"> </span><span class="o">(</span><span class="m">172</span>.18.0.2<span class="o">)</span>:<span class="w"> </span><span class="nv">icmp_seq</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">ttl</span><span class="o">=</span><span class="m">64</span><span class="w"> </span><span class="nv">time</span><span class="o">=</span><span class="m">0</span>.176<span class="w"> </span>ms
+</code></pre></div>
+<p>Example： <code>指定网络为none</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker  run  -it  --rm  --name centos_none  --network none  5d0da3dc9764  /bin/bash</span>
+<span class="o">[</span>root@77f3d49738c0<span class="w"> </span>/<span class="o">]</span><span class="c1">#   </span>
+<span class="o">[</span>root@77f3d49738c0<span class="w"> </span>/<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@77f3d49738c0<span class="w"> </span>/<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@77f3d49738c0<span class="w"> </span>/<span class="o">]</span><span class="c1"># ip ad</span>
+<span class="m">1</span>:<span class="w"> </span>lo:<span class="w"> </span>&lt;LOOPBACK,UP,LOWER_UP&gt;<span class="w"> </span>mtu<span class="w"> </span><span class="m">65536</span><span class="w"> </span>qdisc<span class="w"> </span>noqueue<span class="w"> </span>state<span class="w"> </span>UNKNOWN<span class="w"> </span>group<span class="w"> </span>default<span class="w"> </span>qlen<span class="w"> </span><span class="m">1000</span>
+<span class="w">    </span>link/loopback<span class="w"> </span><span class="m">00</span>:00:00:00:00:00<span class="w"> </span>brd<span class="w"> </span><span class="m">00</span>:00:00:00:00:00
+<span class="w">    </span>inet<span class="w"> </span><span class="m">127</span>.0.0.1/8<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>lo
+<span class="w">       </span>valid_lft<span class="w"> </span>forever<span class="w"> </span>preferred_lft<span class="w"> </span>forever
+<span class="w">    </span>inet6<span class="w"> </span>::1/128<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>
+<span class="w">       </span>valid_lft<span class="w"> </span>forever<span class="w"> </span>preferred_lft<span class="w"> </span>forever
+<span class="o">[</span>root@77f3d49738c0<span class="w"> </span>/<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<p>!image-20250923115957027](/images/image-20250923115957027.png)</p>
+<p>Example:</p>
+<p>创建别名：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># alias  dn=&quot;docker network&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dn  rm  my_net</span>
+</code></pre></div>
+<h3 id="volume">volume 数据卷</h3>
+<p><code>volume</code> 是容器的持久数据存储，由 Docker 创建和管理。您可以使用 <code>docker</code> 命令<code>docker volume create</code> 创建卷，或者 Docker 可以在容器或服务创建期间创建卷。</p>
+<p>创建卷时，它会存储在 Docker 主机上的一个目录中。将卷挂载到容器中时，该目录也会被挂载到容器中。这与绑定挂载的工作方式类似，不同之处在于卷由 Docker 管理，并且与主机的核心功能隔离。</p>
+<h4 id="_7">何时使用卷</h4>
+<p>卷是持久化 Docker 容器生成和使用的数据的首选机制。<a href="https://docs.docker.com/engine/storage/bind-mounts/"> 绑定挂载</a>依赖于主机的目录结构和操作系统，而卷则完全由 Docker 管理。对于以下用例，卷是一个不错的选择：</p>
+<ul>
+<li>与绑定挂载相比，卷更容易备份或迁移。</li>
+<li>您可以使用 Docker CLI 命令或 Docker API 管理卷。</li>
+<li>卷可以在 Linux 和 Windows 容器上运行。</li>
+<li>卷可以在多个容器之间更安全地共享。</li>
+<li>新卷的内容可以通过容器或构建预先填充。</li>
+<li>当您的应用程序需要高性能 I/O 时。</li>
+</ul>
+<h4 id="_8">卷的生命周期</h4>
+<p>卷的内容存在于给定容器的生命周期之外。当容器被销毁时，可写层也会随之销毁。使用卷可以确保即使使用该卷的容器被移除，数据也能持久保存。</p>
+<p>给定的卷可以同时挂载到多个容器中。当没有正在运行的容器使用卷时，该卷仍然可供 Docker 使用，并且不会被自动删除。您可以使用 <code>docker volume prune</code> 删除未使用的卷。</p>
+<h4 id="_9">命名卷和匿名卷</h4>
+<p>卷可以是命名的，也可以是匿名的。匿名卷会被赋予一个随机名称，该名称保证在给定的 Docker 主机中是唯一的。与命名卷一样，即使删除了使用它们的容器，匿名卷也会保留，除非在创建容器时使用 <code>--rm</code> 标志，在这种情况下 与容器关联的匿名卷被销毁的情况。请参阅 <a href="https://docs.docker.com/engine/storage/volumes/#remove-anonymous-volumes">删除匿名卷 </a>。</p>
+<h4 id="_10">卷管理</h4>
+<p>创建别名：<code>[root@docker ~]# alias  dv="docker volume"</code></p>
+<ul>
+<li>创建一个卷 匿名卷/命名卷</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv  create    #创建匿名卷；随机生成一个名称（忽略）</span>
+
+<span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv create my_volume</span>
+my_volume
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv  ls</span>
+DRIVER<span class="w">    </span>VOLUME<span class="w"> </span>NAME
+<span class="nb">local</span><span class="w">     </span>dd9110ad03fa15742bfd8cb759fdd2709b6c9d6339a4b94a4480929b7d8ca444
+<span class="nb">local</span><span class="w">     </span>my_volume
+</code></pre></div>
+<ul>
+<li>查看卷的详细信息</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv  inspect  my_volume</span>
+<span class="o">[</span>
+<span class="w">    </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;CreatedAt&quot;</span>:<span class="w"> </span><span class="s2">&quot;2025-09-23T14:30:21+08:00&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Driver&quot;</span>:<span class="w"> </span><span class="s2">&quot;local&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Labels&quot;</span>:<span class="w"> </span>null,
+<span class="w">        </span><span class="s2">&quot;Mountpoint&quot;</span>:<span class="w"> </span><span class="s2">&quot;/var/lib/docker/volumes/my_volume/_data&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Name&quot;</span>:<span class="w"> </span><span class="s2">&quot;my_volume&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;Options&quot;</span>:<span class="w"> </span>null,
+<span class="w">        </span><span class="s2">&quot;Scope&quot;</span>:<span class="w"> </span><span class="s2">&quot;local&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">]</span>
+</code></pre></div>
+<ul>
+<li>删除卷</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 指定删除卷</span>
+<span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv rm dd9110ad03fa15742bfd8cb759fdd2709b6c9d6339a4b94a4480929b7d8ca444</span>
+dd9110ad03fa15742bfd8cb759fdd2709b6c9d6339a4b94a4480929b7d8ca444
+
+<span class="c1">#移除未使用的数据（所有卷）</span>
+<span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># dv  prune  -a </span>
+WARNING!<span class="w"> </span>This<span class="w"> </span>will<span class="w"> </span>remove<span class="w"> </span>all<span class="w"> </span><span class="nb">local</span><span class="w"> </span>volumes<span class="w"> </span>not<span class="w"> </span>used<span class="w"> </span>by<span class="w"> </span>at<span class="w"> </span>least<span class="w"> </span>one<span class="w"> </span>container.
+Are<span class="w"> </span>you<span class="w"> </span>sure<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span><span class="k">continue</span>?<span class="w"> </span><span class="o">[</span>y/N<span class="o">]</span><span class="w"> </span>y
+Deleted<span class="w"> </span>Volumes:
+my_volume
+</code></pre></div>
+<p>使用卷：</p>
+<blockquote>
+<p>要使用 <code>docker run</code> 命令挂载卷，您可以使用 <code>--mount</code> 或 <code>--volume</code> 标志</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--mount<span class="w"> </span><span class="nv">type</span><span class="o">=</span>volume,src<span class="o">=</span>&lt;volume-name&gt;,dst<span class="o">=</span>&lt;mount-path&gt;
+docker<span class="w"> </span>run<span class="w"> </span>--volume<span class="w"> </span>&lt;volume-name&gt;:&lt;mount-path&gt;
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>~<span class="o">]</span><span class="c1"># docker run  -d   --name  nginx_volume  --mount  source=nginx-data,target=/app  nginx-proxy:v1</span>
+2749f43ac1893ae183e833cfe3752bc5beaed969a69255f95c6b6135878e79a3
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code>登陆容器创建文件
+</code></pre></div>
+<p>查看容器信息</p>
+<p><code>[root@docker ~]# docker inspect  2749f43ac1893ae183</code></p>
+<div class="highlight"><pre><span></span><code><span class="w">        </span><span class="s2">&quot;Mounts&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">            </span><span class="o">{</span>
+<span class="w">                </span><span class="s2">&quot;Type&quot;</span>:<span class="w"> </span><span class="s2">&quot;volume&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;Name&quot;</span>:<span class="w"> </span><span class="s2">&quot;nginx-data&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;Source&quot;</span>:<span class="w"> </span><span class="s2">&quot;/var/lib/docker/volumes/nginx-data/_data&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;Destination&quot;</span>:<span class="w"> </span><span class="s2">&quot;/app&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;Driver&quot;</span>:<span class="w"> </span><span class="s2">&quot;local&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;Mode&quot;</span>:<span class="w"> </span><span class="s2">&quot;z&quot;</span>,
+<span class="w">                </span><span class="s2">&quot;RW&quot;</span>:<span class="w"> </span>true,
+<span class="w">                </span><span class="s2">&quot;Propagation&quot;</span>:<span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">            </span><span class="o">}</span>
+<span class="w">        </span><span class="o">]</span>,
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>graph
+a((container))
+b((container))
+v(volume)
+a &amp; b -..-&gt; v
+</code></pre></div>
+<p>!image-20250923145659230](/images/image-20250923145659230.png)</p>
+<h3 id="dockerfile">Dockerfile</h3>
+<blockquote>
+<p>Dockerfile 是构建镜像的文件</p>
+</blockquote>
+<p>一切都从 Dockerfile 开始。</p>
+<p>Docker 通过读取 Dockerfile 中的指令来构建镜像。 Dockerfile 是一个文本文件，其中包含构建源的说明 代码。Dockerfile 指令语法由规范定义 参考 <a href="https://docs.docker.com/reference/dockerfile/">Dockerfile 参考 </a>。</p>
+<p>Dockerfile 语法：</p>
+<div class="highlight"><pre><span></span><code>FROM<span class="w">  </span><span class="c1">#指定哪一个镜像为基础镜像</span>
+RUN<span class="w">   </span><span class="c1">#执行构建命令</span>
+COPY<span class="w">  </span><span class="c1">#复制文件和目录</span>
+ADD<span class="w">   </span><span class="c1">#</span>
+ENV<span class="w">   </span><span class="c1">#设置环境变量</span>
+WORKDIR<span class="w"> </span><span class="c1">#指定工作目录</span>
+EXPOSE<span class="w">  </span><span class="c1">#描述您的应用程序正在监听的端口</span>
+MAINTAINER<span class="w"> </span><span class="c1">#作者新版不维护；1.13版本之后不在维护推荐使用label</span>
+CMD<span class="w"> </span><span class="o">[</span><span class="s2">&quot;/usr/sbin/httpd&quot;</span>,<span class="w"> </span><span class="s2">&quot;-D&quot;</span>,<span class="w"> </span><span class="s2">&quot;FOREGROUND&quot;</span><span class="o">]</span>
+ENTRYPOINT
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;"><code>ENTRYPOINT</code></th>
+<th style="text-align: left;"><code>CMD</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>主要作用</strong></td>
+<td style="text-align: left;">将容器定义为<strong>可执行程序</strong></td>
+<td style="text-align: left;">为容器提供<strong>默认命令和参数</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>是否易被覆盖</strong></td>
+<td style="text-align: left;">难（需 <code>--entrypoint</code>）</td>
+<td style="text-align: left;">易（<code>docker run</code> 后的命令直接覆盖）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>推荐使用形式</strong></td>
+<td style="text-align: left;"><code>ENTRYPOINT ["exec", ...]</code></td>
+<td style="text-align: left;"><code>CMD ["arg1", "arg2"]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>如何选择</strong></td>
+<td style="text-align: left;">当你想让容器像一个<strong>命令</strong>一样工作时使用（如 <code>docker run my-app</code>）。</td>
+<td style="text-align: left;">当你想为容器提供<strong>默认行为</strong>，且希望该行为<strong>容易被覆盖</strong>时使用。</td>
+</tr>
+</tbody>
+</table>
+<p>Example: <code>Dockerfile</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 使用CentOS 8作为基础镜像</span>
+FROM<span class="w"> </span>centos:centos8
+
+<span class="c1"># 添加镜像元数据，版本信息</span>
+LABEL<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span>
+LABEL<span class="w"> </span><span class="nv">description</span><span class="o">=</span><span class="s2">&quot;CentOS 8 with httpd, JDK 21, vim and net-tools&quot;</span>
+
+<span class="c1"># 移除默认的yum仓库配置（CentOS 8已停止维护，需要使用Vault仓库）</span>
+RUN<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/etc/yum.repos.d/*
+
+<span class="c1"># 添加阿里云的CentOS 8 Vault仓库（适用于已停止维护的CentOS 8）</span>
+RUN<span class="w"> </span>curl<span class="w"> </span>-o<span class="w"> </span>/etc/yum.repos.d/CentOS-Base.repo<span class="w"> </span>https://mirrors.aliyun.com/repo/Centos-vault-8.5.2111.repo
+
+<span class="c1"># 检查仓库列表是否正常</span>
+RUN<span class="w"> </span>dnf<span class="w"> </span>repolist
+
+<span class="c1"># 安装vim编辑器</span>
+RUN<span class="w"> </span>dnf<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>vim
+
+<span class="c1"># 安装网络工具（如ifconfig等）</span>
+RUN<span class="w"> </span>dnf<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>net-tools
+
+<span class="c1"># 安装httpd web服务器</span>
+RUN<span class="w"> </span>dnf<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>httpd
+
+<span class="c1"># 复制JDK安装包到容器当前目录（建议指定更明确的路径）</span>
+COPY<span class="w"> </span>jdk-21_linux-x64_bin.tar.gz<span class="w"> </span>/tmp/
+
+<span class="c1"># 解压JDK到/usr/local目录（通常软件安装在/usr/local下）</span>
+ADD<span class="w"> </span>jdk-21_linux-x64_bin.tar.gz
+
+<span class="c1"># 配置JDK环境变量（注意：解压后的目录名需与实际一致）</span>
+ENV<span class="w"> </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/jdk-21.0.8
+ENV<span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="c1"># 创建并挂载数据卷（用于持久化数据）</span>
+VOLUME<span class="w"> </span>/app<span class="w">          </span><span class="c1"># 应用程序目录</span>
+VOLUME<span class="w"> </span>/opt/abc<span class="w">      </span><span class="c1"># 额外数据目录</span>
+
+<span class="c1"># 设置工作目录为/app</span>
+WORKDIR<span class="w"> </span>/app
+
+<span class="c1"># 复制index.html到当前工作目录（即/app下）</span>
+COPY<span class="w"> </span>index.html<span class="w"> </span>.
+
+<span class="c1"># 设置入口点为bash交互shell（方便进入容器操作）</span>
+ENTRYPOINT<span class="w"> </span><span class="o">[</span><span class="s2">&quot;/bin/bash&quot;</span><span class="o">]</span>
+
+<span class="c1"># 暴露80端口（httpd默认端口），而非22端口（未安装ssh服务）</span>
+EXPOSE<span class="w"> </span><span class="m">80</span>/tcp
+
+<span class="c1"># 如需启动httpd，可使用以下CMD（取消注释并注释上面的ENTRYPOINT）</span>
+CMD<span class="w"> </span><span class="o">[</span><span class="s2">&quot;/usr/sbin/httpd&quot;</span>,<span class="w"> </span><span class="s2">&quot;-D&quot;</span>,<span class="w"> </span><span class="s2">&quot;FOREGROUND&quot;</span><span class="o">]</span>
+</code></pre></div>
+<p><strong><code>/usr/sbin/httpd</code></strong></p>
+<ul>
+<li>这是 Apache HTTP 服务器的可执行文件路径</li>
+<li>
+<p>在 CentOS/RHEL 系统中，httpd 的二进制文件通常位于此路径</p>
+</li>
+<li>
+<p><strong><code>-D</code> 参数</strong></p>
+</li>
+<li>
+<p>这是 Apache 的<strong>定义参数</strong>，用于在启动时设置特定的配置指令</p>
+</li>
+<li>
+<p>它可以指定要启用的模块或特定的服务器配置</p>
+</li>
+<li>
+<p><strong><code>FOREGROUND</code></strong></p>
+</li>
+<li>
+<p>这是 <code>-D</code> 参数的值，也是<strong>最关键的部分</strong></p>
+</li>
+<li>它告诉 Apache 在<strong>前台</strong>运行，而不是作为守护进程（daemon）在后台运行</li>
+</ul>
+<p>构建：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>opt<span class="o">]</span><span class="c1"># docker build   -t centos-java:v2   .</span>
+</code></pre></div>
+<blockquote>
+<p>-t: 定义tag</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>opt<span class="o">]</span><span class="c1"># docker images </span>
+REPOSITORY<span class="w">    </span>TAG<span class="w">          </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">             </span>SIZE
+centos-java<span class="w">   </span>v2<span class="w">           </span>94f6d558a96d<span class="w">   </span>About<span class="w"> </span>an<span class="w"> </span>hour<span class="w"> </span>ago<span class="w">   </span>879MB
+</code></pre></div>
+<p>项目练习：<code>基于docker官方公共镜像</code></p>
+<div class="highlight"><pre><span></span><code>graph LR
+a((http-container01))
+b((http-container02))
+v(volume)
+n{nginx}
+n --&gt; a &amp; b
+a &amp; b -..-&gt; v
+c --&gt; n
+</code></pre></div>
+<p>项目练习：<code>自己构建镜像通过dockerfile,在同一网络中，使用容器名称</code></p>
+<div class="highlight"><pre><span></span><code>graph LR
+a((http-container01))
+b((http-container02))
+v(volume)
+n{nginx}
+n --&gt; a &amp; b
+a &amp; b -..-&gt; v
+c --&gt; n
+</code></pre></div>
+<p>项目练习：<code>自己构建镜像通过dockerfile；基于docker compose</code></p>
+<div class="highlight"><pre><span></span><code>graph LR
+a((http-container01))
+b((http-container02))
+v(volume)
+n{nginx}
+n --&gt; a &amp; b
+a &amp; b -..-&gt; v
+c --&gt; n
+</code></pre></div>
+<p>项目练习：<code>自己构建镜像通过dockerfile；将构建的镜像上传至镜像仓库</code></p>
+<div class="highlight"><pre><span></span><code>graph 
+a((http-container01))
+b((http-container02))
+n{nginx}
+h(harbor)
+a &amp; b &amp; n -.上传镜像.-&gt; h
+</code></pre></div></article>
+<article class="doc-section" id="镜像仓库-dockercompse"><h2>镜像仓库 Docker Compose</h2><h1 id="_1">镜像仓库</h1>
+<blockquote>
+<p>存放镜像的仓库</p>
+</blockquote>
+<p>!image-20250924110534012](/images/image-20250924110534012.png)</p>
+<p>容器编排系统：</p>
+<p>单机编排系统工具</p>
+<ul>
+<li>Docker compose </li>
+</ul>
+<p>多节点编排工具：</p>
+<ul>
+<li>docker swarm</li>
+<li>kubernetes </li>
+</ul>
+<h3 id="docker-compose">Docker compose</h3>
+<p><strong>Docker Compose</strong> 是一个用于定义和运行多容器 Docker 应用程序的工具。它使用 YAML 文件来配置应用程序的服务、网络、数据卷等，然后通过一个简单的命令就能启动整个应用栈。</p>
+<h4 id="_2">核心概念</h4>
+<ul>
+<li><strong>单机编排</strong>：主要针对单台主机上的多容器应用</li>
+<li><strong>声明式配置</strong>：使用 YAML 文件描述整个应用架构</li>
+<li><strong>一键操作</strong>：一条命令启动/停止所有服务</li>
+</ul>
+<h3 id="_3"><strong>主要配置项</strong></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">配置项</th>
+<th style="text-align: left;">说明</th>
+<th style="text-align: left;">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>version</code></td>
+<td style="text-align: left;">Compose 文件版本</td>
+<td style="text-align: left;"><code>'3.8'</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>services</code></td>
+<td style="text-align: left;">定义各个服务容器</td>
+<td style="text-align: left;"><code>web</code>, <code>db</code>, <code>cache</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>networks</code></td>
+<td style="text-align: left;">自定义网络配置</td>
+<td style="text-align: left;"><code>backend</code>, <code>frontend</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>volumes</code></td>
+<td style="text-align: left;">数据卷配置</td>
+<td style="text-align: left;"><code>db_data</code>, <code>app_logs</code></td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">[</span><span class="nv">root@docker httpd-example</span><span class="p p-Indicator">]</span><span class="c1"># cat   docker-compose.yaml </span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">web</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w">   </span><span class="c1">#当前目录必须有Dockerfile</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;33000:80&quot;</span>
+</code></pre></div>
+<p>dockercompose命令：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>httpd-example<span class="o">]</span><span class="c1"># docker compose --help</span>
+<span class="o">[</span>root@docker<span class="w"> </span>httpd-example<span class="o">]</span><span class="c1"># docker compose  up    #构建并前台运行</span>
+<span class="o">[</span>root@docker<span class="w"> </span>httpd-example<span class="o">]</span><span class="c1"># docker compose  up -d  #构建完成并后台运行</span>
+<span class="o">[</span>root@docker<span class="w"> </span>httpd-example<span class="o">]</span><span class="c1"># docker compose  stop  #停止所有的容器（docker-compose.yaml）</span>
+<span class="o">[</span>root@docker<span class="w"> </span>httpd-example<span class="o">]</span><span class="c1"># docker compose  start #运行所有的容器（docker-compose.yaml）</span>
+</code></pre></div>
+<h2 id="harbor">Harbor</h2>
+<p>Harbor 是一个开源镜像仓库，它通过策略和基于角色的访问控制来保护工件，确保镜像经过扫描且无漏洞，并将镜像签名为可信镜像。Harbor 是一个 CNCF 毕业项目，提供合规性、性能和互操作性，帮助您在 Kubernetes 和 Docker 等云原生计算平台上一致且安全地管理工件。</p>
+<h3 id="resource-requirement">Resource Requirement 资源需求</h3>
+<p>!image-20250924143137533](/images/image-20250924143137533.png)</p>
+<h3 id="software-stack-requirements-compose">Software Stack Requirements Compose</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Software 软件</th>
+<th style="text-align: left;">Version 版本</th>
+<th style="text-align: left;">Description 描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Docker Engine Docker 引擎</td>
+<td style="text-align: left;">Version &gt; 20.10 版本 &gt; 20.10</td>
+<td style="text-align: left;"><a href="https://docs.docker.com/engine/install/">Docker Engine Installation Docker 引擎安装</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">Docker Compose Docker 撰写</td>
+<td style="text-align: left;">Docker compose &gt; 2.3</td>
+<td style="text-align: left;">Docker Compose is part of Docker Engine Docker Compose 是 Docker Engine 的一部分</td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenSSL</td>
+<td style="text-align: left;">Latest (optional) 最新（可选）</td>
+<td style="text-align: left;">Used to generate certificate and keys for Harbor 用于生成 Harbor 的证书和密钥</td>
+</tr>
+</tbody>
+</table>
+<h3 id="network-ports">Network ports 网络端口</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Port 港口</th>
+<th style="text-align: left;">Protocol 协议</th>
+<th style="text-align: left;">Description 描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">443</td>
+<td style="text-align: left;">HTTPS</td>
+<td style="text-align: left;">Harbor portal and core API accept HTTPS requests on this port. You can change this port in the configuration file. Harbor 门户和核心 API 在此端口接受 HTTPS 请求。您可以在配置文件中更改此端口。</td>
+</tr>
+<tr>
+<td style="text-align: left;">80</td>
+<td style="text-align: left;">HTTP</td>
+<td style="text-align: left;">Harbor portal and core API accept HTTP requests on this port. You can change this port in the configuration file. Harbor 门户和核心 API 在此端口接受 HTTP 请求。您可以在配置文件中更改此端口。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="harbor_1">部署<code>harbor</code></h4>
+<p>方案：  <code>docker compose  helm</code></p>
+<p>案例：<code>docker compose</code></p>
+<ul>
+<li>
+<p>(离线安装) (https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-offline-installer-v2.14.0.tgz)</p>
+</li>
+<li>
+<p>(在线安装) [https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-online-installer-v2.14.0.tgz]</p>
+</li>
+</ul>
+<p>解压：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># tar  xf  harbor-offline-installer-v2.14.0.tgz   -C /usr/local/</span>
+</code></pre></div>
+<p>修改配置文件</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># cp  harbor.yml.tmpl  harbor.yml</span>
+</code></pre></div>
+<p>!image-20250924145200437](/images/image-20250924145200437.png)</p>
+<p>执行安装脚本</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># ./install.sh</span>
+</code></pre></div>
+<p>获取容器的状态</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># #docker  compose  stats #检查容器占用系统的信息；实时</span>
+<span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># docker  compose ps</span>
+NAME<span class="w">                </span>IMAGE<span class="w">                                 </span>COMMAND<span class="w">                   </span>SERVICE<span class="w">       </span>CREATED<span class="w">         </span>STATUS<span class="w">                   </span>PORTS
+harbor-core<span class="w">         </span>goharbor/harbor-core:v2.14.0<span class="w">          </span><span class="s2">&quot;/harbor/entrypoint.…&quot;</span><span class="w">   </span>core<span class="w">          </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+harbor-db<span class="w">           </span>goharbor/harbor-db:v2.14.0<span class="w">            </span><span class="s2">&quot;/docker-entrypoint.…&quot;</span><span class="w">   </span>postgresql<span class="w">    </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+harbor-jobservice<span class="w">   </span>goharbor/harbor-jobservice:v2.14.0<span class="w">    </span><span class="s2">&quot;/harbor/entrypoint.…&quot;</span><span class="w">   </span>jobservice<span class="w">    </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+harbor-log<span class="w">          </span>goharbor/harbor-log:v2.14.0<span class="w">           </span><span class="s2">&quot;/bin/sh -c /usr/loc…&quot;</span><span class="w">   </span>log<span class="w">           </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span><span class="m">127</span>.0.0.1:1514-&gt;10514/tcp
+harbor-portal<span class="w">       </span>goharbor/harbor-portal:v2.14.0<span class="w">        </span><span class="s2">&quot;nginx -g &#39;daemon of…&quot;</span><span class="w">   </span>portal<span class="w">        </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+nginx<span class="w">               </span>goharbor/nginx-photon:v2.14.0<span class="w">         </span><span class="s2">&quot;nginx -g &#39;daemon of…&quot;</span><span class="w">   </span>proxy<span class="w">         </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span><span class="m">0</span>.0.0.0:80-&gt;8080/tcp,<span class="w"> </span>:::80-&gt;8080/tcp
+redis<span class="w">               </span>goharbor/redis-photon:v2.14.0<span class="w">         </span><span class="s2">&quot;redis-server /etc/r…&quot;</span><span class="w">   </span>redis<span class="w">         </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+registry<span class="w">            </span>goharbor/registry-photon:v2.14.0<span class="w">      </span><span class="s2">&quot;/home/harbor/entryp…&quot;</span><span class="w">   </span>registry<span class="w">      </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+registryctl<span class="w">         </span>goharbor/harbor-registryctl:v2.14.0<span class="w">   </span><span class="s2">&quot;/home/harbor/start.…&quot;</span><span class="w">   </span>registryctl<span class="w">   </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span>ago<span class="w">   </span>Up<span class="w"> </span><span class="m">3</span><span class="w"> </span>minutes<span class="w"> </span><span class="o">(</span>healthy<span class="o">)</span><span class="w">   </span>
+</code></pre></div>
+<p>!image-20250924145600127](/images/image-20250924145600127.png)</p>
+<p>客户端指定本地地址：</p>
+<blockquote>
+<p>默认采用https </p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># cat  /etc/docker/daemon.json </span>
+<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="s2">&quot;registry-mirrors&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">    </span><span class="s2">&quot;https://docker.m.daocloud.io&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.imgdb.de&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker-0.unsee.tech&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.hlmirror.com&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.1ms.run&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://func.ink&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://lispy.org&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;https://docker.xiaogenban1993.com&quot;</span>
+<span class="w">  </span><span class="o">]</span>,
+<span class="w">  </span><span class="s2">&quot;insecure-registries&quot;</span>:<span class="w"> </span><span class="o">[</span><span class="s2">&quot;192.168.1.101&quot;</span><span class="o">]</span>
+
+<span class="o">}</span>
+</code></pre></div>
+<p>重启docker</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># systemctl daemon-reload</span>
+<span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># systemctl restart docker</span>
+</code></pre></div>
+<p>登陆<code>harbor</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># docker  login  192.168.1.101/httpd</span>
+Username:<span class="w"> </span>admin
+Password:<span class="w"> </span>
+WARNING!<span class="w"> </span>Your<span class="w"> </span>password<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>stored<span class="w"> </span>unencrypted<span class="w"> </span><span class="k">in</span><span class="w"> </span>/root/.docker/config.json.
+Configure<span class="w"> </span>a<span class="w"> </span>credential<span class="w"> </span>helper<span class="w"> </span>to<span class="w"> </span>remove<span class="w"> </span>this<span class="w"> </span>warning.<span class="w"> </span>See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login<span class="w"> </span>Succeeded
+</code></pre></div>
+<p>退出：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># docker   logout</span>
+</code></pre></div>
+<p>推送镜像到<code>harbor</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>把原镜像打tag<span class="w"> </span>加上仓库地址
+<span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># docker tag  httpd-example-web:latest  192.168.1.101/httpd/tpd-example-web:latest</span>
+<span class="m">2</span>.<span class="w"> </span>推送
+<span class="o">[</span>root@docker<span class="w"> </span>harbor<span class="o">]</span><span class="c1"># docker  push 192.168.1.101/httpd/tpd-example-web:latest</span>
+The<span class="w"> </span>push<span class="w"> </span>refers<span class="w"> </span>to<span class="w"> </span>repository<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.101/httpd/tpd-example-web<span class="o">]</span>
+8e0bd7f2098e:<span class="w"> </span>Pushed<span class="w"> </span>
+9997bf603098:<span class="w"> </span>Pushed<span class="w"> </span>
+c3fc389bda9e:<span class="w"> </span>Pushed<span class="w"> </span>
+b5522521eb73:<span class="w"> </span>Pushed<span class="w"> </span>
+74ddd0ec08fa:<span class="w"> </span>Pushed<span class="w"> </span>
+latest:<span class="w"> </span>digest:<span class="w"> </span>sha256:9266caa5cbb6cd5b683e9376bf10d3dab7a9ad787d3439f3e38af64e9734b01f<span class="w"> </span>size:<span class="w"> </span><span class="m">1367</span>
+</code></pre></div>
+<p>拉取镜像</p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>docker<span class="w"> </span>pull<span class="w"> </span><span class="m">192</span>.168.1.101/nginx/nginx-proxy:v1
+v1:<span class="w"> </span>Pulling<span class="w"> </span>from<span class="w"> </span>nginx/nginx-proxy
+Digest:<span class="w"> </span>sha256:640b0facc7fc449936bbe5201afaf226071ddc5bac7f19c1cd4ba01fae5fd387
+Status:<span class="w"> </span>Downloaded<span class="w"> </span>newer<span class="w"> </span>image<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="m">192</span>.168.1.101/nginx/nginx-proxy:v1
+<span class="m">192</span>.168.1.101/nginx/nginx-proxy:v1
+</code></pre></div></article></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

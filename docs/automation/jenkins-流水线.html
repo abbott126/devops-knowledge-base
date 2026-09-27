@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenkins 流水线 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-cicd-jenkins"># CiCd jenkins</a></li><li class="toc-l2"><a href="#-概念">## 概念</a></li><li class="toc-l2"><a href="#-jenkins-支持流水线语法">## jenkins 支持流水线语法：</a></li><li class="toc-l1"><a href="#定义build步骤">#定义build步骤</a></li><li class="toc-l1"><a href="#构建的过程">#构建的过程</a></li><li class="toc-l1"><a href="#定义test-阶段">#定义"Test" 阶段。</a></li><li class="toc-l1"><a href="#定义deploy-阶段">#定义"Deploy" 阶段。</a></li><li class="toc-l1"><a href="#执行与deploy-阶段相关的步骤">#执行与"Deploy" 阶段相关的步骤。</a></li><li class="toc-l1"><a href="#定义test-阶段">#定义"Test" 阶段</a></li><li class="toc-l1"><a href="#执行与test-阶段相关的步骤">#执行与"Test" 阶段相关的步骤</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="cicd-jenkins">CiCd jenkins</h1>
+<h2 id="_1">概念</h2>
+<p>Jenkins 流水线 (或简单的带有大写"P"的"Pipeline") 是一套插件，它支持实现和集成 <code>continuous delivery pipelines</code> 到 <code>Jenkins</code>。</p>
+<p><code>continuous delivery (CD) pipeline</code>是你的进程的自动表达，用于从版本控制向用户和客户获取软件。 你的软件的每次的变更 (在源代码控制中提交)在它被释放的路上都经历了一个复杂的过程 on its way to being released. 这个过程包括以一种可靠并可重复的方式构建软件, 以及通过多个测试和部署阶段来开发构建好的软件 (c成为 "build") 。</p>
+<h2 id="jenkins">jenkins 支持流水线语法：</h2>
+<ul>
+<li>
+<p>声明式</p>
+</li>
+<li>
+<p>脚本化</p>
+</li>
+</ul>
+<p>声明式语法：</p>
+<div class="highlight"><pre><span></span><code><span class="err">pipeli</span><span class="kc">ne</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">age</span><span class="kc">nt</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">y</span><span class="w"> </span>
+<span class="w">    </span><span class="err">s</span><span class="kc">ta</span><span class="err">ges</span><span class="w"> </span><span class="p">{</span>
+<span class="w">       </span><span class="err">#定义build步骤</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;Build&#39;)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">          </span><span class="err">#构建的过程</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// </span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w">   </span>
+<span class="w">         </span><span class="err">#定义</span><span class="s2">&quot;Test&quot;</span><span class="w"> </span><span class="err">阶段。</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;Tes</span><span class="kc">t</span><span class="err">&#39;)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">          </span><span class="err">执行与</span><span class="s2">&quot;Test&quot;</span><span class="w"> </span><span class="err">阶段相关的步骤。</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// </span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">#定义</span><span class="s2">&quot;Deploy&quot;</span><span class="w"> </span><span class="err">阶段。</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;Deploy&#39;)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">          </span><span class="err">#执行与</span><span class="s2">&quot;Deploy&quot;</span><span class="w"> </span><span class="err">阶段相关的步骤。</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// </span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>脚本式： <code>Jenkinsfile</code></p>
+<div class="highlight"><pre><span></span><code>node<span class="w"> </span><span class="o">{</span><span class="w">  </span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;Build&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">        </span>//<span class="w"> </span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="c1">#定义&quot;Test&quot; 阶段</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;Test&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">    </span><span class="c1">#执行与&quot;Test&quot; 阶段相关的步骤</span>
+<span class="w">        </span>//<span class="w"> </span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;Deploy&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">        </span>//<span class="w"> </span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>安装插件<code>可视化流线</code></p>
+<ul>
+<li>Blue Ocean</li>
+<li>Web for Blue Ocean</li>
+</ul>
+<p>Exmaple <code>声明式</code></p>
+<div class="highlight"><pre><span></span><code><span class="err">pipeli</span><span class="kc">ne</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">age</span><span class="kc">nt</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">y</span>
+<span class="w">    </span><span class="err">s</span><span class="kc">ta</span><span class="err">ges</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;pull</span><span class="w"> </span><span class="err">code&#39;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="err">gi</span><span class="kc">t</span><span class="w"> </span><span class="err">&#39;h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//192.168.1.110/dev-group/jenkis-project.git&#39;</span>
+<span class="w">                </span><span class="err">echo</span><span class="w"> </span><span class="err">&#39;pull</span><span class="w"> </span><span class="err">code成功&#39;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;build&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="err">echo</span><span class="w">  </span><span class="s2">&quot;build code&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;docker</span><span class="w"> </span><span class="err">build&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="err">echo</span><span class="w">  </span><span class="s2">&quot;build  docker images&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;push</span><span class="w"> </span><span class="err">images</span><span class="w">  </span><span class="err">repos</span><span class="kc">t</span><span class="err">iry&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="p">{</span>
+<span class="w">                </span><span class="err">echo</span><span class="w">  </span><span class="s2">&quot;push  images to repositry&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Example: <code>流水线</code></p>
+<p>!image-20250925140531453](/images/image-20250925140531453.png)</p>
+<p>jenkins 安装插件：`docker</p>
+<p>声明式流水线；</p>
+<div class="highlight"><pre><span></span><code><span class="err">pipeli</span><span class="kc">ne</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">age</span><span class="kc">nt</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">y</span>
+<span class="w">    </span><span class="err">s</span><span class="kc">ta</span><span class="err">ges</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;pull</span><span class="w"> </span><span class="err">code&#39;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">               </span><span class="err">gi</span><span class="kc">t</span><span class="w"> </span><span class="err">bra</span><span class="kc">n</span><span class="err">ch</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="kc">test</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">crede</span><span class="kc">nt</span><span class="err">ialsId</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="mf">0ee</span><span class="err">c</span><span class="mi">2047-599</span><span class="err">a</span><span class="mi">-4</span><span class="err">ca</span><span class="mi">9-</span><span class="err">b</span><span class="mi">23</span><span class="err">a</span><span class="mi">-</span><span class="err">b</span><span class="mf">9e676562</span><span class="err">d</span><span class="kc">f</span><span class="err">d&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">url</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//192.168.1.110/dev-group/jenkis-project.git&#39;</span>
+<span class="w">                </span><span class="err">echo</span><span class="w"> </span><span class="err">&#39;pull</span><span class="w"> </span><span class="err">code成功&#39;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;docker</span><span class="w"> </span><span class="err">build&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="err">sh</span><span class="w"> </span><span class="err">&#39;docker</span><span class="w">  </span><span class="mi">--</span><span class="err">versio</span><span class="kc">n</span><span class="err">&#39;</span><span class="w">              </span>
+<span class="w">            </span><span class="err">sh</span><span class="w">  </span><span class="err">&#39;sudo</span><span class="w"> </span><span class="err">docker</span><span class="w"> </span><span class="err">build</span><span class="w"> </span><span class="mi">-</span><span class="kc">t</span><span class="w"> </span><span class="mf">192.168.1.101</span><span class="err">/h</span><span class="kc">tt</span><span class="err">pd/</span><span class="kc">t</span><span class="err">pd</span><span class="mf">-e</span><span class="err">xample</span><span class="mi">-</span><span class="err">web</span><span class="p">:</span><span class="err">v</span><span class="mi">2</span><span class="w"> </span><span class="err">.&#39;</span><span class="w">  </span>
+<span class="w">            </span><span class="err">sh</span><span class="w">  </span><span class="err">&#39;sudo</span><span class="w"> </span><span class="err">docker</span><span class="w"> </span><span class="err">images&#39;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(</span><span class="s2">&quot;login harbor&quot;</span><span class="err">)</span><span class="p">{</span>
+<span class="w">           </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">               </span><span class="err">sh</span><span class="w"> </span><span class="s2">&quot;sudo  docker login http://192.168.1.101 -u admin -p &#39;Harbor12345&#39;&quot;</span>
+<span class="w">           </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;docker</span><span class="w"> </span><span class="err">push</span><span class="w"> </span><span class="err">repo&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="w"> </span><span class="p">{</span>
+<span class="w">             </span><span class="err">sh</span><span class="w">  </span><span class="err">&#39;sudo</span><span class="w">  </span><span class="err">docker</span><span class="w"> </span><span class="err">push</span><span class="w"> </span><span class="mf">192.168.1.101</span><span class="err">/h</span><span class="kc">tt</span><span class="err">pd/</span><span class="kc">t</span><span class="err">pd</span><span class="mf">-e</span><span class="err">xample</span><span class="mi">-</span><span class="err">web</span><span class="p">:</span><span class="err">v</span><span class="mi">2</span><span class="err">&#39;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="err">s</span><span class="kc">ta</span><span class="err">ge(&#39;部署&#39;)</span><span class="p">{</span>
+<span class="w">            </span><span class="err">s</span><span class="kc">te</span><span class="err">ps</span><span class="p">{</span>
+<span class="w">               </span><span class="err">sh</span><span class="w">  </span><span class="err">&#39;a</span><span class="kc">ns</span><span class="err">ible</span><span class="w"> </span><span class="err">all</span><span class="w"> </span><span class="mi">-</span><span class="err">m</span><span class="w"> </span><span class="err">shell</span><span class="w">  </span><span class="mi">-</span><span class="err">a</span><span class="w">  </span><span class="s2">&quot;docker pull  192.168.1.101/httpd/tpd-example-web:v2&quot;</span><span class="w"> </span><span class="err">&#39;</span>
+<span class="w">               </span><span class="err">sh</span><span class="w">  </span><span class="err">&#39;a</span><span class="kc">ns</span><span class="err">ible</span><span class="w"> </span><span class="err">all</span><span class="w"> </span><span class="mi">-</span><span class="err">m</span><span class="w"> </span><span class="err">shell</span><span class="w">  </span><span class="mi">-</span><span class="err">a</span><span class="w"> </span><span class="s2">&quot;docker run  -d --name httpd-example  -p 80:80 192.168.1.101/httpd/tpd-example-web:v2 &quot;</span><span class="err">&#39;</span>
+<span class="w">               </span><span class="err">echo</span><span class="w">  </span><span class="s2">&quot;部署完成&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>脚本式：</p>
+<div class="highlight"><pre><span></span><code>node<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;pull code&#39;</span><span class="o">){</span>
+<span class="w">        </span>git<span class="w"> </span>branch:<span class="w"> </span><span class="s1">&#39;test&#39;</span>,<span class="w"> </span>credentialsId:<span class="w"> </span><span class="s1">&#39;0eec2047-599a-4ca9-b23a-b9e676562dfd&#39;</span>,<span class="w"> </span>url:<span class="w"> </span><span class="s1">&#39;http://192.168.1.110/dev-group/java-web-app.git&#39;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;查看文件&#39;</span><span class="o">){</span>
+<span class="w">       </span>sh<span class="w"> </span><span class="s1">&#39;ls .&#39;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;docker Build&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">       </span>sh<span class="w">  </span><span class="s1">&#39;docker build . &#39;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;test&#39;</span><span class="o">){</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;test images&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;push  image  repo&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">       </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;push  images &quot;</span>
+<span class="w">    </span><span class="o">}</span>
+
+<span class="w">    </span>stage<span class="o">(</span><span class="s1">&#39;Deploy&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">       </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;部署&quot;</span>
+<span class="w">       </span>when<span class="w"> </span><span class="o">{</span>
+<span class="w">         </span>branch<span class="w"> </span><span class="s1">&#39;development&#39;</span>
+<span class="w">       </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

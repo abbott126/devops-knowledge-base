@@ -1,0 +1,29 @@
+version: v1
+
+services:
+
+  database:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: Root@123.
+      character-set-server: utf8mb4
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app@123
+      MYSQL_DATABASE: app 
+    networks:
+      - my_net
+
+  web:
+    image: httpd:latest
+    networks:
+      - my_net
+
+  php:
+    image: php:latest
+    networks:
+      - my_net
+  
+networks:
+  my_net:
+    driver: bridge
+ 

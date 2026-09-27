@@ -1,0 +1,7 @@
+---
+- hosts: all
+  roles:
+     - mysql
+     - nginx
+     - php
+     - ansible_roles/yum_repo

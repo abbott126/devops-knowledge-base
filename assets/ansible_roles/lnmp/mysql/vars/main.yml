@@ -1,0 +1,4 @@
+---
+# vars file for lnmp/mysql
+user: root
+password:  Root@123

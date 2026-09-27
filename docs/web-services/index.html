@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 服务 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main><article class="doc-section" id="Web服务"><h2>Web 服务</h2><h1 id="web">Web服务</h1>
+<p>提供用户访问页面；</p>
+<p>协议类型： TCP/IP协议</p>
+<p>web服务：http https </p>
+<h2 id="web_1">提供web中间件：</h2>
+<ol>
+<li>httpd  apache</li>
+<li>nginx   </li>
+<li>tomcat   --&gt; js</li>
+<li>weblogic --&gt; Java  不开源</li>
+</ol>
+<h1 id="httpd">httpd 服务</h1>
+<p>官方地址：https://httpd.apache.org/</p>
+<h3 id="_1">部署方案：</h3>
+<ul>
+<li>RPM</li>
+<li>YUM/dnf</li>
+<li>源码</li>
+</ul>
+<p>配置源</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>local<span class="o">]</span>
+<span class="nv">name</span><span class="o">=</span>centos<span class="w"> </span><span class="m">7</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>repo
+<span class="nv">baseurl</span><span class="o">=</span>file:///mnt<span class="w">          </span><span class="c1">#协议http ftp  file :// 标准的URL  http://</span>
+<span class="nv">enable</span><span class="o">=</span><span class="m">1</span><span class="w">  </span><span class="c1">#值：0 1</span>
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">0</span>
+</code></pre></div>
+<h3 id="_2">源码：</h3>
+<div class="highlight"><pre><span></span><code>apr<span class="w">  </span>
+apr-util
+httpd
+</code></pre></div>
+<h2 id="_3">准备工作</h2>
+<h3 id="_4">修改主机名</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl  set-hostname web-server.com</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># bash</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<h3 id="_5">获取软件包：</h3>
+<p><font color=red>切记：一定官方网站获取</font></p>
+<div class="highlight"><pre><span></span><code>wget<span class="w">  </span>https://dlcdn.apache.org//apr/apr-1.7.6.tar.gz
+wget<span class="w">  </span>https://dlcdn.apache.org//apr/apr-util-1.6.3.tar.gz
+wget<span class="w">  </span>https://dlcdn.apache.org/httpd/httpd-2.4.65.tar.gz
+</code></pre></div>
+<blockquote>
+<p>如果： 在工作的时候不能连接外网；</p>
+<ol>
+<li>下载本地；使用SCP命令</li>
+</ol>
+</blockquote>
+<h3 id="_6">创建管理目录</h3>
+<p><font color=red>注意：</font></p>
+<blockquote>
+<p>学习：源码安装软件包位置：<code>/usr/local/</code></p>
+<p>生产： 根据公司定义软件包安装位置 <code>/app</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir  /usr/local/apache1</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir   /usr/local/apache1/{apr,apr-util,http}</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls /usr/local/apache1/</span>
+apr<span class="w">  </span>apr-util<span class="w">  </span>http
+</code></pre></div>
+<h3 id="_7">依次解压软件包</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  apr-1.7.6.tar.gz  -C  /usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  apr-util-1.6.3.tar.gz  -C /usr/local/apache1/apr-util/</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  httpd-2.4.65.tar.gz  -C /usr/local/apache1/http/</span>
+</code></pre></div>
+<h2 id="_8">依次安装软件包</h2>
+<p>对于源码部署：（口诀三板斧）</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>检查环境
+./configure
+<span class="m">2</span>.<span class="w"> </span>编译
+make
+<span class="m">3</span>.<span class="w"> </span>编译安装
+make<span class="w"> </span>install<span class="w"> </span>
+</code></pre></div>
+<ul>
+<li>apr</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1"># ./configure  --prefix=/usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1">#  make </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1">#  make install  </span>
+</code></pre></div>
+<blockquote>
+<p>判断上次执行的命令是否成功： <code>echo $?</code></p>
+<p>0  # 非0 表示执行失败</p>
+</blockquote>
+<ul>
+<li>apr-util</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># ./configure  --prefix=/usr/local/apache1/apr-util   --with-apr=/usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># make</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># make install </span>
+</code></pre></div>
+<blockquote>
+<p>--prefix= # 指定安装目录</p>
+<p>--with-apr=  # 指定apr安装的位置</p>
+</blockquote>
+<ul>
+<li>httpd</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># ./configure \</span>
+--prefix<span class="o">=</span>/usr/local/apache1/http/<span class="w"> </span><span class="se">\</span>
+--with-apr<span class="o">=</span>/usr/local/apache1/apr<span class="w"> </span><span class="se">\</span>
+--with-apr-util<span class="o">=</span>/usr/local/apache1/apr-util/
+<span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># make </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># make install </span>
+</code></pre></div>
+<ul>
+<li>开启http服务</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># bin/apachectl </span>
+</code></pre></div>
+<p>检查是否启动</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># ss  -luntp | grep 80</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">    </span><span class="o">[</span>::<span class="o">]</span>:80<span class="w">                 </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112912</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112911</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112910</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112909</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">))</span>
+</code></pre></div>
+<p>测试服务</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># curl  127.0.0.1 </span>
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;It<span class="w"> </span>works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre></div>
+<p>客户端请求web</p>
+<p>!image-20250815113430519](/images/image-20250815113430519.png)</p>
+<p>防火墙管理的命令(firewalld)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># firewall-cmd   --list-all</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># firewall-cmd  --add-port=80/tcp #临时添加规则</span>
+</code></pre></div>
+<h2 id="_9">错误信息</h2>
+<p>错误1: </p>
+<p>问题： <code>缺少expat的函数库文件</code></p>
+<p>!image-20250815110536640](/images/image-20250815110536640.png)</p>
+<p>解决方案：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># yum -y install  expat-devel</span>
+</code></pre></div>
+<p>Error 2:</p>
+<p>问题：<code>没有找Pcre的函数库</code></p>
+<p>!image-20250815111137225](/images/image-20250815111137225.png)</p>
+<p>解决方案：</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>源码安装Pcre<span class="w"> </span>
+<span class="m">2</span>.<span class="w"> </span>基于YUM安装
+yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>pcre-devel
+</code></pre></div>
+<p>Error 3 :</p>
+<p>!image-20250815111510486](/images/image-20250815111510486.png)</p>
+<blockquote>
+<p>清除所有编译 </p>
+<p><code>make clean</code></p>
+</blockquote>
+<h1 id="_10">下午:</h1>
+<p>目标：</p>
+<ul>
+<li>[ ] 解决上午的疑难杂症</li>
+</ul>
+<blockquote>
+<p>YUM 源：基于本地（ISO）</p>
+<ol>
+<li>加载：将ISO文件放置在虚拟光驱中</li>
+<li>/dev/sr0</li>
+<li>挂载： mount  /dev/sr0  /mnt</li>
+<li><code>/etc/yum.repos.d/local.repo</code></li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>[ ] 简单了解httpd的服务配置文件</p>
+</li>
+<li>
+<p>[ ] 修改配置文件</p>
+</li>
+<li>
+<p>[ ] 了解http工作模式</p>
+</li>
+</ul>
+<h2 id="httpd_1">关于Httpd 服务的相关配置文件</h2>
+<blockquote>
+<p>如果基于YUM的安装服务；基本所有的配置会在<code>/etc/</code></p>
+<p>源码是自己定义的存放目录</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># tree   -L 1  . </span>
+.
+├──<span class="w"> </span>bin<span class="w">    </span><span class="c1">#二进制执行文件</span>
+├──<span class="w"> </span>build<span class="w">  </span><span class="c1">#构建内容</span>
+├──<span class="w"> </span>cgi-bin<span class="w">  </span><span class="c1">#CGI的插件二进制执行文件</span>
+├──<span class="w"> </span>conf<span class="w">   </span><span class="c1">#存放配置文件目录</span>
+├──<span class="w"> </span>error<span class="w">  </span><span class="c1">#存放服务启动错误信息</span>
+├──<span class="w"> </span>htdocs<span class="w">  </span><span class="c1">#存放项目的位置(默认)</span>
+├──<span class="w"> </span>logs<span class="w">    </span><span class="c1">#存放日志文件的目录</span>
+└──<span class="w"> </span>modules<span class="w"> </span><span class="c1">#存放模块</span>
+
+<span class="m">13</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">0</span><span class="w"> </span>files
+</code></pre></div>
+<p>配置文件详解：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>conf<span class="o">]</span><span class="c1"># grep  -v  &#39;^#&#39;  httpd.conf  | grep -v  &#39;^$&#39; </span>
+
+<span class="c1">#定义服务的根目录</span>
+ServerRoot<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http/&quot;</span>
+<span class="c1">#定义监听地址及端口</span>
+Listen<span class="w">  </span><span class="m">192</span>.168.19.181:80
+<span class="c1">#定义模块</span>
+LoadModule<span class="w"> </span>authn_file_module<span class="w"> </span>modules/mod_authn_file.so
+LoadModule<span class="w"> </span>authn_core_module<span class="w"> </span>modules/mod_authn_core.so
+LoadModule<span class="w"> </span>authz_host_module<span class="w"> </span>modules/mod_authz_host.so
+LoadModule<span class="w"> </span>authz_groupfile_module<span class="w"> </span>modules/mod_authz_groupfile.so
+LoadModule<span class="w"> </span>authz_user_module<span class="w"> </span>modules/mod_authz_user.so
+LoadModule<span class="w"> </span>authz_core_module<span class="w"> </span>modules/mod_authz_core.so
+LoadModule<span class="w"> </span>access_compat_module<span class="w"> </span>modules/mod_access_compat.so
+LoadModule<span class="w"> </span>auth_basic_module<span class="w"> </span>modules/mod_auth_basic.so
+LoadModule<span class="w"> </span>reqtimeout_module<span class="w"> </span>modules/mod_reqtimeout.so
+LoadModule<span class="w"> </span>filter_module<span class="w"> </span>modules/mod_filter.so
+LoadModule<span class="w"> </span>mime_module<span class="w"> </span>modules/mod_mime.so
+LoadModule<span class="w"> </span>log_config_module<span class="w"> </span>modules/mod_log_config.so
+LoadModule<span class="w"> </span>env_module<span class="w"> </span>modules/mod_env.so
+LoadModule<span class="w"> </span>headers_module<span class="w"> </span>modules/mod_headers.so
+LoadModule<span class="w"> </span>setenvif_module<span class="w"> </span>modules/mod_setenvif.so
+LoadModule<span class="w"> </span>version_module<span class="w"> </span>modules/mod_version.so
+LoadModule<span class="w"> </span>unixd_module<span class="w"> </span>modules/mod_unixd.so
+LoadModule<span class="w"> </span>status_module<span class="w"> </span>modules/mod_status.so
+LoadModule<span class="w"> </span>autoindex_module<span class="w"> </span>modules/mod_autoindex.so
+LoadModule<span class="w"> </span>dir_module<span class="w"> </span>modules/mod_dir.so
+LoadModule<span class="w"> </span>alias_module<span class="w"> </span>modules/mod_alias.so
+
+
+<span class="c1">#定义服务管理的用户和组</span>
+&lt;IfModule<span class="w"> </span>unixd_module&gt;
+User<span class="w"> </span>daemon
+Group<span class="w"> </span>daemon
+&lt;/IfModule&gt;
+<span class="c1"># 定义服务的管理员</span>
+<span class="c1">#ServerAdmin you@example.com</span>
+ServerName<span class="w">  </span>web-server.com
+<span class="c1">#定义用户访问的路径</span>
+&lt;Directory<span class="w"> </span>/&gt;
+<span class="w">    </span>AllowOverride<span class="w"> </span>none
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>denied
+&lt;/Directory&gt;
+
+<span class="c1">#定义文档的根目录</span>
+DocumentRoot<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//htdocs&quot;</span>
+<span class="c1">#定义权限</span>
+&lt;Directory<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//htdocs&quot;</span>&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Possible values for the Options directive are &quot;None&quot;, &quot;All&quot;,</span>
+<span class="w">    </span><span class="c1"># or any combination of:</span>
+<span class="w">    </span><span class="c1">#   Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Note that &quot;MultiViews&quot; must be named *explicitly* --- &quot;Options All&quot;</span>
+<span class="w">    </span><span class="c1"># doesn&#39;t give it to you.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The Options directive is both complicated and important.  Please see</span>
+<span class="w">    </span><span class="c1"># http://httpd.apache.org/docs/2.4/mod/core.html#options</span>
+<span class="w">    </span><span class="c1"># for more information.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>Options<span class="w"> </span>Indexes<span class="w"> </span>FollowSymLinks
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AllowOverride controls what directives may be placed in .htaccess files.</span>
+<span class="w">    </span><span class="c1"># It can be &quot;All&quot;, &quot;None&quot;, or any combination of the keywords:</span>
+<span class="w">    </span><span class="c1">#   AllowOverride FileInfo AuthConfig Limit</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Controls who can get stuff from this server.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>granted
+&lt;/Directory&gt;
+
+<span class="c1"># 定义用户的文件的名称</span>
+&lt;IfModule<span class="w"> </span>dir_module&gt;
+<span class="w">    </span>DirectoryIndex<span class="w"> </span>index.html
+&lt;/IfModule&gt;
+<span class="c1"># 如果请求的URL地址中以`.ht*`后缀名；都拒绝</span>
+&lt;Files<span class="w"> </span><span class="s2">&quot;.ht*&quot;</span>&gt;
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>denied
+&lt;/Files&gt;
+
+<span class="c1">#定义错误日志</span>
+ErrorLog<span class="w"> </span><span class="s2">&quot;logs/error_log&quot;</span>
+<span class="c1">#定义日志的级别</span>
+LogLevel<span class="w"> </span>warn
+
+<span class="c1"># 定义日志格式的模块</span>
+&lt;IfModule<span class="w"> </span>log_config_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The following directives define some format nicknames for use with</span>
+<span class="w">    </span><span class="c1"># a CustomLog directive (see below).</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot;&quot;</span><span class="w"> </span>combined
+<span class="w">    </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b&quot;</span><span class="w"> </span>common
+<span class="w">    </span>&lt;IfModule<span class="w"> </span>logio_module&gt;
+<span class="w">      </span><span class="c1"># You need to enable mod_logio.c to use %I and %O</span>
+<span class="w">      </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot; %I %O&quot;</span><span class="w"> </span>combinedio
+<span class="w">    </span>&lt;/IfModule&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The location and format of the access logfile (Common Logfile Format).</span>
+<span class="w">    </span><span class="c1"># If you do not define any access logfiles within a &lt;VirtualHost&gt;</span>
+<span class="w">    </span><span class="c1"># container, they will be logged here.  Contrariwise, if you *do*</span>
+<span class="w">    </span><span class="c1"># define per-&lt;VirtualHost&gt; access logfiles, transactions will be</span>
+<span class="w">    </span><span class="c1"># logged therein and *not* in this file.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>CustomLog<span class="w"> </span><span class="s2">&quot;logs/access_log&quot;</span><span class="w"> </span>common
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If you prefer a logfile with access, agent, and referer information</span>
+<span class="w">    </span><span class="c1"># (Combined Logfile Format) you can use the following directive.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#CustomLog &quot;logs/access_log&quot; combined</span>
+&lt;/IfModule&gt;
+
+<span class="c1">#定义别名的模块</span>
+&lt;IfModule<span class="w"> </span>alias_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Redirect: Allows you to tell clients about documents that used to </span>
+<span class="w">    </span><span class="c1"># exist in your server&#39;s namespace, but do not anymore. The client </span>
+<span class="w">    </span><span class="c1"># will make a new request for the document at its new location.</span>
+<span class="w">    </span><span class="c1"># Example:</span>
+<span class="w">    </span><span class="c1"># Redirect permanent /foo http://www.example.com/bar</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Alias: Maps web paths into filesystem paths and is used to</span>
+<span class="w">    </span><span class="c1"># access content that does not live under the DocumentRoot.</span>
+<span class="w">    </span><span class="c1"># Example:</span>
+<span class="w">    </span><span class="c1"># Alias /webpath /full/filesystem/path</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If you include a trailing / on /webpath then the server will</span>
+<span class="w">    </span><span class="c1"># require it to be present in the URL.  You will also likely</span>
+<span class="w">    </span><span class="c1"># need to provide a &lt;Directory&gt; section to allow access to</span>
+<span class="w">    </span><span class="c1"># the filesystem path.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># ScriptAlias: This controls which directories contain server scripts. </span>
+<span class="w">    </span><span class="c1"># ScriptAliases are essentially the same as Aliases, except that</span>
+<span class="w">    </span><span class="c1"># documents in the target directory are treated as applications and</span>
+<span class="w">    </span><span class="c1"># run by the server when requested rather than as documents sent to the</span>
+<span class="w">    </span><span class="c1"># client.  The same rules about trailing &quot;/&quot; apply to ScriptAlias</span>
+<span class="w">    </span><span class="c1"># directives as to Alias.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>ScriptAlias<span class="w"> </span>/cgi-bin/<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//cgi-bin/&quot;</span>
+&lt;/IfModule&gt;
+&lt;IfModule<span class="w"> </span>cgid_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># ScriptSock: On threaded servers, designate the path to the UNIX</span>
+<span class="w">    </span><span class="c1"># socket used to communicate with the CGI daemon of mod_cgid.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#Scriptsock cgisock</span>
+&lt;/IfModule&gt;
+&lt;Directory<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//cgi-bin&quot;</span>&gt;
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">    </span>Options<span class="w"> </span>None
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>granted
+&lt;/Directory&gt;
+&lt;IfModule<span class="w"> </span>headers_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Avoid passing HTTP_PROXY environment to CGI&#39;s on this or any proxied</span>
+<span class="w">    </span><span class="c1"># backend servers which have lingering &quot;httpoxy&quot; defects.</span>
+<span class="w">    </span><span class="c1"># &#39;Proxy&#39; request header is undefined by the IETF, not listed by IANA</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>RequestHeader<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>Proxy<span class="w"> </span>early
+&lt;/IfModule&gt;
+
+
+<span class="c1"># 定义访问类型</span>
+&lt;IfModule<span class="w"> </span>mime_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># TypesConfig points to the file containing the list of mappings from</span>
+<span class="w">    </span><span class="c1"># filename extension to MIME-type.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>TypesConfig<span class="w"> </span>conf/mime.types
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddType allows you to add to or override the MIME configuration</span>
+<span class="w">    </span><span class="c1"># file specified in TypesConfig for specific file types.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddType application/x-gzip .tgz</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddEncoding allows you to have certain browsers uncompress</span>
+<span class="w">    </span><span class="c1"># information on the fly. Note: Not all browsers support this.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddEncoding x-compress .Z</span>
+<span class="w">    </span><span class="c1">#AddEncoding x-gzip .gz .tgz</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If the AddEncoding directives above are commented-out, then you</span>
+<span class="w">    </span><span class="c1"># probably should define those extensions to indicate media types:</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>AddType<span class="w"> </span>application/x-compress<span class="w"> </span>.Z
+<span class="w">    </span>AddType<span class="w"> </span>application/x-gzip<span class="w"> </span>.gz<span class="w"> </span>.tgz
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddHandler allows you to map certain file extensions to &quot;handlers&quot;:</span>
+<span class="w">    </span><span class="c1"># actions unrelated to filetype. These can be either built into the server</span>
+<span class="w">    </span><span class="c1"># or added with the Action directive (see below)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># To use CGI scripts outside of ScriptAliased directories:</span>
+<span class="w">    </span><span class="c1"># (You will also need to add &quot;ExecCGI&quot; to the &quot;Options&quot; directive.)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddHandler cgi-script .cgi</span>
+<span class="w">    </span><span class="c1"># For type maps (negotiated resources):</span>
+<span class="w">    </span><span class="c1">#AddHandler type-map var</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Filters allow you to process content before it is sent to the client.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># To parse .shtml files for server-side includes (SSI):</span>
+<span class="w">    </span><span class="c1"># (You will also need to add &quot;Includes&quot; to the &quot;Options&quot; directive.)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddType text/html .shtml</span>
+<span class="w">    </span><span class="c1">#AddOutputFilter INCLUDES .shtml</span>
+&lt;/IfModule&gt;
+<span class="c1">#定义代理的模块</span>
+&lt;IfModule<span class="w"> </span>proxy_html_module&gt;
+Include<span class="w"> </span>conf/extra/proxy-html.conf
+&lt;/IfModule&gt;
+<span class="c1">#定义https加密传输的模块</span>
+&lt;IfModule<span class="w"> </span>ssl_module&gt;
+SSLRandomSeed<span class="w"> </span>startup<span class="w"> </span><span class="nb">builtin</span>
+SSLRandomSeed<span class="w"> </span>connect<span class="w"> </span><span class="nb">builtin</span>
+&lt;/IfModule&gt;
+</code></pre></div>
+<h2 id="_11">实现虚拟主</h2>
+<blockquote>
+<p>为什么使用虚拟主机</p>
+<p>几种方式实现</p>
+</blockquote>
+<ul>
+<li>[ ] 基于IP</li>
+<li>[ ] 基于端口</li>
+<li>[ ] 基于域名</li>
+</ul>
+<p>基于IP地址创建虚拟主机</p>
+<blockquote>
+<p>注意： 添加一块网卡</p>
+</blockquote>
+<ol>
+<li>修改配置(打开支持引入虚拟主机配置文件)</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Virtual hosts</span>
+Include<span class="w"> </span>conf/extra/httpd-vhosts.conf
+</code></pre></div>
+<ol>
+<li>
+<p>定义虚拟主机</p>
+</li>
+<li>
+<p>创建项目</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir /usr/local/apache1/http/htdocs/test-project </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># vim   /usr/local/apache1/http/htdocs/test-project/index.html </span>
+&lt;html&gt;
+&lt;head&gt;
+<span class="w">    </span>&lt;meta<span class="w"> </span><span class="nv">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>&gt;
+<span class="w">    </span>&lt;!--<span class="w"> </span>其他头部内容<span class="w"> </span>--&gt;
+&lt;/head&gt;
+
+&lt;h1&gt;hello<span class="w"> </span>vhost<span class="w"> </span>基于IP<span class="w"> </span>&lt;/h1&gt;
+&lt;/html&gt;
+</code></pre></div>
+</li>
+<li>
+<p>配置虚拟主机</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1">#vim  /usr/local/apache1/http/conf/extra/httpd-vhosts.conf </span>
+
+&lt;VirtualHost<span class="w"> </span><span class="m">192</span>.168.19.120&gt;
+<span class="w">    </span><span class="c1">#ServerAdmin webmaster@dummy-host2.example.com</span>
+<span class="w">    </span><span class="c1">#定义项目目录</span>
+<span class="w">    </span>DocumentRoot<span class="w"> </span><span class="s2">&quot;htdocs/test-project&quot;</span>
+<span class="w">    </span><span class="c1">#ServerName dummy-host2.example.com</span>
+<span class="w">    </span>定义日志
+<span class="w">    </span>ErrorLog<span class="w"> </span><span class="s2">&quot;logs/test-project-error_log&quot;</span>
+<span class="w">    </span>CustomLog<span class="w"> </span><span class="s2">&quot;logs/test-project-access_log&quot;</span><span class="w"> </span>common
+&lt;/VirtualHost&gt;
+</code></pre></div>
+</li>
+<li>
+<p>重启服务</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/apache1/http/bin/apachectl  -k stop ^C</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/apache1/http/bin/apachectl</span>
+</code></pre></div>
+<ol>
+<li>验证：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.查看监听端口是否启动
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># lsof  -i:80</span>
+COMMAND<span class="w">  </span>PID<span class="w">   </span>USER<span class="w">   </span>FD<span class="w">   </span>TYPE<span class="w"> </span>DEVICE<span class="w"> </span>SIZE/OFF<span class="w"> </span>NODE<span class="w"> </span>NAME
+httpd<span class="w">   </span><span class="m">1714</span><span class="w">   </span>root<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1715</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1716</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1717</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1806</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+
+<span class="m">2</span>.检查虚拟主机的日志是否产生
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls  /usr/local/apache1/http/logs/</span>
+access_log<span class="w">               </span>httpd.pid<span class="w">                </span>test-project-error_log<span class="w">   </span>
+error_log<span class="w">                </span>test-project-access_log<span class="w">  </span>
+
+<span class="m">3</span>.<span class="w"> </span>基于本机
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.19.181</span>
+&lt;!DOCTYPE<span class="w"> </span>HTML<span class="w"> </span>PUBLIC<span class="w"> </span><span class="s2">&quot;-//W3C//DTD HTML 3.2 Final//EN&quot;</span>&gt;
+&lt;html&gt;
+<span class="w"> </span>&lt;head&gt;
+<span class="w">  </span>&lt;title&gt;Index<span class="w"> </span>of<span class="w"> </span>/&lt;/title&gt;
+<span class="w"> </span>&lt;/head&gt;
+<span class="w"> </span>&lt;body&gt;
+&lt;h1&gt;Index<span class="w"> </span>of<span class="w"> </span>/&lt;/h1&gt;
+&lt;ul&gt;&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;abc/&quot;</span>&gt;<span class="w"> </span>abc/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;index.html_bak&quot;</span>&gt;<span class="w"> </span>index.html_bak&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;test-project/&quot;</span>&gt;<span class="w"> </span>test-project/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/body&gt;&lt;/html&gt;
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.19.120</span>
+&lt;html&gt;
+&lt;head&gt;
+<span class="w">    </span>&lt;meta<span class="w"> </span><span class="nv">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>&gt;
+<span class="w">    </span>&lt;!--<span class="w"> </span>其他头部内容<span class="w"> </span>--&gt;
+&lt;/head&gt;
+
+&lt;h1&gt;hello<span class="w"> </span>vhost<span class="w"> </span>基于IP<span class="w"> </span>&lt;/h1&gt;
+&lt;/html&gt;
+</code></pre></div>
+<p>客户端验证：</p>
+<p>!image-20250815170519717](/images/image-20250815170519717.png)</p></article>
+<article class="doc-section" id="Tomcat"><h2>Tomcat</h2><h1 id="tomcat">Tomcat</h1>
+<blockquote>
+<p>httpd   nginx   Tomcat</p>
+</blockquote>
+<p>Tomcat 是基于jsp 开发 </p>
+<ul>
+<li>管理Java应用</li>
+<li>页面比较漂亮</li>
+</ul>
+<h2 id="_1">目标：</h2>
+<ul>
+<li>[ ] 什么是tomcat</li>
+<li>[ ] 什么使用使用Tomcat</li>
+<li>[ ] 如何部署Tomcat </li>
+<li>[ ] 如何使用Tomcat </li>
+<li>[ ] 发布应用</li>
+<li>[ ] 部署Java应用的时候不使用Tomcat</li>
+<li>[ ] 结束</li>
+</ul>
+<h2 id="tomcat_1">二、什么使用使用Tomcat</h2>
+<ol>
+<li>如果是使用<code>springboot</code>框架 开发 就不能使用Tomcat发布</li>
+<li>测试环境会使用<code>Tomcat</code> 内存溢出(使用)</li>
+<li>微服务不能Tomcat</li>
+<li>自动化任务(可能)</li>
+</ol>
+<h2 id="tomcat_2">三、 部署Tomcat</h2>
+<blockquote>
+<p>你要想运行java 的应用必须满足一个条件：JDK</p>
+</blockquote>
+<p>3.1 检查Java环境</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># java </span>
+bash:<span class="w"> </span>java:<span class="w"> </span>未找到命
+</code></pre></div>
+<p>3.2 安装Java环境</p>
+<ul>
+<li>
+<ol>
+<li>Openjdk</li>
+</ol>
+</li>
+<li>官方JDK</li>
+<li>官方<code>Jdk</code></li>
+</ul>
+<p>下载Jdk并安装jdk</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/<span class="w"> </span>scp<span class="w"> </span>Downloads/jdk-17.0.16_linux-x64_bin.tar.gz<span class="w"> </span>root@192.168.19.181:~
+root@192.168.19.181<span class="s1">&#39;s password: </span>
+<span class="s1">jdk-17.0.16_linux-x64_bin.tar.gz                                      100%  174MB  32.3MB/s   00:05 </span>
+
+
+<span class="s1">[root@nginx-proxy ~]# scp  jdk-17.0.16_linux-x64_bin.tar.gz 192.168.18.30:~</span>
+<span class="s1">root@192.168.18.30&#39;</span>s<span class="w"> </span>password:<span class="w"> </span>
+jdk-17.0.16_linux-x64_bin.tar.gz<span class="w">  </span>
+
+
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir   /usr/local/java</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar xf  jdk-17.0.16_linux-x64_bin.tar.gz  -C /usr/local/java/</span>
+
+
+
+<span class="c1">#配置Java</span>
+</code></pre></div>
+<p>配置环境变量</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#全局变量 所有用户都可以使用</span>
+<span class="c1">#局部变量 某个用户定义变量</span>
+<span class="c1">#临时变量</span>
+</code></pre></div>
+<p>临时变量：</p>
+<blockquote>
+<p>在现有终端上配置变量</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># #临时</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># export  JAVA_HOME=/usr/local/java/jdk-17.0.16/</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># export  PATH=$PATH:$JAVA_HOME/bin</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># java</span>
+</code></pre></div>
+<p>局部变量:</p>
+<blockquote>
+<p>创建普通用户配置环境变量</p>
+</blockquote>
+<p>创建用户</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># useradd  abbott</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># passwd abbott</span>
+<span class="c1"># 创建用户且加入wheel组</span>
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>sudo<span class="w"> </span>useradd<span class="w">  </span><span class="nb">test</span><span class="w">  </span>-G<span class="w"> </span>wheel
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>passwd<span class="w">  </span><span class="nb">test</span><span class="w"> </span>
+passwd：只有根用户才能指定用户名。
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>sudo<span class="w">  </span>passwd<span class="w">  </span><span class="nb">test</span><span class="w"> </span>
+</code></pre></div>
+<p>授予可以调用<code>sudo</code>的权限(修改配置文件 <code>/etc/sudoers</code>)</p>
+<div class="highlight"><pre><span></span><code><span class="c1">## Allow root to run any commands anywhere </span>
+root<span class="w">    </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+abbott<span class="w">  </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+
+<span class="c1">## Allows people in group wheel to run all commands</span>
+%wheel<span class="w">  </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+</code></pre></div>
+<p>配置局部变量：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>cat<span class="w"> </span>.bashrc<span class="w"> </span>
+<span class="c1"># .bashrc</span>
+
+<span class="c1"># Source global definitions</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span>/etc/bashrc<span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span>.<span class="w"> </span>/etc/bashrc
+<span class="k">fi</span>
+
+<span class="c1"># Uncomment the following line if you don&#39;t like systemctl&#39;s auto-paging feature:</span>
+<span class="c1"># export SYSTEMD_PAGER=</span>
+
+<span class="c1"># User specific aliases and functions</span>
+<span class="nb">export</span><span class="w">  </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/java/jdk-17.0.16/
+<span class="nb">export</span><span class="w">  </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span><span class="nb">source</span><span class="w">  </span>.bashrc<span class="w">   </span><span class="c1">#加载/刷新配置</span>
+</code></pre></div>
+<p>测试：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>java
+用法：java<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>&lt;主类&gt;<span class="w"> </span><span class="o">[</span>args...<span class="o">]</span>
+<span class="w">           </span>（执行类）
+<span class="w">   </span>或<span class="w">  </span>java<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>-jar<span class="w"> </span>&lt;jar<span class="w"> </span>文件&gt;<span class="w"> </span><span class="o">[</span>args...<span class="o">]</span>
+<span class="w">           </span>（执行<span class="w"> </span>jar<span class="w"> </span>文件）
+</code></pre></div>
+<p>全局变量</p>
+<blockquote>
+<p><code>/etc/profile</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># vim /etc/profile</span>
+.....
+<span class="nb">unset</span><span class="w"> </span>i
+<span class="nb">unset</span><span class="w"> </span>-f<span class="w"> </span>pathmunge
+
+<span class="nb">export</span><span class="w">  </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/java/jdk-17.0.16/
+<span class="nb">export</span><span class="w">  </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># source  /etc/profile</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># java</span>
+</code></pre></div>
+<p>配置tomcat</p>
+<ul>
+<li>解压且启动</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls</span>
+anaconda-ks.cfg<span class="w">  </span>apache-tomcat-10.1.44.tar.gz<span class="w">  </span>jdk-17.0.16_linux-x64_bin.tar.gz<span class="w">  </span>nginx-1.28.0.tar.gz
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir  /usr/local/tomcat  &amp;&amp;  tar xf  apache-tomcat-10.1.44.tar.gz  -C /usr/local/tomcat  </span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cd /usr/local/tomcat/</span>
+
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># bin/startup.sh </span>
+Using<span class="w"> </span>CATALINA_BASE:<span class="w">   </span>/usr/local/tomcat/tomcat10
+Using<span class="w"> </span>CATALINA_HOME:<span class="w">   </span>/usr/local/tomcat/tomcat10
+Using<span class="w"> </span>CATALINA_TMPDIR:<span class="w"> </span>/usr/local/tomcat/tomcat10/temp
+Using<span class="w"> </span>JRE_HOME:<span class="w">        </span>/usr/local/java/jdk-17.0.16
+Using<span class="w"> </span>CLASSPATH:<span class="w">       </span>/usr/local/tomcat/tomcat10/bin/bootstrap.jar:/usr/local/tomcat/tomcat10/bin/tomcat-juli.jar
+Using<span class="w"> </span>CATALINA_OPTS:<span class="w">   </span>
+Tomcat<span class="w"> </span>started.
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># ss  -luntp </span>
+Netid<span class="w">  </span>State<span class="w">      </span>Recv-Q<span class="w"> </span>Send-Q<span class="w">    </span>Local<span class="w"> </span>Address:Port<span class="w">                   </span>Peer<span class="w"> </span>Address:Port<span class="w">              </span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">1</span><span class="w">        </span><span class="o">[</span>::ffff:127.0.0.1<span class="o">]</span>:8005<span class="w">                           </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;java&quot;</span>,pid<span class="o">=</span><span class="m">18500</span>,fd<span class="o">=</span><span class="m">51</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">100</span><span class="w">                </span><span class="o">[</span>::<span class="o">]</span>:8080<span class="w">                           </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;java&quot;</span>,pid<span class="o">=</span><span class="m">18500</span>,fd<span class="o">=</span><span class="m">42</span><span class="o">))</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<ul>
+<li>验证</li>
+</ul>
+<blockquote>
+<p>使用浏览器：http://serverip:8080</p>
+</blockquote>
+<p>!image-20250820105034915](/images/image-20250820105034915.png)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --permanent  --add-port=8080/tcp</span>
+success
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --reload </span>
+cdsuccess
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --list-all</span>
+</code></pre></div>
+<h3 id="_2">端口：</h3>
+<blockquote>
+<p>8080 #对外提供服务端口号</p>
+<p>8005 #管理端口</p>
+</blockquote>
+<h3 id="tomcat_3">Tomcat 目录</h3>
+<div class="highlight"><pre><span></span><code>bin<span class="w">   </span><span class="c1">#二进制执行文件         </span>
+conf<span class="w">  </span><span class="c1">#配置文件目录           </span>
+lib<span class="w">   </span><span class="c1">#库文件目录</span>
+logs<span class="w">  </span><span class="c1">#日志目录</span>
+webapps<span class="w">  </span><span class="c1">#web应用目录</span>
+</code></pre></div>
+<h3 id="tomcat_4">管理Tomcat</h3>
+<blockquote>
+<p>用户可以访问8005端口</p>
+</blockquote>
+<ol>
+<li>修改<code>context.xml</code>  允许客户端使用IP地址请求8005端口；默认仅限于<code>127.0.0.1</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>logs<span class="o">]</span><span class="c1"># find  /  -name  context.xml</span>
+/usr/local/tomcat/tomcat10/conf/context.xml
+/usr/local/tomcat/tomcat10/webapps/docs/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/examples/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/host-manager/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/manager/META-INF/context.xml
+
+
+
+<span class="c1">#依次将上面检索`context.xml`关于修改将127的地址修改&quot;^.*$&quot;</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># cat /usr/local/tomcat/tomcat10/webapps/manager/META-INF/context.xml | grep allow</span>
+<span class="w">         </span><span class="nv">allow</span><span class="o">=</span><span class="s2">&quot;^.*</span>$<span class="s2">&quot;</span><span class="w"> </span>/&gt;
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># </span>
+
+<span class="c1">#重启服务</span>
+</code></pre></div>
+<p>!image-20250820115437939](/images/image-20250820115437939.png)</p>
+<ol>
+<li>配置用户/角色和密码</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@tomcat-server tomcat10]# cat  conf/tomcat-users.xml 
+&lt;tomcat-users xmlns=&quot;http://tomcat.apache.org/xml&quot;
+              xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+              xsi:schemaLocation=&quot;http://tomcat.apache.org/xml tomcat-users.xsd&quot;
+              version=&quot;1.0&quot;&gt;
+  &lt;role rolename=&quot;manager-gui&quot;/&gt;
+  &lt;user username=&quot;tomcat&quot; password=&quot;tomcat&quot; roles=&quot;manager-gui&quot;/&gt;
+  &lt;role rolename=&quot;admin-gui&quot;/&gt;
+  &lt;user username=&quot;tomcat&quot; password=&quot;tomcat&quot; roles=&quot;admin-gui&quot;/&gt;
+&lt;/tomcat-users&gt;
+</code></pre></div>
+<h3 id="java">发布应用 Java：</h3>
+<blockquote>
+<p>java应用都会构建为<code>.jar || .war</code>  包</p>
+</blockquote>
+<ol>
+<li>利用<code>Tomcat</code>发布应用</li>
+<li>是用Java命令管理应用</li>
+</ol>
+<h4 id="tomcat_5">利用<code>Tomcat</code>发布应用</h4>
+<p>案例： <code>jenkins</code> </p>
+<p>获取地址： <a href="https://www.jenkins.io/">https://www.<strong>jenkins</strong>.io</a></p>
+<p>!image-20250820152152134](/images/image-20250820152152134.png)</p>
+<p>第二种方案：</p>
+<blockquote>
+<p>直接将应用的war包推送到webapps目录下</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># cd webapps/</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>webapps<span class="o">]</span><span class="c1"># ls</span>
+docs<span class="w">  </span>examples<span class="w">  </span>host-manager<span class="w">  </span>jenkins<span class="w">  </span>jenkins.war<span class="w">  </span>manager<span class="w">  </span>ROOT
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>webapps<span class="o">]</span><span class="c1"># pwd</span>
+/usr/local/tomcat/tomcat10/webapps
+</code></pre></div>
+<h4 id="java_1">使用Java命令管理应用</h4>
+<div class="highlight"><pre><span></span><code><span class="c1">#语法</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># java  -jar  *.war  || *.jar</span>
+
+<span class="c1">#前台运行</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># java -jar jenkins.war </span>
+Running<span class="w"> </span>from:<span class="w"> </span>/usr/local/jenkins.war
+webroot:<span class="w"> </span>/root/.jenkins/war
+<span class="c1"># 后台运行并且输出日志</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># nohup  java -jar jenkins.war   &amp;  </span>
+<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="m">9763</span>
+</code></pre></div>
+<p>查看后台运行的进程</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># jobs   #查看后台运行或者停止的任务</span>
+<span class="o">[</span><span class="m">1</span><span class="o">]</span>-<span class="w">  </span>运行中<span class="w">               </span>nohup<span class="w"> </span>java<span class="w"> </span>-jar<span class="w"> </span>jenkins.war<span class="w"> </span><span class="p">&amp;</span>
+<span class="o">[</span><span class="m">2</span><span class="o">]</span>+<span class="w">  </span>已停止<span class="w">               </span>vim<span class="w"> </span>abc
+
+
+<span class="c1">#将后台的任务调度到前台运行</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># fg  [后台任务的编号]</span>
+
+<span class="c1"># 查看Java应用的进程命令</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># jps  </span>
+<span class="m">9763</span><span class="w"> </span>war
+</code></pre></div>
+<p>分析：</p>
+<blockquote>
+<p><code>jps</code> 常与其他 Java 工具（如 <code>jstat</code>、<code>jmap</code>、<code>jstack</code> 等）配合使用，用于 Java 应用程序的监控和问题排查。</p>
+</blockquote>
+<p>错误信息：</p>
+<blockquote>
+<p>运行jenkins 的检测到系统缺少字体</p>
+</blockquote>
+<p>!image-20250820145346963](/images/image-20250820145346963.png)</p>
+<p>解决方法：</p>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>fontconfig<span class="w"> </span>freetype-devel
+</code></pre></div>
+<h2 id="_3">最终实现结果：</h2>
+<p>!image-20250820155117253](/images/image-20250820155117253.png)</p>
+<h1 id="_4">命令快捷方式：</h1>
+<div class="highlight"><pre><span></span><code>!<span class="o">{</span>command/编号<span class="o">}</span>
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># !firewall-cmd^C</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># !116</span>
+
+ctrl+r<span class="w">   </span><span class="c1">#检索历史命令</span>
+</code></pre></div></article>
+<article class="doc-section" id="nginx-8-18"><h2>Nginx</h2><h1 id="8-18">8-18</h1>
+<p>目标：</p>
+<ul>
+<li>[x] 解决问题及补充知识点</li>
+<li>[x] nginx概述</li>
+<li>[x] Nginx 基本使用及配置</li>
+<li>[x] Nginx 代理</li>
+<li>[x] Nginx  负载均衡器</li>
+<li>[ ] Nginx 实战</li>
+</ul>
+<h2 id="nginx">nginx概述</h2>
+<p>Nginx 是一个web 服务器，负载均衡、TCP/UDP协议代理、缓存、代理Email 服务器，也是开源产品，</p>
+<p><a href="https://nginx.org/en/docs/index.html">官网</a></p>
+<h2 id="nginx_1">Nginx 基本使用及配置</h2>
+<h3 id="nginx_2">部署Nginx</h3>
+<p>基于源码</p>
+<ol>
+<li>获取软件包</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># wget https://nginx.org/download/nginx-1.28.0.tar.gz</span>
+</code></pre></div>
+<ol>
+<li>创建管理目录及解压</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx-1.28.0<span class="o">]</span><span class="c1"># mkdir  /usr/local/nginx128</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>nginx-1.28.0<span class="o">]</span><span class="c1"># tar xf  nginx-1.28.0.tar.gz   -C  /usr/local/nginx128/</span>
+</code></pre></div>
+<ol>
+<li>编译安装</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx-1.28.0<span class="o">]</span><span class="c1"># ./configure  \</span>
+&gt;<span class="w"> </span>--prefix<span class="o">=</span>/usr/local/nginx128/<span class="w"> </span><span class="se">\ </span><span class="w"> </span>
+&gt;<span class="w"> </span>--user<span class="o">=</span>www<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--group<span class="o">=</span>www<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-threads<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_ssl_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_v2_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_mp4_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_gzip_static_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_auth_request_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-http_stub_status_module<span class="w">  </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-stream<span class="w">  </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-stream_ssl_module<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span>--with-pcre<span class="w"> </span><span class="se">\ </span>
+
+<span class="o">[</span>root@web-server<span class="w"> </span>nginx-1.28.0<span class="o">]</span><span class="c1"># make  </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>nginx-1.28.0<span class="o">]</span><span class="c1">#  make install</span>
+</code></pre></div>
+<ol>
+<li>创建管理用户</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># useradd  -M  -s /sbin/nologin   www</span>
+</code></pre></div>
+<ol>
+<li>启动服务</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># sbin/nginx  </span>
+
+<span class="c1">#验证</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># lsof  -i:80</span>
+COMMAND<span class="w">   </span>PID<span class="w"> </span>USER<span class="w">   </span>FD<span class="w">   </span>TYPE<span class="w"> </span>DEVICE<span class="w"> </span>SIZE/OFF<span class="w"> </span>NODE<span class="w"> </span>NAME
+nginx<span class="w">   </span><span class="m">15421</span><span class="w"> </span>root<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w">  </span><span class="m">37867</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">15422</span><span class="w">  </span>www<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w">  </span><span class="m">37867</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>测试</li>
+</ol>
+<p>!image-20250818103028066](/images/image-20250818103028066.png)</p>
+<h3 id="_1">理解配置文件</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># tree   -L 1 . </span>
+.
+├──<span class="w"> </span>conf<span class="w">    </span><span class="c1">#服务配置文件管理目录</span>
+├──<span class="w"> </span>html<span class="w">    </span><span class="c1">#前端项目存放的目录</span>
+├──<span class="w"> </span>logs<span class="w">    </span><span class="c1">#服务日志的目录</span>
+├──<span class="w"> </span>sbin<span class="w">    </span><span class="c1">#二进制执行文件目录</span>
+</code></pre></div>
+<p>住配置文件解析</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#全局定义的模块</span>
+user<span class="w">  </span>www<span class="p">;</span>
+worker_processes<span class="w">  </span><span class="m">1</span><span class="p">;</span><span class="w">   </span><span class="c1">#工作进程 自动 根据机器性能</span>
+<span class="c1">#事件定义定义模块</span>
+events<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>worker_connections<span class="w">  </span><span class="m">1024</span><span class="p">;</span><span class="w">  </span>工作进程的连接数
+<span class="o">}</span>
+<span class="c1">#http服务定义的模块</span>
+http<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>include<span class="w">       </span>mime.types<span class="p">;</span><span class="w">   </span><span class="c1">#引入一个http类型文件</span>
+<span class="w">    </span>default_type<span class="w">  </span>application/octet-stream<span class="p">;</span>
+<span class="w">   </span><span class="c1">#日志格式</span>
+<span class="w">    </span>log_format<span class="w">  </span>main<span class="w">  </span><span class="s1">&#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;</span>
+<span class="w">                      </span><span class="s1">&#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;</span>
+<span class="w">                      </span><span class="s1">&#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;</span><span class="p">;</span>
+<span class="c1">#访问日志</span>
+<span class="w">    </span>access_log<span class="w">  </span>logs/access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="c1">#发送文件 开启</span>
+<span class="w">    </span>sendfile<span class="w">        </span>on<span class="p">;</span>
+<span class="w">    </span><span class="c1">#tcp_nopush     on;</span>
+<span class="c1">#连接超时时间 65 单位秒   </span>
+<span class="w">    </span>keepalive_timeout<span class="w">  </span><span class="m">65</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">#gzip  on;  #发送是否压缩</span>
+<span class="c1">#定义server主机</span>
+<span class="w">    </span>sever<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>listen<span class="w">       </span><span class="m">80</span><span class="p">;</span>
+<span class="w">      </span>server_name<span class="w">  </span>localhost<span class="p">;</span>
+<span class="w">      </span><span class="c1">#匹配规则</span>
+<span class="w">      </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>root<span class="w">   </span>html<span class="p">;</span>
+<span class="w">            </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">      </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="c1">#    include  /usr/local/nginx128/conf/vhosts/*.conf;  #引入conf.d下的所有以.conf文件结尾的文件</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>定义匹配</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#默认请求        </span>
+<span class="w">        </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>root<span class="w">   </span>html<span class="p">;</span>
+<span class="w">            </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="c1">#根据二级目录匹配</span>
+<span class="w">        </span>location<span class="w"> </span>/api<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>root<span class="w">   </span>html<span class="p">;</span>
+<span class="w">            </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="c1">#根据二级目录匹配</span>
+<span class="w">        </span>location<span class="w"> </span>/interface<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>root<span class="w">   </span>html/api<span class="p">;</span>
+<span class="w">            </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="c1">#获取nginx 状态</span>
+<span class="w">        </span>location<span class="w"> </span>/status<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>stub_status<span class="w"> </span>on<span class="p">;</span>
+<span class="w">        </span><span class="c1">#    allow 127.0.0.1;  192.168.19.19</span>
+<span class="w">        </span><span class="c1">#    deny all; </span>
+<span class="w">        </span><span class="o">}</span>
+</code></pre></div>
+<p>目录的结构</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># tree   -L 3  html/</span>
+html/
+├──<span class="w"> </span>50x.html
+├──<span class="w"> </span>api
+│<span class="w">   </span>├──<span class="w"> </span>index.html
+│<span class="w">   </span>└──<span class="w"> </span>interface
+│<span class="w">       </span>└──<span class="w"> </span>index.html
+└──<span class="w"> </span>index.html
+</code></pre></div>
+<p>主索引文件内容</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat  html/index.html </span>
+&lt;html&gt;
+&lt;h1&gt;<span class="w"> </span>hello<span class="w"> </span>nignx<span class="w"> </span>&lt;/h1&gt;
+&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span>http://192.168.19.181/api&gt;api&lt;/a&gt;
+&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span>http://192.168.19.181/interface&gt;interface&lt;/a&gt;
+&lt;/html&gt;
+</code></pre></div>
+<p>!image-20250818114214704](/images/image-20250818114214704.png)</p>
+<h2 id="nginx_3">Nginx 代理</h2>
+<div class="highlight"><pre><span></span><code>graph LR
+
+subgraph proxy
+nginx
+转发
+end
+subgraph 私有server
+web
+mysql
+end
+
+subgraph client
+clinet01  
+end
+client  &lt;-.请求.-&gt; proxy  &lt;--&gt;  私有server
+</code></pre></div>
+<h3 id="_2">正向代理</h3>
+<blockquote>
+<p>正向代理是<strong>客户端（如个人电脑、手机）的 “中间人”</strong>，代表客户端向目标服务器发起请求。客户端需主动配置代理地址，所有请求先发送到代理服务器，再由代理转发至目标服务器，最终将服务器响应回传给客户端。</p>
+</blockquote>
+<h3 id="_3">反向代理</h3>
+<blockquote>
+<p>反向代理是<strong>服务器（如 Web 服务器、应用服务器）的 “中间人”</strong>，代表服务器接收客户端的请求。客户端无需配置代理，只需向 “代理服务器” 发送请求（以为代理就是目标服务器），代理再根据规则将请求转发到后端真实的服务器集群，最终将后端响应回传给客户端。</p>
+</blockquote>
+<p>Nginx 的配置</p>
+<div class="highlight"><pre><span></span><code>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>proxy_pass<span class="w">  </span>http://server<span class="p">;</span><span class="w">  </span><span class="c1">#代理</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>Example：</p>
+<blockquote>
+<p>在代理本机http服务</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>server<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span>listen<span class="w">       </span><span class="m">80</span><span class="p">;</span>
+<span class="w">  </span>server_name<span class="w">  </span>localhost<span class="p">;</span>
+<span class="w">  </span>location<span class="w"> </span>/api<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>proxy_pass<span class="w">  </span>http://127.0.0.1:81<span class="p">;</span>
+<span class="w">  </span><span class="o">}</span>
+
+<span class="w">  </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>root<span class="w"> </span>test-project<span class="p">;</span>
+<span class="w">     </span>proxy_pass<span class="w">  </span>http://127.0.0.1:82<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>简化：</p>
+<blockquote>
+<p>方便管理；每个业务都有独立的项目目录；使用域名访问</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat conf/vhosts/proxy_81.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span>api.project.com<span class="p">;</span><span class="w">  </span><span class="c1">#定义域名</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/api.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/api<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://127.0.0.1:81<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat conf/vhosts/proxy_82.conf  </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w"> </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w">  </span>test.project.com<span class="p">;</span><span class="w">  </span><span class="c1">#定义域名</span>
+<span class="w">   </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">      </span>root<span class="w"> </span>test-project<span class="p">;</span>
+<span class="w">      </span>access_log<span class="w">  </span>logs/test.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">      </span>proxy_pass<span class="w">  </span>http://127.0.0.1:82<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>修改客户端本机的<code>/etc/hosts</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.19.181<span class="w"> </span>test.project.com
+<span class="m">192</span>.168.19.181<span class="w"> </span>api.project.com
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>graph LR 
+subgraph web-server
+server01
+server02
+end
+
+subgraph proxy
+nginx
+end
+
+subgraph clinet
+client
+end
+
+
+clinet -.api-project-com.-&gt; proxy -.根据server_name转发.-&gt; server01 
+clinet -.test-project-com.-&gt; proxy -.根据server_name转发.-&gt; server02
+</code></pre></div>
+<p>Example 2:  </p>
+<blockquote>
+<p>实现网络隔离</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>graph LR
+
+s1(server01)
+s2(server02)
+subgraph nginx-proxy
+n(内部网卡)
+w(公网网卡)
+end
+c -.19网段.-&gt; w
+n -.18网段.-&gt;  s1 &amp; s2
+
+w &lt;-.系统内部路由.-&gt; n
+</code></pre></div>
+<h2 id="_4">实现步骤：</h2>
+<p>前提条件：</p>
+<ul>
+<li>nginx 上需要绑定两张网卡</li>
+<li>一张网卡：负责接受客户端请求（公有网络）</li>
+<li>一张网卡： 负责内部网络的状态（私有网络）</li>
+<li>Server01 和 server02负责web的服务</li>
+</ul>
+<p>第一步：</p>
+<div class="highlight"><pre><span></span><code>配置所有主机的IP地址
+</code></pre></div>
+<p>第二步：</p>
+<blockquote>
+<p>配置后端服务 20--&gt;30需要配置</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="m">1</span><span class="w">  </span>mount<span class="w"> </span>/dev/sr0<span class="w"> </span>/mnt/
+<span class="w">    </span><span class="m">2</span><span class="w">  </span><span class="nb">cd</span><span class="w"> </span>/etc/yum.repos.d/
+<span class="w">    </span><span class="m">3</span><span class="w">  </span>ls
+<span class="w">    </span><span class="m">4</span><span class="w">  </span>mkdir<span class="w"> </span>bak<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">  </span>mv<span class="w">  </span>CentOS-*<span class="w">  </span>bak
+<span class="w">    </span><span class="m">5</span><span class="w">  </span>cp<span class="w"> </span>bak/CentOS-Base.repo<span class="w">  </span>.<span class="w"> </span>
+<span class="w">    </span><span class="m">6</span><span class="w">  </span>ls
+<span class="w">    </span><span class="m">7</span><span class="w">  </span>vim<span class="w"> </span>CentOS-Base.repo<span class="w"> </span>
+<span class="w">    </span><span class="m">8</span><span class="w">  </span>vi<span class="w"> </span>CentOS-Base.repo<span class="w"> </span>
+<span class="w">    </span><span class="m">9</span><span class="w">  </span>scp<span class="w">  </span>CentOS-Base.repo<span class="w">  </span><span class="m">192</span>.168.18.30:/etc/yum.repos.d/
+<span class="w">   </span><span class="m">10</span><span class="w">   </span>yum<span class="w">  </span>repolist
+<span class="w">   </span><span class="m">11</span><span class="w">  </span>yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w">  </span>httpd
+<span class="w">   </span><span class="m">12</span><span class="w">  </span><span class="nb">cd</span><span class="w"> </span>~
+<span class="w">   </span><span class="m">13</span><span class="w">  </span><span class="nb">echo</span><span class="w">  </span><span class="s2">&quot;192.168.18.20&quot;</span><span class="w">  </span>&gt;<span class="w"> </span>/var/www/html/index.html
+<span class="w">   </span><span class="m">14</span><span class="w">  </span>systemctl<span class="w">  </span><span class="nb">enable</span><span class="w">  </span>--now<span class="w">  </span>httpd
+<span class="w">   </span><span class="m">15</span><span class="w">  </span>firewall-cmd<span class="w">  </span>add-port<span class="o">=</span><span class="m">80</span>/tcp
+<span class="w">   </span><span class="m">16</span><span class="w">  </span>firewall-cmd<span class="w">  </span>--add-port<span class="o">=</span><span class="m">80</span>/tcp
+<span class="w">   </span><span class="m">17</span><span class="w">  </span><span class="nb">history</span><span class="w"> </span>
+</code></pre></div>
+<p>第</p>
+<blockquote>
+<p>配置代理</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat conf/vhosts/proxy_20.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">20</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/20.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://192.168.18.20<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+
+<span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat conf/vhosts/proxy_30.conf</span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">30</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/30.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://192.168.18.30<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>第四步：</p>
+<blockquote>
+<p>验证</p>
+</blockquote>
+<p>!image-20250818165817420](/images/image-20250818165817420.png)</p>
+<h2 id="location">在原有的基础上进阶使用访问后服务<code>location</code></h2>
+<div class="highlight"><pre><span></span><code>graph LR
+subgraph nginx-server1
+s1(server01 默认)
+A(AB-project)
+end
+subgraph nginx-server2
+s2(server02)
+B(AB-project)
+end
+subgraph nginx-proxy
+n(内部网卡)
+w(公网网卡)
+end
+c -.19网段.-&gt; w
+n -.18网段.-&gt;  s1 &amp; s2
+w &lt;-.系统内部路由.-&gt; n
+
+c -.http://server01/A.-&gt;w
+c -.http://server02/B.-&gt;w 
+n -.18网段&lt;br&gt;A.-&gt; A
+n -.18网段&lt;br&gt;B.-&gt; B
+</code></pre></div>
+<h3 id="_5">准备虚拟机主机</h3>
+<h4 id="web">Web 主机上操作</h4>
+<ol>
+<li>准备后端服务的项目</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web01-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat  /usr/local/nginx128/html/AB-project/index.html </span>
+&lt;h1&gt;AB-project&lt;/h1&gt;
+
+<span class="o">[</span>root@web02<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat  /usr/local/nginx128/html/AB-project/index.html </span>
+&lt;h1&gt;AB-project30&lt;/h1&gt;
+</code></pre></div>
+<ol>
+<li>创建虚拟机主机</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web01-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /usr/local/nginx128/conf/vhosts/AB.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">20</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/20.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w">  </span>/AB-project<span class="w"> </span><span class="o">{</span>
+<span class="w">      </span>root<span class="w">  </span>html<span class="p">;</span>
+<span class="w">      </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span><span class="w">    </span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="o">[</span>root@web02<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat  /usr/local/nginx128/conf/vhosts/AB-project.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">30</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/30.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/AB-project<span class="w"> </span><span class="o">{</span>
+<span class="w"> </span>root<span class="w">  </span>html<span class="p">;</span>
+<span class="w"> </span>index<span class="w"> </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<ol>
+<li>重启服务</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web01-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/nginx128/sbin/nginx  -t #检查语法</span>
+<span class="o">[</span>root@web01-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@web01-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/nginx128/sbin/nginx  -s  reload | stop  | reopen  </span>
+</code></pre></div>
+<blockquote>
+<p>reload  # 重新加载服务</p>
+<p>stop     # 停止服务</p>
+<p>reopen  #重新打开一个</p>
+</blockquote>
+<h3 id="nginx_4">Nginx 代理配</h3>
+<ol>
+<li>创建虚拟主机</li>
+</ol>
+<p>配置后端20的web主机</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat  /usr/local/nginx128/conf/vhosts/proxy_nginx.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">20</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/20.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://192.168.18.20<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="w">   </span>location<span class="w">  </span>/AB-project<span class="w"> </span><span class="o">{</span>
+<span class="w"> </span>proxy_pass<span class="w">  </span>http://192.168.18.20<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>配置后端30的web主机</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat  /usr/local/nginx128/conf/vhosts/proxy_nginx_30.conf </span>
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>listen<span class="w">  </span><span class="m">80</span><span class="p">;</span>
+<span class="w">   </span>server_name<span class="w"> </span><span class="m">30</span>.com<span class="p">;</span>
+<span class="w">   </span>access_log<span class="w">  </span>logs/30.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">   </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://192.168.18.30<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="w">   </span>location<span class="w"> </span>/AB-project<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w">  </span>http://192.168.18.30<span class="p">;</span>
+<span class="w">   </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<ol>
+<li>重启</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># /usr/local/nginx128/sbin/nginx  -t #检查语法</span>
+
+<span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># /usr/local/nginx128/sbin/nginx  -s  reload | stop  | reopen  </span>
+</code></pre></div>
+<p>验证：</p>
+<p>!image-20250819111339824](/images/image-20250819111339824.png)</p>
+<h2 id="nginx-lb-load-balancer">Nginx  负载均衡器（LB load balancer）</h2>
+<p>Nginx 负载均衡是通过 Nginx 作为反向代理服务器，将客户端请求<strong>合理分配到后端多台服务器</strong>，以实现流量分散、提高系统吞吐量和可用性的技术。它是高并发场景下（如电商、短视频平台）保障服务稳定的核心手段。</p>
+<h4 id="_6">一、负载均衡的核心作用</h4>
+<ol>
+<li><strong>分流减压</strong>：避免单台服务器因请求过多而过载（如秒杀活动的流量峰值）。</li>
+<li><strong>高可用</strong>：某台后端服务器故障时，自动将请求转发到其他正常服务器，减少服务中断。</li>
+<li><strong>扩展灵活</strong>：通过增加后端服务器数量，线性提升系统处理能力（无需修改客户端配置）。</li>
+</ol>
+<h4 id="_7">二、 配置负载均衡</h4>
+<div class="highlight"><pre><span></span><code><span class="c1">#定义后端集群主机的地址；ip地址:端口 域名 </span>
+默认使用的轮训算法
+upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="p">;</span>
+<span class="o">}</span>
+
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>listen<span class="w"> </span><span class="m">80</span><span class="p">;</span>
+
+<span class="w">    </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w"> </span>http://web-server<span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<h4 id="_8">三、重启&amp;测试</h4>
+<h3 id="nginx_5">Nginx 调度算法</h3>
+<ul>
+<li><code>rr</code>.  轮询调度算法</li>
+<li><code>least-connected</code> 最少连接算法</li>
+<li><code>ip-hash</code>  基于客户端的 源IP 地址；请求到后端节点上</li>
+</ul>
+<p>Example：</p>
+<p>默认轮询</p>
+<div class="highlight"><pre><span></span><code>upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>最少连接</p>
+<div class="highlight"><pre><span></span><code>upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>least_conn<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>Ip_hash</p>
+<div class="highlight"><pre><span></span><code>upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>ip_hash<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>加权轮询算法：</p>
+<div class="highlight"><pre><span></span><code>upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="w"> </span><span class="nv">weight</span><span class="o">=</span><span class="m">3</span><span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>上课示例</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>nginx128<span class="o">]</span><span class="c1"># cat   conf/vhosts/upstream.conf </span>
+upstream<span class="w"> </span>web-server<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="w">  </span><span class="nv">max_fails</span><span class="o">=</span><span class="m">3</span><span class="w">  </span><span class="nv">fail_timeout</span><span class="o">=</span>30s<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30<span class="w">  </span><span class="nv">max_fails</span><span class="o">=</span><span class="m">3</span><span class="w">  </span><span class="nv">fail_timeout</span><span class="o">=</span>30s<span class="p">;</span>
+<span class="w">     </span>server<span class="w"> </span><span class="m">192</span>.168.18.30:81<span class="w"> </span>backup<span class="p">;</span>
+<span class="w">     </span><span class="c1">#server 192.168.18.30:81 down;</span>
+<span class="o">}</span>
+
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>listen<span class="w"> </span><span class="m">80</span><span class="p">;</span>
+
+<span class="w">    </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>proxy_pass<span class="w"> </span>http://web-server<span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>参数描述：</p>
+<div class="highlight"><pre><span></span><code><span class="nv">max_fails</span><span class="o">=</span><span class="m">3</span><span class="w">    </span><span class="c1"># 最多允许3次失败</span>
+<span class="nv">fail_timeout</span><span class="o">=</span>30s<span class="p">;</span><span class="w">  </span><span class="c1"># 失败后30秒内不再分配请求</span>
+backup<span class="p">;</span><span class="w">  </span><span class="c1">#当所有的猪节点都失效之后备用节点上线</span>
+
+
+ngx_http_healthcheck_module<span class="w"> </span>模块
+<span class="w"> </span><span class="c1"># 主动健康检查配置</span>
+<span class="w">    </span>healthcheck_enabled<span class="w"> </span>on<span class="p">;</span><span class="w">               </span><span class="c1"># 启用主动检查</span>
+<span class="w">    </span>healthcheck_interval<span class="w"> </span><span class="m">5000</span><span class="p">;</span><span class="w">            </span><span class="c1"># 每5秒检查一次</span>
+<span class="w">    </span>healthcheck_timeout<span class="w"> </span><span class="m">2000</span><span class="p">;</span><span class="w">             </span><span class="c1"># 检查超时时间2秒</span>
+<span class="w">    </span>healthcheck_type<span class="w"> </span>http<span class="p">;</span><span class="w">                </span><span class="c1"># 检查类型为HTTP</span>
+<span class="w">    </span>healthcheck_uri<span class="w"> </span>/health<span class="p">;</span><span class="w">              </span><span class="c1"># 检查路径（后端需提供健康检查接口）</span>
+<span class="w">    </span>healthcheck_expected_status<span class="w"> </span><span class="m">200</span><span class="p">;</span><span class="w">      </span><span class="c1"># 期望的响应状态码（200表示健康）</span>
+<span class="w">    </span>healthcheck_concurrency<span class="w"> </span><span class="m">10</span><span class="p">;</span><span class="w">           </span><span class="c1"># 并发检查的连接数</span>
+</code></pre></div>
+<h2 id="nginx_6">Nginx  配置证书</h2>
+<p><code>http</code>协议:</p>
+<blockquote>
+<p>不安全协议；明文传输  端口：<code>80</code></p>
+</blockquote>
+<p><code>https</code> 协议：</p>
+<blockquote>
+<p>建立在安全的协议上；加密传输协议  端口<code>443</code> <code>8443</code></p>
+</blockquote>
+<p>申请证书：</p>
+<ul>
+<li>私有证书</li>
+<li>公有证书</li>
+</ul>
+<p>公有证书</p>
+<blockquote>
+<p>颁发机构： 阿里云  华为</p>
+</blockquote>
+<p>私有证书</p>
+<blockquote>
+<p>使用openssl 命令创建私有证书</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>openssl genrsa -out private.key 2048
+
+openssl req -new -key private.key -out certificate.csr
+
+# 生成自签名证书，有效期 365 天
+openssl x509 -req -days 365 -in certificate.csr -signkey private.key -out certificate.crt
+</code></pre></div>
+<p>配置Nginx </p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>/usr/local/nginx128/key
+mv<span class="w">  </span>certificate.crt<span class="w"> </span>private.key<span class="w">   </span>/usr/local/nginx128/key/
+</code></pre></div>
+<p>开启nginx 的443</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>server<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>listen<span class="w">       </span><span class="m">443</span><span class="w"> </span>ssl<span class="p">;</span>
+<span class="w">        </span>server_name<span class="w">  </span>localhost<span class="p">;</span>
+
+<span class="w">        </span>ssl_certificate<span class="w">      </span>/usr/local/nginx128/key/certificate.crt<span class="p">;</span>
+<span class="w">        </span>ssl_certificate_key<span class="w">  </span>/usr/local/nginx128/key/private.key<span class="p">;</span>
+
+<span class="w">        </span>ssl_session_cache<span class="w">    </span>shared:SSL:1m<span class="p">;</span>
+<span class="w">        </span>ssl_session_timeout<span class="w">  </span>5m<span class="p">;</span>
+
+<span class="w">        </span>ssl_ciphers<span class="w">  </span>HIGH:!aNULL:!MD5<span class="p">;</span>
+<span class="w">        </span>ssl_prefer_server_ciphers<span class="w">  </span>on<span class="p">;</span>
+
+<span class="w">        </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>root<span class="w">   </span>html<span class="p">;</span>
+<span class="w">            </span>index<span class="w">  </span>index.html<span class="w"> </span>index.htm<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+</code></pre></div>
+<p>!image-20250819160331573](/images/image-20250819160331573.png)</p>
+<h2 id="nginx_7">Nginx 添加模块及热更新</h2></article></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

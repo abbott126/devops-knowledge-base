@@ -1,0 +1,17 @@
+---
+- name: install  mysql
+  shell: 'echo hello ansible role mysql instll'
+  when: (ansible_default_ipv4['address'] == "192.168.1.106")or(ansible_default_ipv4['address'] == "192.168.1.102")
+
+- name: init  mysql 
+  shell: 'echo hello ansible role mysql init'
+  when: (ansible_default_ipv4['address'] == "192.168.1.106")or(ansible_default_ipv4['address'] == "192.168.1.102")
+- name: modify config file mysql
+  shell: 'echo hello ansible role mysql config file'
+  when: (ansible_default_ipv4['address'] == "192.168.1.106")or(ansible_default_ipv4['address'] == "192.168.1.102")
+- name: start mysql
+  shell: 'echo hello ansible role mysql run  mysql'
+  when: (ansible_default_ipv4['address'] == "192.168.1.106")or(ansible_default_ipv4['address'] == "192.168.1.102")
+- name: 查询数据库
+  shell: 'mysql -u{{ user }} -p{{ password}} -e "show databases"'
+  when: (ansible_default_ipv4['address'] == "192.168.1.106")or(ansible_default_ipv4['address'] == "192.168.1.102")

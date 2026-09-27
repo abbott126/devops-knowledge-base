@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 服务 - Web 服务 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-web服务">#  Web服务</a></li><li class="toc-l2"><a href="#-提供web中间件">## 提供web中间件：</a></li><li class="toc-l1"><a href="#-httpd-服务"># httpd 服务</a></li><li class="toc-l3"><a href="#-部署方案">### 部署方案：</a></li><li class="toc-l3"><a href="#-源码">### 源码：</a></li><li class="toc-l2"><a href="#-准备工作">## 准备工作</a></li><li class="toc-l3"><a href="#-修改主机名">### 修改主机名</a></li><li class="toc-l3"><a href="#-获取软件包">### 获取软件包：</a></li><li class="toc-l3"><a href="#-创建管理目录">### 创建管理目录</a></li><li class="toc-l3"><a href="#-依次解压软件包">### 依次解压软件包</a></li><li class="toc-l2"><a href="#-依次安装软件包">## 依次安装软件包</a></li><li class="toc-l2"><a href="#-错误信息">## 错误信息</a></li><li class="toc-l1"><a href="#-下午"># 下午:</a></li><li class="toc-l2"><a href="#-关于httpd-服务的相关配置文件">## 关于Httpd 服务的相关配置文件</a></li><li class="toc-l1"><a href="#定义服务的根目录">#定义服务的根目录</a></li><li class="toc-l1"><a href="#定义监听地址及端口">#定义监听地址及端口</a></li><li class="toc-l1"><a href="#定义模块">#定义模块</a></li><li class="toc-l1"><a href="#定义服务管理的用户和组">#定义服务管理的用户和组</a></li><li class="toc-l1"><a href="#-定义服务的管理员"># 定义服务的管理员</a></li><li class="toc-l1"><a href="#serveradmin-youexample.com">#ServerAdmin you@example.com</a></li><li class="toc-l1"><a href="#定义用户访问的路径">#定义用户访问的路径</a></li><li class="toc-l1"><a href="#定义文档的根目录">#定义文档的根目录</a></li><li class="toc-l1"><a href="#定义权限">#定义权限</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#-possible-values-for-the-options-directive-are-none-all"># Possible values for the Options directive are "None", "All",</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="web">Web服务</h1>
+<p>提供用户访问页面；</p>
+<p>协议类型： TCP/IP协议</p>
+<p>web服务：http https </p>
+<h2 id="web_1">提供web中间件：</h2>
+<ol>
+<li>httpd  apache</li>
+<li>nginx   </li>
+<li>tomcat   --&gt; js</li>
+<li>weblogic --&gt; Java  不开源</li>
+</ol>
+<h1 id="httpd">httpd 服务</h1>
+<p>官方地址：https://httpd.apache.org/</p>
+<h3 id="_1">部署方案：</h3>
+<ul>
+<li>RPM</li>
+<li>YUM/dnf</li>
+<li>源码</li>
+</ul>
+<p>配置源</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>local<span class="o">]</span>
+<span class="nv">name</span><span class="o">=</span>centos<span class="w"> </span><span class="m">7</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>repo
+<span class="nv">baseurl</span><span class="o">=</span>file:///mnt<span class="w">          </span><span class="c1">#协议http ftp  file :// 标准的URL  http://</span>
+<span class="nv">enable</span><span class="o">=</span><span class="m">1</span><span class="w">  </span><span class="c1">#值：0 1</span>
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">0</span>
+</code></pre></div>
+<h3 id="_2">源码：</h3>
+<div class="highlight"><pre><span></span><code>apr<span class="w">  </span>
+apr-util
+httpd
+</code></pre></div>
+<h2 id="_3">准备工作</h2>
+<h3 id="_4">修改主机名</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl  set-hostname web-server.com</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># bash</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<h3 id="_5">获取软件包：</h3>
+<p><font color=red>切记：一定官方网站获取</font></p>
+<div class="highlight"><pre><span></span><code>wget<span class="w">  </span>https://dlcdn.apache.org//apr/apr-1.7.6.tar.gz
+wget<span class="w">  </span>https://dlcdn.apache.org//apr/apr-util-1.6.3.tar.gz
+wget<span class="w">  </span>https://dlcdn.apache.org/httpd/httpd-2.4.65.tar.gz
+</code></pre></div>
+<blockquote>
+<p>如果： 在工作的时候不能连接外网；</p>
+<ol>
+<li>下载本地；使用SCP命令</li>
+</ol>
+</blockquote>
+<h3 id="_6">创建管理目录</h3>
+<p><font color=red>注意：</font></p>
+<blockquote>
+<p>学习：源码安装软件包位置：<code>/usr/local/</code></p>
+<p>生产： 根据公司定义软件包安装位置 <code>/app</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir  /usr/local/apache1</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir   /usr/local/apache1/{apr,apr-util,http}</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls /usr/local/apache1/</span>
+apr<span class="w">  </span>apr-util<span class="w">  </span>http
+</code></pre></div>
+<h3 id="_7">依次解压软件包</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  apr-1.7.6.tar.gz  -C  /usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  apr-util-1.6.3.tar.gz  -C /usr/local/apache1/apr-util/</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar  xf  httpd-2.4.65.tar.gz  -C /usr/local/apache1/http/</span>
+</code></pre></div>
+<h2 id="_8">依次安装软件包</h2>
+<p>对于源码部署：（口诀三板斧）</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>检查环境
+./configure
+<span class="m">2</span>.<span class="w"> </span>编译
+make
+<span class="m">3</span>.<span class="w"> </span>编译安装
+make<span class="w"> </span>install<span class="w"> </span>
+</code></pre></div>
+<ul>
+<li>apr</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1"># ./configure  --prefix=/usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1">#  make </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-1.7.6<span class="o">]</span><span class="c1">#  make install  </span>
+</code></pre></div>
+<blockquote>
+<p>判断上次执行的命令是否成功： <code>echo $?</code></p>
+<p>0  # 非0 表示执行失败</p>
+</blockquote>
+<ul>
+<li>apr-util</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># ./configure  --prefix=/usr/local/apache1/apr-util   --with-apr=/usr/local/apache1/apr</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># make</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># make install </span>
+</code></pre></div>
+<blockquote>
+<p>--prefix= # 指定安装目录</p>
+<p>--with-apr=  # 指定apr安装的位置</p>
+</blockquote>
+<ul>
+<li>httpd</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># ./configure \</span>
+--prefix<span class="o">=</span>/usr/local/apache1/http/<span class="w"> </span><span class="se">\</span>
+--with-apr<span class="o">=</span>/usr/local/apache1/apr<span class="w"> </span><span class="se">\</span>
+--with-apr-util<span class="o">=</span>/usr/local/apache1/apr-util/
+<span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># make </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>httpd-2.4.65<span class="o">]</span><span class="c1"># make install </span>
+</code></pre></div>
+<ul>
+<li>开启http服务</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># bin/apachectl </span>
+</code></pre></div>
+<p>检查是否启动</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># ss  -luntp | grep 80</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">    </span><span class="o">[</span>::<span class="o">]</span>:80<span class="w">                 </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112912</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112911</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112910</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;httpd&quot;</span>,pid<span class="o">=</span><span class="m">112909</span>,fd<span class="o">=</span><span class="m">4</span><span class="o">))</span>
+</code></pre></div>
+<p>测试服务</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># curl  127.0.0.1 </span>
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;It<span class="w"> </span>works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre></div>
+<p>客户端请求web</p>
+<p>!image-20250815113430519](/images/image-20250815113430519.png)</p>
+<p>防火墙管理的命令(firewalld)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># firewall-cmd   --list-all</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># firewall-cmd  --add-port=80/tcp #临时添加规则</span>
+</code></pre></div>
+<h2 id="_9">错误信息</h2>
+<p>错误1: </p>
+<p>问题： <code>缺少expat的函数库文件</code></p>
+<p>!image-20250815110536640](/images/image-20250815110536640.png)</p>
+<p>解决方案：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apr-util-1.6.3<span class="o">]</span><span class="c1"># yum -y install  expat-devel</span>
+</code></pre></div>
+<p>Error 2:</p>
+<p>问题：<code>没有找Pcre的函数库</code></p>
+<p>!image-20250815111137225](/images/image-20250815111137225.png)</p>
+<p>解决方案：</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>源码安装Pcre<span class="w"> </span>
+<span class="m">2</span>.<span class="w"> </span>基于YUM安装
+yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>pcre-devel
+</code></pre></div>
+<p>Error 3 :</p>
+<p>!image-20250815111510486](/images/image-20250815111510486.png)</p>
+<blockquote>
+<p>清除所有编译 </p>
+<p><code>make clean</code></p>
+</blockquote>
+<h1 id="_10">下午:</h1>
+<p>目标：</p>
+<ul>
+<li>[ ] 解决上午的疑难杂症</li>
+</ul>
+<blockquote>
+<p>YUM 源：基于本地（ISO）</p>
+<ol>
+<li>加载：将ISO文件放置在虚拟光驱中</li>
+<li>/dev/sr0</li>
+<li>挂载： mount  /dev/sr0  /mnt</li>
+<li><code>/etc/yum.repos.d/local.repo</code></li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>[ ] 简单了解httpd的服务配置文件</p>
+</li>
+<li>
+<p>[ ] 修改配置文件</p>
+</li>
+<li>
+<p>[ ] 了解http工作模式</p>
+</li>
+</ul>
+<h2 id="httpd_1">关于Httpd 服务的相关配置文件</h2>
+<blockquote>
+<p>如果基于YUM的安装服务；基本所有的配置会在<code>/etc/</code></p>
+<p>源码是自己定义的存放目录</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>http<span class="o">]</span><span class="c1"># tree   -L 1  . </span>
+.
+├──<span class="w"> </span>bin<span class="w">    </span><span class="c1">#二进制执行文件</span>
+├──<span class="w"> </span>build<span class="w">  </span><span class="c1">#构建内容</span>
+├──<span class="w"> </span>cgi-bin<span class="w">  </span><span class="c1">#CGI的插件二进制执行文件</span>
+├──<span class="w"> </span>conf<span class="w">   </span><span class="c1">#存放配置文件目录</span>
+├──<span class="w"> </span>error<span class="w">  </span><span class="c1">#存放服务启动错误信息</span>
+├──<span class="w"> </span>htdocs<span class="w">  </span><span class="c1">#存放项目的位置(默认)</span>
+├──<span class="w"> </span>logs<span class="w">    </span><span class="c1">#存放日志文件的目录</span>
+└──<span class="w"> </span>modules<span class="w"> </span><span class="c1">#存放模块</span>
+
+<span class="m">13</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">0</span><span class="w"> </span>files
+</code></pre></div>
+<p>配置文件详解：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>conf<span class="o">]</span><span class="c1"># grep  -v  &#39;^#&#39;  httpd.conf  | grep -v  &#39;^$&#39; </span>
+
+<span class="c1">#定义服务的根目录</span>
+ServerRoot<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http/&quot;</span>
+<span class="c1">#定义监听地址及端口</span>
+Listen<span class="w">  </span><span class="m">192</span>.168.19.181:80
+<span class="c1">#定义模块</span>
+LoadModule<span class="w"> </span>authn_file_module<span class="w"> </span>modules/mod_authn_file.so
+LoadModule<span class="w"> </span>authn_core_module<span class="w"> </span>modules/mod_authn_core.so
+LoadModule<span class="w"> </span>authz_host_module<span class="w"> </span>modules/mod_authz_host.so
+LoadModule<span class="w"> </span>authz_groupfile_module<span class="w"> </span>modules/mod_authz_groupfile.so
+LoadModule<span class="w"> </span>authz_user_module<span class="w"> </span>modules/mod_authz_user.so
+LoadModule<span class="w"> </span>authz_core_module<span class="w"> </span>modules/mod_authz_core.so
+LoadModule<span class="w"> </span>access_compat_module<span class="w"> </span>modules/mod_access_compat.so
+LoadModule<span class="w"> </span>auth_basic_module<span class="w"> </span>modules/mod_auth_basic.so
+LoadModule<span class="w"> </span>reqtimeout_module<span class="w"> </span>modules/mod_reqtimeout.so
+LoadModule<span class="w"> </span>filter_module<span class="w"> </span>modules/mod_filter.so
+LoadModule<span class="w"> </span>mime_module<span class="w"> </span>modules/mod_mime.so
+LoadModule<span class="w"> </span>log_config_module<span class="w"> </span>modules/mod_log_config.so
+LoadModule<span class="w"> </span>env_module<span class="w"> </span>modules/mod_env.so
+LoadModule<span class="w"> </span>headers_module<span class="w"> </span>modules/mod_headers.so
+LoadModule<span class="w"> </span>setenvif_module<span class="w"> </span>modules/mod_setenvif.so
+LoadModule<span class="w"> </span>version_module<span class="w"> </span>modules/mod_version.so
+LoadModule<span class="w"> </span>unixd_module<span class="w"> </span>modules/mod_unixd.so
+LoadModule<span class="w"> </span>status_module<span class="w"> </span>modules/mod_status.so
+LoadModule<span class="w"> </span>autoindex_module<span class="w"> </span>modules/mod_autoindex.so
+LoadModule<span class="w"> </span>dir_module<span class="w"> </span>modules/mod_dir.so
+LoadModule<span class="w"> </span>alias_module<span class="w"> </span>modules/mod_alias.so
+
+
+<span class="c1">#定义服务管理的用户和组</span>
+&lt;IfModule<span class="w"> </span>unixd_module&gt;
+User<span class="w"> </span>daemon
+Group<span class="w"> </span>daemon
+&lt;/IfModule&gt;
+<span class="c1"># 定义服务的管理员</span>
+<span class="c1">#ServerAdmin you@example.com</span>
+ServerName<span class="w">  </span>web-server.com
+<span class="c1">#定义用户访问的路径</span>
+&lt;Directory<span class="w"> </span>/&gt;
+<span class="w">    </span>AllowOverride<span class="w"> </span>none
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>denied
+&lt;/Directory&gt;
+
+<span class="c1">#定义文档的根目录</span>
+DocumentRoot<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//htdocs&quot;</span>
+<span class="c1">#定义权限</span>
+&lt;Directory<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//htdocs&quot;</span>&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Possible values for the Options directive are &quot;None&quot;, &quot;All&quot;,</span>
+<span class="w">    </span><span class="c1"># or any combination of:</span>
+<span class="w">    </span><span class="c1">#   Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Note that &quot;MultiViews&quot; must be named *explicitly* --- &quot;Options All&quot;</span>
+<span class="w">    </span><span class="c1"># doesn&#39;t give it to you.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The Options directive is both complicated and important.  Please see</span>
+<span class="w">    </span><span class="c1"># http://httpd.apache.org/docs/2.4/mod/core.html#options</span>
+<span class="w">    </span><span class="c1"># for more information.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>Options<span class="w"> </span>Indexes<span class="w"> </span>FollowSymLinks
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AllowOverride controls what directives may be placed in .htaccess files.</span>
+<span class="w">    </span><span class="c1"># It can be &quot;All&quot;, &quot;None&quot;, or any combination of the keywords:</span>
+<span class="w">    </span><span class="c1">#   AllowOverride FileInfo AuthConfig Limit</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Controls who can get stuff from this server.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>granted
+&lt;/Directory&gt;
+
+<span class="c1"># 定义用户的文件的名称</span>
+&lt;IfModule<span class="w"> </span>dir_module&gt;
+<span class="w">    </span>DirectoryIndex<span class="w"> </span>index.html
+&lt;/IfModule&gt;
+<span class="c1"># 如果请求的URL地址中以`.ht*`后缀名；都拒绝</span>
+&lt;Files<span class="w"> </span><span class="s2">&quot;.ht*&quot;</span>&gt;
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>denied
+&lt;/Files&gt;
+
+<span class="c1">#定义错误日志</span>
+ErrorLog<span class="w"> </span><span class="s2">&quot;logs/error_log&quot;</span>
+<span class="c1">#定义日志的级别</span>
+LogLevel<span class="w"> </span>warn
+
+<span class="c1"># 定义日志格式的模块</span>
+&lt;IfModule<span class="w"> </span>log_config_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The following directives define some format nicknames for use with</span>
+<span class="w">    </span><span class="c1"># a CustomLog directive (see below).</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot;&quot;</span><span class="w"> </span>combined
+<span class="w">    </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b&quot;</span><span class="w"> </span>common
+<span class="w">    </span>&lt;IfModule<span class="w"> </span>logio_module&gt;
+<span class="w">      </span><span class="c1"># You need to enable mod_logio.c to use %I and %O</span>
+<span class="w">      </span>LogFormat<span class="w"> </span><span class="s2">&quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot; %I %O&quot;</span><span class="w"> </span>combinedio
+<span class="w">    </span>&lt;/IfModule&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># The location and format of the access logfile (Common Logfile Format).</span>
+<span class="w">    </span><span class="c1"># If you do not define any access logfiles within a &lt;VirtualHost&gt;</span>
+<span class="w">    </span><span class="c1"># container, they will be logged here.  Contrariwise, if you *do*</span>
+<span class="w">    </span><span class="c1"># define per-&lt;VirtualHost&gt; access logfiles, transactions will be</span>
+<span class="w">    </span><span class="c1"># logged therein and *not* in this file.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>CustomLog<span class="w"> </span><span class="s2">&quot;logs/access_log&quot;</span><span class="w"> </span>common
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If you prefer a logfile with access, agent, and referer information</span>
+<span class="w">    </span><span class="c1"># (Combined Logfile Format) you can use the following directive.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#CustomLog &quot;logs/access_log&quot; combined</span>
+&lt;/IfModule&gt;
+
+<span class="c1">#定义别名的模块</span>
+&lt;IfModule<span class="w"> </span>alias_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Redirect: Allows you to tell clients about documents that used to </span>
+<span class="w">    </span><span class="c1"># exist in your server&#39;s namespace, but do not anymore. The client </span>
+<span class="w">    </span><span class="c1"># will make a new request for the document at its new location.</span>
+<span class="w">    </span><span class="c1"># Example:</span>
+<span class="w">    </span><span class="c1"># Redirect permanent /foo http://www.example.com/bar</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Alias: Maps web paths into filesystem paths and is used to</span>
+<span class="w">    </span><span class="c1"># access content that does not live under the DocumentRoot.</span>
+<span class="w">    </span><span class="c1"># Example:</span>
+<span class="w">    </span><span class="c1"># Alias /webpath /full/filesystem/path</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If you include a trailing / on /webpath then the server will</span>
+<span class="w">    </span><span class="c1"># require it to be present in the URL.  You will also likely</span>
+<span class="w">    </span><span class="c1"># need to provide a &lt;Directory&gt; section to allow access to</span>
+<span class="w">    </span><span class="c1"># the filesystem path.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># ScriptAlias: This controls which directories contain server scripts. </span>
+<span class="w">    </span><span class="c1"># ScriptAliases are essentially the same as Aliases, except that</span>
+<span class="w">    </span><span class="c1"># documents in the target directory are treated as applications and</span>
+<span class="w">    </span><span class="c1"># run by the server when requested rather than as documents sent to the</span>
+<span class="w">    </span><span class="c1"># client.  The same rules about trailing &quot;/&quot; apply to ScriptAlias</span>
+<span class="w">    </span><span class="c1"># directives as to Alias.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>ScriptAlias<span class="w"> </span>/cgi-bin/<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//cgi-bin/&quot;</span>
+&lt;/IfModule&gt;
+&lt;IfModule<span class="w"> </span>cgid_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># ScriptSock: On threaded servers, designate the path to the UNIX</span>
+<span class="w">    </span><span class="c1"># socket used to communicate with the CGI daemon of mod_cgid.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#Scriptsock cgisock</span>
+&lt;/IfModule&gt;
+&lt;Directory<span class="w"> </span><span class="s2">&quot;/usr/local/apache1/http//cgi-bin&quot;</span>&gt;
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">    </span>Options<span class="w"> </span>None
+<span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>granted
+&lt;/Directory&gt;
+&lt;IfModule<span class="w"> </span>headers_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Avoid passing HTTP_PROXY environment to CGI&#39;s on this or any proxied</span>
+<span class="w">    </span><span class="c1"># backend servers which have lingering &quot;httpoxy&quot; defects.</span>
+<span class="w">    </span><span class="c1"># &#39;Proxy&#39; request header is undefined by the IETF, not listed by IANA</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>RequestHeader<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>Proxy<span class="w"> </span>early
+&lt;/IfModule&gt;
+
+
+<span class="c1"># 定义访问类型</span>
+&lt;IfModule<span class="w"> </span>mime_module&gt;
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># TypesConfig points to the file containing the list of mappings from</span>
+<span class="w">    </span><span class="c1"># filename extension to MIME-type.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>TypesConfig<span class="w"> </span>conf/mime.types
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddType allows you to add to or override the MIME configuration</span>
+<span class="w">    </span><span class="c1"># file specified in TypesConfig for specific file types.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddType application/x-gzip .tgz</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddEncoding allows you to have certain browsers uncompress</span>
+<span class="w">    </span><span class="c1"># information on the fly. Note: Not all browsers support this.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddEncoding x-compress .Z</span>
+<span class="w">    </span><span class="c1">#AddEncoding x-gzip .gz .tgz</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># If the AddEncoding directives above are commented-out, then you</span>
+<span class="w">    </span><span class="c1"># probably should define those extensions to indicate media types:</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span>AddType<span class="w"> </span>application/x-compress<span class="w"> </span>.Z
+<span class="w">    </span>AddType<span class="w"> </span>application/x-gzip<span class="w"> </span>.gz<span class="w"> </span>.tgz
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># AddHandler allows you to map certain file extensions to &quot;handlers&quot;:</span>
+<span class="w">    </span><span class="c1"># actions unrelated to filetype. These can be either built into the server</span>
+<span class="w">    </span><span class="c1"># or added with the Action directive (see below)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># To use CGI scripts outside of ScriptAliased directories:</span>
+<span class="w">    </span><span class="c1"># (You will also need to add &quot;ExecCGI&quot; to the &quot;Options&quot; directive.)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddHandler cgi-script .cgi</span>
+<span class="w">    </span><span class="c1"># For type maps (negotiated resources):</span>
+<span class="w">    </span><span class="c1">#AddHandler type-map var</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># Filters allow you to process content before it is sent to the client.</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1"># To parse .shtml files for server-side includes (SSI):</span>
+<span class="w">    </span><span class="c1"># (You will also need to add &quot;Includes&quot; to the &quot;Options&quot; directive.)</span>
+<span class="w">    </span><span class="c1">#</span>
+<span class="w">    </span><span class="c1">#AddType text/html .shtml</span>
+<span class="w">    </span><span class="c1">#AddOutputFilter INCLUDES .shtml</span>
+&lt;/IfModule&gt;
+<span class="c1">#定义代理的模块</span>
+&lt;IfModule<span class="w"> </span>proxy_html_module&gt;
+Include<span class="w"> </span>conf/extra/proxy-html.conf
+&lt;/IfModule&gt;
+<span class="c1">#定义https加密传输的模块</span>
+&lt;IfModule<span class="w"> </span>ssl_module&gt;
+SSLRandomSeed<span class="w"> </span>startup<span class="w"> </span><span class="nb">builtin</span>
+SSLRandomSeed<span class="w"> </span>connect<span class="w"> </span><span class="nb">builtin</span>
+&lt;/IfModule&gt;
+</code></pre></div>
+<h2 id="_11">实现虚拟主</h2>
+<blockquote>
+<p>为什么使用虚拟主机</p>
+<p>几种方式实现</p>
+</blockquote>
+<ul>
+<li>[ ] 基于IP</li>
+<li>[ ] 基于端口</li>
+<li>[ ] 基于域名</li>
+</ul>
+<p>基于IP地址创建虚拟主机</p>
+<blockquote>
+<p>注意： 添加一块网卡</p>
+</blockquote>
+<ol>
+<li>修改配置(打开支持引入虚拟主机配置文件)</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Virtual hosts</span>
+Include<span class="w"> </span>conf/extra/httpd-vhosts.conf
+</code></pre></div>
+<ol>
+<li>
+<p>定义虚拟主机</p>
+</li>
+<li>
+<p>创建项目</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir /usr/local/apache1/http/htdocs/test-project </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># vim   /usr/local/apache1/http/htdocs/test-project/index.html </span>
+&lt;html&gt;
+&lt;head&gt;
+<span class="w">    </span>&lt;meta<span class="w"> </span><span class="nv">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>&gt;
+<span class="w">    </span>&lt;!--<span class="w"> </span>其他头部内容<span class="w"> </span>--&gt;
+&lt;/head&gt;
+
+&lt;h1&gt;hello<span class="w"> </span>vhost<span class="w"> </span>基于IP<span class="w"> </span>&lt;/h1&gt;
+&lt;/html&gt;
+</code></pre></div>
+</li>
+<li>
+<p>配置虚拟主机</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1">#vim  /usr/local/apache1/http/conf/extra/httpd-vhosts.conf </span>
+
+&lt;VirtualHost<span class="w"> </span><span class="m">192</span>.168.19.120&gt;
+<span class="w">    </span><span class="c1">#ServerAdmin webmaster@dummy-host2.example.com</span>
+<span class="w">    </span><span class="c1">#定义项目目录</span>
+<span class="w">    </span>DocumentRoot<span class="w"> </span><span class="s2">&quot;htdocs/test-project&quot;</span>
+<span class="w">    </span><span class="c1">#ServerName dummy-host2.example.com</span>
+<span class="w">    </span>定义日志
+<span class="w">    </span>ErrorLog<span class="w"> </span><span class="s2">&quot;logs/test-project-error_log&quot;</span>
+<span class="w">    </span>CustomLog<span class="w"> </span><span class="s2">&quot;logs/test-project-access_log&quot;</span><span class="w"> </span>common
+&lt;/VirtualHost&gt;
+</code></pre></div>
+</li>
+<li>
+<p>重启服务</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/apache1/http/bin/apachectl  -k stop ^C</span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># /usr/local/apache1/http/bin/apachectl</span>
+</code></pre></div>
+<ol>
+<li>验证：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.查看监听端口是否启动
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># lsof  -i:80</span>
+COMMAND<span class="w">  </span>PID<span class="w">   </span>USER<span class="w">   </span>FD<span class="w">   </span>TYPE<span class="w"> </span>DEVICE<span class="w"> </span>SIZE/OFF<span class="w"> </span>NODE<span class="w"> </span>NAME
+httpd<span class="w">   </span><span class="m">1714</span><span class="w">   </span>root<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1715</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1716</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1717</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+httpd<span class="w">   </span><span class="m">1806</span><span class="w"> </span>daemon<span class="w">    </span>4u<span class="w">  </span>IPv6<span class="w">  </span><span class="m">22729</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+
+<span class="m">2</span>.检查虚拟主机的日志是否产生
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls  /usr/local/apache1/http/logs/</span>
+access_log<span class="w">               </span>httpd.pid<span class="w">                </span>test-project-error_log<span class="w">   </span>
+error_log<span class="w">                </span>test-project-access_log<span class="w">  </span>
+
+<span class="m">3</span>.<span class="w"> </span>基于本机
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.19.181</span>
+&lt;!DOCTYPE<span class="w"> </span>HTML<span class="w"> </span>PUBLIC<span class="w"> </span><span class="s2">&quot;-//W3C//DTD HTML 3.2 Final//EN&quot;</span>&gt;
+&lt;html&gt;
+<span class="w"> </span>&lt;head&gt;
+<span class="w">  </span>&lt;title&gt;Index<span class="w"> </span>of<span class="w"> </span>/&lt;/title&gt;
+<span class="w"> </span>&lt;/head&gt;
+<span class="w"> </span>&lt;body&gt;
+&lt;h1&gt;Index<span class="w"> </span>of<span class="w"> </span>/&lt;/h1&gt;
+&lt;ul&gt;&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;abc/&quot;</span>&gt;<span class="w"> </span>abc/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;index.html_bak&quot;</span>&gt;<span class="w"> </span>index.html_bak&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a<span class="w"> </span><span class="nv">href</span><span class="o">=</span><span class="s2">&quot;test-project/&quot;</span>&gt;<span class="w"> </span>test-project/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/body&gt;&lt;/html&gt;
+<span class="o">[</span>root@web-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.19.120</span>
+&lt;html&gt;
+&lt;head&gt;
+<span class="w">    </span>&lt;meta<span class="w"> </span><span class="nv">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>&gt;
+<span class="w">    </span>&lt;!--<span class="w"> </span>其他头部内容<span class="w"> </span>--&gt;
+&lt;/head&gt;
+
+&lt;h1&gt;hello<span class="w"> </span>vhost<span class="w"> </span>基于IP<span class="w"> </span>&lt;/h1&gt;
+&lt;/html&gt;
+</code></pre></div>
+<p>客户端验证：</p>
+<p>!image-20250815170519717](/images/image-20250815170519717.png)</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

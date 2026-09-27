@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>读写分离 ProxySQL - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-读写分离"># 读写分离</a></li><li class="toc-l2"><a href="#-组件">## 组件：</a></li><li class="toc-l2"><a href="#-proxysql">## proxySQL</a></li><li class="toc-l3"><a href="#-部署proxysql">### 部署proxySQL</a></li><li class="toc-l1"><a href="#-使用service-管理服务6-"># 使用service 管理服务（6-）</a></li><li class="toc-l1"><a href="#-使用systemctl管理服务7"># 使用systemctl管理服务(7+)</a></li><li class="toc-l3"><a href="#-use-proxysql">### use proxysql</a></li><li class="toc-l3"><a href="#-添加后端mysql集群">### 添加后端mysql集群</a></li><li class="toc-l3"><a href="#-配置监控信息">### 配置监控信息</a></li><li class="toc-l3"><a href="#-配置应用连接账号mysql_users">### 配置应用连接账号（mysql_users）</a></li><li class="toc-l1"><a href="#proxysql">#proxySQL</a></li><li class="toc-l1"><a href="#mysql数据库上创建用户">#mysql数据库上创建用户</a></li><li class="toc-l1"><a href="#授权">#授权</a></li><li class="toc-l1"><a href="#刷新表">#刷新表</a></li><li class="toc-l3"><a href="#-添加路由规则">### 添加路由规则</a></li><li class="toc-l1"><a href="#查询的规则">#查询的规则</a></li><li class="toc-l1"><a href="#写入规则">#写入规则</a></li><li class="toc-l1"><a href="#将规则添加到运行时">#将规则添加到运行时</a></li><li class="toc-l1"><a href="#将规则保存的磁盘中">#将规则保存的磁盘中</a></li><li class="toc-l4"><a href="#-查询连接池">#### 查询连接池</a></li><li class="toc-l3"><a href="#-查看连接信息">### 查看连接信息</a></li><li class="toc-l3"><a href="#-web-管理">### Web 管理</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">读写分离</h1>
+<blockquote>
+<p>原则： 对主数据数据库分档压力</p>
+<p>12306   AI  </p>
+</blockquote>
+<p>!image-20250905092655207](/images/image-20250905092655207.png)</p>
+<h2 id="_2">组件：</h2>
+<ul>
+<li>mysql route</li>
+</ul>
+<blockquote>
+<p>https://dev.mysql.com/doc/mysql-router/8.0/en/</p>
+</blockquote>
+<ul>
+<li>
+<p>mycat </p>
+</li>
+<li>
+<p>proxySQL </p>
+</li>
+<li>
+<p>Haproxy</p>
+</li>
+</ul>
+<h2 id="proxysql">proxySQL</h2>
+<p>在现代数据库管理的动态环境中，优化性能和有效处理数据库流量是各种规模企业最关心的问题。ProxySQL 是一种强大的 SQL 代理解决方案，充当数据库客户端和服务器之间的关键桥梁，提供大量旨在简化数据库作的功能。</p>
+<p>ProxySQL 不仅仅是数据库管理员武器库中的另一个工具，它还是游戏规则的改变者。凭借其智能路由查询、平衡负载和提供故障转移处理的能力，ProxySQL 使组织能够充分利用其数据库基础设施的潜力。无论您是在努力应对可扩展性挑战、努力提高性能还是寻求确保高可用性，ProxySQL 都是一个多功能的盟友，能够满足各种数据库环境的多样化需求。</p>
+<p>!image-20250905094513741](/images/image-20250905094513741.png)</p>
+<h3 id="proxysql_1">部署proxySQL</h3>
+<blockquote>
+<p>https://proxysql.com/documentation/installing-proxysql/</p>
+</blockquote>
+<p>配置源：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /etc/yum.repos.d/proxysql.repo </span>
+<span class="o">[</span>proxysql_repo<span class="o">]</span>
+<span class="nv">name</span><span class="o">=</span>ProxySQL<span class="w"> </span>repository
+<span class="nv">baseurl</span><span class="o">=</span>https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/centos/7/
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">gpgkey</span><span class="o">=</span>https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/repo_pub_key
+</code></pre></div>
+<p>安装</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum  -y install vim wget gcc gcc-c++ proxysql </span>
+</code></pre></div>
+<p>列出关于<code>proxySQL的相关文件</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># rpm  -ql  proxysql  </span>
+/etc/logrotate.d/proxysql
+/etc/proxysql.cnf
+/etc/systemd/system/proxysql-initial.service
+/etc/systemd/system/proxysql.service
+/usr/bin/proxysql
+/usr/share/proxysql/tools/proxysql_galera_checker.sh
+/usr/share/proxysql/tools/proxysql_galera_writer.pl
+</code></pre></div>
+<p>查看安装版本</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># proxysql --version</span>
+ProxySQL<span class="w"> </span>version<span class="w"> </span><span class="m">2</span>.7.3-12-g50b7f85,<span class="w"> </span>codename<span class="w"> </span>Truls
+</code></pre></div>
+<p>运行<code>proxysql</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 使用service 管理服务（6-）</span>
+service<span class="w"> </span><span class="o">[</span>service_name<span class="o">]</span><span class="w"> </span><span class="o">[</span>动作<span class="o">]</span>
+<span class="c1"># 使用systemctl管理服务(7+)</span>
+systemctl<span class="w">  </span><span class="o">[</span>动作<span class="o">]</span><span class="w"> </span><span class="o">[</span>serivce_name<span class="w"> </span><span class="o">]</span>
+
+<span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl  enable  --now  proxysql </span>
+</code></pre></div>
+<p>查看端口</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># ss  -luntp | grep  proxysql</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6032<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;proxysql&quot;</span>,pid<span class="o">=</span><span class="m">1721</span>,fd<span class="o">=</span><span class="m">30</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6033<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;proxysql&quot;</span>,pid<span class="o">=</span><span class="m">1721</span>,fd<span class="o">=</span><span class="m">26</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6033<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;proxysql&quot;</span>,pid<span class="o">=</span><span class="m">1721</span>,fd<span class="o">=</span><span class="m">25</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6033<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;proxysql&quot;</span>,pid<span class="o">=</span><span class="m">1721</span>,fd<span class="o">=</span><span class="m">24</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6033<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;proxysql&quot;</span>,pid<span class="o">=</span><span class="m">1721</span>,fd<span class="o">=</span><span class="m">23</span><span class="o">))</span>
+</code></pre></div>
+<blockquote>
+<p>6032: 管理员使用端口</p>
+<p>6033：数据库端口</p>
+</blockquote>
+<p>登陆<code>ProxySQL</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@proxysql-server117<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql  -u admin  -padmin  -h 127.0.0.1 -P6032  --prompt=&#39;proxysql_Admin&gt; &#39;</span>
+Welcome<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>MariaDB<span class="w"> </span>monitor.<span class="w">  </span>Commands<span class="w"> </span>end<span class="w"> </span>with<span class="w"> </span><span class="p">;</span><span class="w"> </span>or<span class="w"> </span><span class="se">\g</span>.
+Your<span class="w"> </span>MySQL<span class="w"> </span>connection<span class="w"> </span>id<span class="w"> </span>is<span class="w"> </span><span class="m">4</span>
+Server<span class="w"> </span>version:<span class="w"> </span><span class="m">5</span>.5.30<span class="w"> </span><span class="o">(</span>ProxySQL<span class="w"> </span>Admin<span class="w"> </span>Module<span class="o">)</span>
+
+Copyright<span class="w"> </span><span class="o">(</span>c<span class="o">)</span><span class="w"> </span><span class="m">2000</span>,<span class="w"> </span><span class="m">2018</span>,<span class="w"> </span>Oracle,<span class="w"> </span>MariaDB<span class="w"> </span>Corporation<span class="w"> </span>Ab<span class="w"> </span>and<span class="w"> </span>others.
+
+Type<span class="w"> </span><span class="s1">&#39;help;&#39;</span><span class="w"> </span>or<span class="w"> </span><span class="s1">&#39;\h&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>help.<span class="w"> </span>Type<span class="w"> </span><span class="s1">&#39;\c&#39;</span><span class="w"> </span>to<span class="w"> </span>clear<span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>input<span class="w"> </span>statement.
+
+proxysql_Admin&gt;<span class="w"> </span>
+</code></pre></div>
+<blockquote>
+<p>需要mysql的命令</p>
+</blockquote>
+<h3 id="use-proxysql">use proxysql</h3>
+<ol>
+<li>查看库</li>
+</ol>
+<div class="highlight"><pre><span></span><code>proxysql_Admin&gt;<span class="w"> </span>show<span class="w"> </span>databases<span class="p">;</span>
++-----+---------------+-------------------------------------+
+<span class="p">|</span><span class="w"> </span>seq<span class="w"> </span><span class="p">|</span><span class="w"> </span>name<span class="w">          </span><span class="p">|</span><span class="w"> </span>file<span class="w">                                </span><span class="p">|</span>
++-----+---------------+-------------------------------------+
+<span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>main<span class="w">          </span><span class="p">|</span><span class="w">                                     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">2</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>disk<span class="w">          </span><span class="p">|</span><span class="w"> </span>/var/lib/proxysql/proxysql.db<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>stats<span class="w">         </span><span class="p">|</span><span class="w">                                     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">4</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>monitor<span class="w">       </span><span class="p">|</span><span class="w">                                     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">5</span><span class="w">   </span><span class="p">|</span><span class="w"> </span>stats_history<span class="w"> </span><span class="p">|</span><span class="w"> </span>/var/lib/proxysql/proxysql_stats.db<span class="w"> </span><span class="p">|</span>
++-----+---------------+-------------------------------------+
+<span class="m">5</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>查看表</li>
+</ol>
+<div class="highlight"><pre><span></span><code>proxysql_Admin&gt;<span class="w"> </span>show<span class="w"> </span>tables<span class="p">;</span>
++----------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>tables<span class="w">                                             </span><span class="p">|</span>
++----------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>coredump_filters<span class="w">                                   </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>global_variables<span class="w">                                   </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_aws_aurora_hostgroups<span class="w">                        </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_collations<span class="w">                                   </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_firewall_whitelist_rules<span class="w">                     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_firewall_whitelist_sqli_fingerprints<span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_firewall_whitelist_users<span class="w">                     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_galera_hostgroups<span class="w">                            </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_group_replication_hostgroups<span class="w">                 </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_hostgroup_attributes<span class="w">                         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql_query_rules<span class="w"> </span>
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>graph LR
+subgraph myqsl-cluster
+M(mysql-master 134)
+S1(mysql-slave 150 )
+S2(mysql-slave2 135)
+M -.基于GTID复制.-&gt; S1 &amp; S2
+end
+
+subgraph proxy
+P(ProxySQL117)
+end
+
+
+proxy &lt;--&gt;myqsl-cluster
+
+c -.写/读.-&gt; proxy
+</code></pre></div>
+<h3 id="mysql">添加后端mysql集群</h3>
+<ul>
+<li>添加<code>master/slave节点</code>到10/20组</li>
+</ul>
+<p>10组--&gt;master.   20组--&gt;slave</p>
+<div class="highlight"><pre><span></span><code><span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">mysql_servers</span><span class="w"> </span><span class="p">(</span><span class="n">hostgroup_id</span><span class="p">,</span><span class="w"> </span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="k">port</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;192.168.122.134&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3306</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">mysql_servers</span><span class="w"> </span><span class="p">(</span><span class="n">hostgroup_id</span><span class="p">,</span><span class="w"> </span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="k">port</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;192.168.122.150&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3306</span><span class="p">);</span>
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">mysql_servers</span><span class="w"> </span><span class="p">(</span><span class="n">hostgroup_id</span><span class="p">,</span><span class="w"> </span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="k">port</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;192.168.122.135&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3306</span><span class="p">);</span>
+
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">LOAD</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="n">servers</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">RUNTIME</span><span class="p">;</span>
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SAVE</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="n">servers</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="k">DISK</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li>查看表</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">mysql_servers</span><span class="p">;</span>
+</code></pre></div>
+<p>!image-20250905153620325](/images/image-20250905153620325.png)</p>
+<p>官方文档：https://proxysql.com/documentation/main-runtime#mysql_servers</p>
+<h3 id="_3">配置监控信息</h3>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">user</span><span class="w">  </span><span class="s1">&#39;monitor&#39;</span><span class="nv">@&#39;%&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w">  </span><span class="k">with</span><span class="w"> </span><span class="n">mysql_native_password</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="s1">&#39;monitor&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.04</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">grant</span><span class="w"> </span><span class="k">all</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="o">*</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="k">to</span><span class="w">  </span><span class="s1">&#39;monitor&#39;</span><span class="nv">@&#39;%&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.04</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>确认后端节点在线：</p>
+<p>!image-20250905144727609](/images/image-20250905144727609.png)</p>
+<h3 id="mysql_users">配置应用连接账号（mysql_users）</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">#proxySQL </span>
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">mysql_users</span><span class="p">(</span><span class="n">username</span><span class="p">,</span><span class="k">password</span><span class="p">,</span><span class="n">default_hostgroup</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;appuser&#39;</span><span class="p">,</span><span class="s1">&#39;123456&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">LOAD</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">RUNTIME</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SAVE</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="k">DISK</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.04</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+
+<span class="c1">#mysql数据库上创建用户</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">user</span><span class="w"> </span><span class="s1">&#39;appuser&#39;</span><span class="nv">@&#39;%&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">mysql_native_password</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="s2">&quot;123456&quot;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.03</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="c1">#授权</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">grant</span><span class="w"> </span><span class="k">all</span><span class="w">  </span><span class="k">on</span><span class="w">  </span><span class="o">*</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="k">to</span><span class="w">  </span><span class="s1">&#39;appuser&#39;</span><span class="nv">@&#39;%&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.04</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="c1">#刷新表</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">flush</span><span class="w">  </span><span class="k">tables</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.03</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_4">添加路由规则</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">#查询的规则</span>
+proxysql_Admin&gt;<span class="w"> </span>INSERT<span class="w"> </span>INTO<span class="w"> </span>mysql_query_rules<span class="w"> </span><span class="o">(</span>rule_id,<span class="w"> </span>active,<span class="w"> </span>match_digest,<span class="w"> </span>destination_hostgroup,<span class="w"> </span>apply<span class="o">)</span>VALUES<span class="w"> </span><span class="o">(</span><span class="m">1</span>,<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="s1">&#39;^SELECT.*|^SHOW.*&#39;</span>,<span class="w"> </span><span class="m">20</span>,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span><span class="w"> </span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">1</span><span class="w"> </span>row<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+
+<span class="c1">#写入规则</span>
+proxysql_Admin&gt;<span class="w"> </span>INSERT<span class="w"> </span>INTO<span class="w"> </span>mysql_query_rules<span class="w"> </span><span class="o">(</span>rule_id,<span class="w"> </span>active,<span class="w"> </span>match_digest,<span class="w"> </span>destination_hostgroup,<span class="w"> </span>apply<span class="o">)</span>VALUES<span class="w"> </span><span class="o">(</span><span class="m">2</span>,<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="s1">&#39;^INSERT|^UPDATE|^DELETE|^CREATE&#39;</span>,<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="m">1</span><span class="o">)</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">1</span><span class="w"> </span>row<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>保存规则：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#将规则添加到运行时</span>
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">LOAD</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="k">QUERY</span><span class="w"> </span><span class="n">RULES</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">RUNTIME</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="c1">#将规则保存的磁盘中</span>
+<span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SAVE</span><span class="w"> </span><span class="n">MYSQL</span><span class="w"> </span><span class="k">QUERY</span><span class="w"> </span><span class="n">RULES</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="k">DISK</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.05</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>查询路由规则</p>
+<ul>
+<li>默认</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w">  </span><span class="n">mysql_query_rules</span><span class="w"> </span><span class="err">\</span><span class="n">G</span><span class="p">;</span>
+<span class="o">***************************</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="o">***************************</span>
+<span class="w">              </span><span class="n">rule_id</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">               </span><span class="k">active</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">             </span><span class="n">username</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">schemaname</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">               </span><span class="n">flagIN</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">          </span><span class="n">client_addr</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">proxy_addr</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">proxy_port</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">               </span><span class="n">digest</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">         </span><span class="n">match_digest</span><span class="o">:</span><span class="w"> </span><span class="o">^</span><span class="k">SELECT</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="o">|^</span><span class="k">SHOW</span><span class="p">.</span><span class="o">*</span>
+<span class="w">        </span><span class="n">match_pattern</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w"> </span><span class="n">negate_match_pattern</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">         </span><span class="n">re_modifiers</span><span class="o">:</span><span class="w"> </span><span class="n">CASELESS</span>
+</code></pre></div>
+<ul>
+<li>Runtime 表</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w">  </span><span class="n">runtime_mysql_query_rules</span><span class="w"> </span><span class="err">\</span><span class="n">G</span><span class="p">;</span>
+<span class="o">***************************</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="o">***************************</span>
+<span class="w">              </span><span class="n">rule_id</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">               </span><span class="k">active</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">             </span><span class="n">username</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">schemaname</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">               </span><span class="n">flagIN</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">          </span><span class="n">client_addr</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">proxy_addr</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">           </span><span class="n">proxy_port</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">               </span><span class="n">digest</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w">         </span><span class="n">match_digest</span><span class="o">:</span><span class="w"> </span><span class="o">^</span><span class="k">SELECT</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="o">|^</span><span class="k">SHOW</span><span class="p">.</span><span class="o">*</span>
+<span class="w">        </span><span class="n">match_pattern</span><span class="o">:</span><span class="w"> </span><span class="no">NULL</span>
+<span class="w"> </span><span class="n">negate_match_pattern</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">         </span><span class="n">re_modifiers</span><span class="o">:</span><span class="w"> </span><span class="n">CASELESS</span>
+</code></pre></div>
+<h4 id="_5">查询连接池</h4>
+<div class="highlight"><pre><span></span><code>proxysql_Admin&gt;<span class="w"> </span>SELECT<span class="w"> </span>*<span class="w"> </span>FROM<span class="w"> </span>stats_mysql_connection_pool<span class="w"> </span><span class="se">\G</span><span class="p">;</span>
+***************************<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>row<span class="w"> </span>***************************
+<span class="w">        </span>hostgroup:<span class="w"> </span><span class="m">20</span><span class="w">   </span><span class="c1">#主机组：20</span>
+<span class="w">         </span>srv_host:<span class="w"> </span><span class="m">192</span>.168.122.150<span class="w">  </span><span class="c1">#服务器主机</span>
+<span class="w">         </span>srv_port:<span class="w"> </span><span class="m">3306</span><span class="w">  </span><span class="c1">#服务器端口</span>
+<span class="w">           </span>status:<span class="w"> </span>SHUNNED<span class="w"> </span><span class="c1">#状态  ONLINE |SHUNNED |OFFLINE_SOFT |OFFLINE_HARD</span>
+<span class="w">         </span>ConnUsed:<span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1">#正在使用的连接数</span>
+<span class="w">         </span>ConnFree:<span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1">#空闲连接数</span>
+<span class="w">           </span>ConnOK:<span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1">#连接成功数</span>
+<span class="w">          </span>ConnERR:<span class="w"> </span><span class="m">44</span><span class="w">  </span><span class="c1">#连接错误数</span>
+<span class="w">      </span>MaxConnUsed:<span class="w"> </span><span class="m">1</span><span class="w">   </span><span class="c1">#最大已使用连接数</span>
+<span class="w">          </span>Queries:<span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="c1">#查询次数</span>
+Queries_GTID_sync:<span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="c1">#基于全局事务标识符（GTID）同步的查询次数</span>
+<span class="w">  </span>Bytes_data_sent:<span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="c1">#已发送数据字节数</span>
+<span class="w">  </span>Bytes_data_recv:<span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="c1">#已接收数据字节数</span>
+<span class="w">       </span>Latency_us:<span class="w"> </span><span class="m">0</span><span class="w">   </span><span class="c1">#延迟（单位：微秒）</span>
+</code></pre></div>
+<p>文档地址：</p>
+<div class="highlight"><pre><span></span><code>ONLINE:<span class="w"> </span>后端服务器全面运行
+SHUNNED:<span class="w">  </span>后端服务器暂时停止使用，因为时间太短，连接错误过多，或者复制延迟超过允许的阈值
+
+OFFLINE_SOFT:
+<span class="w">    </span>当服务器进入<span class="w"> </span>OFFLINE_SOFT<span class="w"> </span>模式时，不会向该服务器创建新连接，而现有连接将保留，直到它们返回到连接池或被销毁。换句话说，连接将保持使用状态，直到再次启用多路复用，例如当事务完成时。只要多路复用有效，就可以优雅地分离后端
+
+OFFLINE_HARD
+当服务器进入<span class="w"> </span>OFFLINE_HARD<span class="w"> </span>模式时，不会向该服务器创建新连接，并且会立即丢弃现有的空闲连接，而当前与客户端会话关联的后端连接会在客户端尝试使用它们时立即被丢弃。这相当于从主机组中删除服务器。在内部，将服务器设置为<span class="w"> </span>OFFLINE_HARD<span class="w"> </span>状态相当于删除服务器
+</code></pre></div>
+<p>验证：读写执行路径</p>
+<p>!image-20250905153221566](/images/image-20250905153221566.png)</p>
+<h3 id="_6">查看连接信息</h3>
+<div class="highlight"><pre><span></span><code><span class="n">proxysql_Admin</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">stats_mysql_connection_pool</span><span class="p">;</span>
+</code></pre></div>
+<p>!image-20250905154050974](/images/image-20250905154050974.png)</p>
+<h3 id="web">Web 管理</h3>
+<div class="highlight"><pre><span></span><code>SET<span class="w"> </span>admin-web_enabled<span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">;</span>
+LOAD<span class="w"> </span>ADMIN<span class="w"> </span>VARIABLES<span class="w"> </span>TO<span class="w"> </span>RUNTIME<span class="p">;</span>
+</code></pre></div>
+<p>用户：</p>
+<div class="highlight"><pre><span></span><code>stats:stats<span class="w"> </span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

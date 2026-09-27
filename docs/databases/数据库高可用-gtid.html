@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库高可用 GTID - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-数据库高可用"># 数据库高可用</a></li><li class="toc-l2"><a href="#-延迟复制">## 延迟复制：</a></li><li class="toc-l1"><a href="#-停止sql线程"># 停止SQL线程</a></li><li class="toc-l1"><a href="#-这是延迟"># 这是延迟</a></li><li class="toc-l1"><a href="#-运行sql-线程"># 运行SQL 线程</a></li><li class="toc-l3"><a href="#-warning-gtid-replication-with-global-transaction-identifiers">### :warning: GTID Replication with Global Transaction Identifiers</a></li><li class="toc-l4"><a href="#-gtid-格式和存储">#### GTID 格式和存储</a></li><li class="toc-l4"><a href="#-临时开启gtid">#### 临时开启GTID</a></li><li class="toc-l3"><a href="#-永久配置所有节点都需要开启">### 永久配置(所有节点都需要开启)</a></li><li class="toc-l1"><a href="#执行事务">#执行事务</a></li><li class="toc-l4"><a href="#-查看主从复制">#### 查看主从复制</a></li><li class="toc-l2"><a href="#-时间服务器chrony">## 时间服务器（chrony）</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#-allow-ntp-client-access-from-local-network."># Allow NTP client access from local network.</a></li><li class="toc-l2"><a href="#-下午">## 下午</a></li><li class="toc-l3"><a href="#-数据库备份">### 数据库备份：</a></li><li class="toc-l4"><a href="#-备份的类型">#### 备份的类型</a></li><li class="toc-l4"><a href="#-备份的策略">#### 备份的策略</a></li><li class="toc-l4"><a href="#-备份工具">#### 备份工具</a></li><li class="toc-l1"><a href="#这一步会完成所有未提交事务的回滚确保备份处于可恢复状态">#这一步会完成所有未提交事务的回滚，确保备份处于可恢复状态</a></li><li class="toc-l1"><a href="#-合并日志"># 合并日志</a></li><li class="toc-l4"><a href="#-如何无法还原再次执行命令-提示log-问题">#### 如何无法还原：再次执行命令 提示·log· 问题#####</a></li><li class="toc-l1"><a href="#-xtrabackup-prepare-target-dir/opt/back"># xtrabackup --prepare  --target-dir=/opt/back</a></li><li class="toc-l2"><a href="#-还原库工具">## 还原库工具</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">数据库高可用</h1>
+<ul>
+<li>默认异步复制（基于二进制日志）</li>
+<li>半同步（基于二进制日志）</li>
+</ul>
+<h2 id="_2">延迟复制：</h2>
+<p>官方：https://dev.mysql.com/doc/refman/8.4/en/replication-delayed.html</p>
+<p>MySQL 支持延迟复制，以便副本服务器故意比源服务器晚至少指定时间执行事务。</p>
+<p>在 MySQL 8.4 中，延迟复制的方法 取决于两个时间戳， <code>immediate_commit_timestamp</code> 和 <code>original_commit_timestamp</code>（参见 <a href="https://dev.mysql.com/doc/refman/8.4/en/replication-delayed.html#replication-delayed-timestamps">复制延迟时间戳 </a>）;延迟 复制是使用这些时间戳来衡量的。如果 immediate source 或 replica 未使用这些时间戳，则 使用从 MySQL 5.7 实现延迟复制（请参阅 <a href="https://dev.mysql.com/doc/refman/5.7/en/replication-delayed.html">延迟复制 </a>）。本节 描述服务器之间的延迟复制，这些服务器都使用 这些时间戳。</p>
+<blockquote>
+<p>默认复制延迟为 0 秒</p>
+</blockquote>
+<p>方法：</p>
+<div class="highlight"><pre><span></span><code><span class="k">CHANGE</span><span class="w"> </span><span class="k">REPLICATION</span><span class="w"> </span><span class="k">SOURCE</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="k">SOURCE_DELAY</span><span class="o">=</span><span class="n">N</span><span class="w">  </span><span class="n">N</span><span class="w"> </span><span class="c1">#表示秒</span>
+</code></pre></div>
+<p>在slave上开启延迟复制</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 停止SQL线程</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">STOP</span><span class="w">   </span><span class="k">REPLICA</span><span class="w"> </span><span class="k">SQL_THREAD</span>
+<span class="c1"># 这是延迟</span>
+<span class="k">CHANGE</span><span class="w"> </span><span class="k">REPLICATION</span><span class="w"> </span><span class="k">SOURCE</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="k">SOURCE_DELAY</span><span class="o">=</span><span class="mi">10</span>
+<span class="c1"># 运行SQL 线程</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">start</span><span class="w">   </span><span class="k">REPLICA</span><span class="w"> </span><span class="k">SQL_THREAD</span>
+</code></pre></div>
+<p>验证：</p>
+<p>!image-20250904100504519](/images/image-20250904100504519.png)</p>
+<p>测试： <code>master 创建库测试</code></p>
+<h3 id="warning-gtid-replication-with-global-transaction-identifiers">:warning: GTID Replication with Global Transaction Identifiers</h3>
+<p>概念：</p>
+<div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 5px;">
+本节介绍使用 全局事务标识符 （GTID）。使用 GTID 时，每个事务都可以在原始服务器上提交并由任何副本应用时进行识别和跟踪;这意味着在启动新副本或故障转移到新源时，使用 GTID 时无需引用日志文件或这些文件中的位置，这大大简化了这些任务。由于基于 GTID 的复制完全基于事务，因此很容易确定源和副本是否一致;只要在源上提交的所有事务也在副本上提交，就可以保证两者之间的一致性。您可以将基于语句或基于行的复制与 GTID 一起使用（参见第 19.2.1 节 ，“复制格式”）; 但是，为了获得最佳效果，我们建议您使用基于行的 格式。
+</div>
+
+<h4 id="gtid">GTID 格式和存储</h4>
+<div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 5px;">
+  全局事务标识符 （GTID） 是创建的唯一标识符，并与在源服务器（源）上提交的每个事务相关联。此标识符不仅对其来源的服务器是唯一的，而且在给定复制拓扑中的所有服务器中都是唯一的。</br>
+<ul>
+  <li><code>GTID = source_id:transaction_id</code></li>
+  <li><code>server_uuid:事务ID</code></li>
+  dd220f24-8870-11f0-ad2e-5254007080f4:1-5
+</ul>
+</div>
+
+<h4 id="gtid_1">临时开启GTID</h4>
+<div class="highlight"><pre><span></span><code>SET<span class="w"> </span>@@GLOBAL.enforce_gtid_consistency<span class="w"> </span><span class="o">=</span><span class="w"> </span>WARN<span class="p">;</span>
+SET<span class="w"> </span>@@GLOBAL.enforce_gtid_consistency<span class="w"> </span><span class="o">=</span><span class="w"> </span>ON<span class="p">;</span>
+SET<span class="w"> </span>@@GLOBAL.gtid_mode<span class="w"> </span><span class="o">=</span><span class="w"> </span>OFF_PERMISSIVE<span class="p">;</span>
+SET<span class="w"> </span>@@GLOBAL.gtid_mode<span class="w"> </span><span class="o">=</span><span class="w"> </span>ON_PERMISSIVE<span class="p">;</span>
+SHOW<span class="w"> </span>STATUS<span class="w"> </span>LIKE<span class="w"> </span><span class="s1">&#39;ONGOING_ANONYMOUS_TRANSACTION_COUNT&#39;</span><span class="p">;</span>
+SET<span class="w"> </span>@@GLOBAL.GTID_MODE<span class="w"> </span><span class="o">=</span><span class="w"> </span>ON<span class="p">;</span>
+
+--<span class="w"> </span>OFF：新的和复制事务都使用anonymous。<span class="w"> </span>
+--<span class="w"> </span>OFF_PERMISSIVE：新事务是匿名的，同时允许复制的事务是GTID或匿名事务<span class="w"> </span>
+--<span class="w"> </span>ON_PERMISSIVE：新事务使用GTID，同时允许复制的事务是GTID或匿名事务
+<span class="w"> </span>--ON:<span class="w"> </span>新的和复制事务都使用GTID
+</code></pre></div>
+<p>验证是否开启GTID</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w">  </span><span class="k">variables</span><span class="w"> </span><span class="k">like</span><span class="w">  </span><span class="s2">&quot;%gtid%&quot;</span><span class="p">;</span>
+<span class="o">+----------------------------------+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Variable_name</span><span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="k">Value</span><span class="w">     </span><span class="o">|</span>
+<span class="o">+----------------------------------+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">binlog_gtid_simple_recovery</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">enforce_gtid_consistency</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_executed</span><span class="w">                    </span><span class="o">|</span><span class="w">           </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_executed_compression_period</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">         </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_mode</span><span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_next</span><span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="n">AUTOMATIC</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_owned</span><span class="w">                       </span><span class="o">|</span><span class="w">           </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_purged</span><span class="w">                      </span><span class="o">|</span><span class="w">           </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">session_track_gtids</span><span class="w">              </span><span class="o">|</span><span class="w"> </span><span class="k">OFF</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+----------------------------------+-----------+</span>
+<span class="mi">9</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>变量名</th>
+<th>值</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>binlog_gtid_simple_recovery</code></td>
+<td><code>ON</code></td>
+<td>用于控制在基于 GTID（全局事务标识符）的二进制日志（binlog）恢复机制方面的行为。 当设置为 <code>ON</code> 时，MySQL 在启动或者进行 binlog 相关恢复操作时，会采用一种相对简单直接的方式来处理 GTID 的信息，确保已提交的事务能正确地基于 GTID 从 binlog 中被识别和应用，有助于提升恢复效率以及保证数据一致性。</td>
+</tr>
+<tr>
+<td><code>enforce_gtid_consistency</code></td>
+<td><code>ON</code></td>
+<td>此参数强制开启 GTID 一致性检查。 开启后，会对数据库操作中的事务进行严格限制，确保所有事务的执行都符合 GTID 的一致性规则，例如禁止创建没有 GTID 的事务、禁止在事务中混合使用基于 GTID 和非基于 GTID 的操作等，以此来保证整个数据库集群中基于 GTID 的复制等功能稳定、准确地运行，避免因操作不一致导致的数据同步问题。</td>
+</tr>
+<tr>
+<td><code>gtid_executed</code></td>
+<td>（空值）</td>
+<td>该变量用于记录已经在当前服务器上执行过的所有 GTID 集合。 它会随着事务的提交不断更新，包含了各个已完成事务对应的 GTID 信息，是数据库用于跟踪自身事务执行历史以及在进行复制、恢复等操作时判断哪些事务已经处理过的重要依据。不过此处显示为空值，可能是尚未有事务执行或者尚未被更新显示（具体取决于当前数据库的状态和查询时机）。</td>
+</tr>
+<tr>
+<td><code>gtid_executed_compression_period</code></td>
+<td><code>0</code></td>
+<td>用于控制 <code>gtid_executed</code> 变量所记录的 GTID 信息的压缩周期（单位为事务数量）。 值为 <code>0</code> 表示不进行自动压缩，设置为一个正整数 <code>N</code> 时，意味着每执行 <code>N</code> 个事务后，MySQL 会对 <code>gtid_executed</code> 中记录的 GTID 信息进行压缩整理，减少其占用的存储空间，优化内存和磁盘使用效率，但压缩操作也会带来一定的性能开销，所以通常根据实际情况来合理设置该值。</td>
+</tr>
+<tr>
+<td><code>gtid_mode</code></td>
+<td><code>ON_PERMISSIVE</code></td>
+<td>用于设定 GTID 的模式，有几种可选值： <code>OFF</code> 表示完全禁用 GTID 功能；<code>ON_PERMISSIVE</code>（当前值）表示允许在数据库中混合使用有 GTID 和无 GTID 的事务，对于不符合 GTID 规则的事务不会报错，只是记录警告信息，常用于从非 GTID 模式向 GTID 模式过渡的场景；<code>ON</code> 则强制要求所有事务都必须使用 GTID，严格遵循 GTID 相关规则，确保数据库操作的一致性；<code>ON_FORCE</code> 类似 <code>ON</code>，但在遇到不符合 GTID 规则的事务时会直接报错并拒绝执行。</td>
+</tr>
+<tr>
+<td><code>gtid_next</code></td>
+<td><code>AUTOMATIC</code></td>
+<td>决定下一个事务使用的 GTID 值如何生成。 <code>AUTOMATIC</code> 表示由 MySQL 自动根据内部机制分配下一个事务的 GTID，是一种常见且自动化程度高的方式，数据库会依据自身的事务执行顺序、复制配置等情况合理生成相应的 GTID，无需用户手动干预，方便且能保证 GTID 体系下事务的有序性和唯一性。</td>
+</tr>
+<tr>
+<td><code>gtid_owned</code></td>
+<td>（空值）</td>
+<td>用于标识当前服务器所 “拥有” 的 GTID 范围，也就是当前正在执行或者已经分配但尚未完成的事务对应的 GTID 集合。 如果为空，说明当前可能没有正在进行的相关事务或者尚未对其进行更新显示（同样取决于具体的数据库状态和查询时机），在多服务器复制环境等场景下可用于监控和了解各服务器的事务执行情况。</td>
+</tr>
+<tr>
+<td><code>gtid_purged</code></td>
+<td>（空值）</td>
+<td>记录了已经从二进制日志（binlog）中被清除掉的 GTID 集合。 在进行 binlog 的清理、过期数据删除等操作后，相应的 GTID 会被标记为已清除并记录在此变量中，方便数据库清楚哪些 GTID 对应的事务数据已经不存在了，有助于后续基于 GTID 的复制、恢复等操作判断数据完整性和历史情况。此处为空值可能是尚未有相关的 binlog 清理操作或者尚未更新显示该变量。</td>
+</tr>
+<tr>
+<td><code>session_track_gtids</code></td>
+<td><code>OFF</code></td>
+<td>用于控制是否在会话层面跟踪 GTID 信息。 当设置为 <code>ON</code> 时，服务器会在会话中记录每个事务对应的 GTID 情况，便于在会话内进行相关的事务监控、分析等操作；设置为 <code>OFF</code>（当前值）则不进行这样的跟踪，减少额外的会话数据记录开销，通常根据具体的应用场景和对 GTID 监控需求来决定是否开启。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_3">永久配置(所有节点都需要开启)</h3>
+<div class="highlight"><pre><span></span><code>gtid-mode<span class="o">=</span>ON
+enforce-gtid-consistency<span class="o">=</span>ON
+</code></pre></div>
+<p>重启服务器</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mysql/bin/mysqld_safe --defaults-file=/usr/local/mysql8/3306/my.cnf --user=mysql &amp;</span>
+</code></pre></div>
+<p>验证是否开启</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">variables</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;gtid%&#39;</span><span class="p">;</span>
+<span class="o">+----------------------------------+------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Variable_name</span><span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="k">Value</span><span class="w">                                    </span><span class="o">|</span>
+<span class="o">+----------------------------------+------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_executed</span><span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="o">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">5</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_executed_compression_period</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">                                        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_mode</span><span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">                                       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_next</span><span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="n">AUTOMATIC</span><span class="w">                                </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_owned</span><span class="w">                       </span><span class="o">|</span><span class="w">                                          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">gtid_purged</span><span class="w">                      </span><span class="o">|</span><span class="w">                                          </span><span class="o">|</span>
+<span class="o">+----------------------------------+------------------------------------------+</span>
+<span class="mi">6</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+
+<span class="c1">#执行事务</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">mysql</span><span class="p">.</span><span class="n">gtid_executed</span><span class="p">;</span>
+<span class="o">+--------------------------------------+----------------+--------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">source_uuid</span><span class="w">                          </span><span class="o">|</span><span class="w"> </span><span class="n">interval_start</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">interval_end</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+--------------------------------------+----------------+--------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w">            </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span><span class="w">            </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="mi">3</span><span class="w"> </span><span class="o">|</span><span class="w">            </span><span class="mi">3</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="mi">4</span><span class="w"> </span><span class="o">|</span><span class="w">            </span><span class="mi">4</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">dd220f24</span><span class="o">-</span><span class="mi">8870</span><span class="o">-</span><span class="n">11f0</span><span class="o">-</span><span class="n">ad2e</span><span class="o">-</span><span class="n">5254007080f4</span><span class="w"> </span><span class="o">|</span><span class="w">              </span><span class="mi">5</span><span class="w"> </span><span class="o">|</span><span class="w">            </span><span class="mi">5</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+--------------------------------------+----------------+--------------+</span>
+<span class="mi">5</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>source_uuid：</li>
+<li>这一列存储的是产生该 GTID 事务的服务器实例的通用唯一识别码（UUID）。通过这个 UUID 可以识别出是哪个具体的 MySQL 实例发起了对应的事务，在有多个 MySQL 实例构成的复制拓扑等场景中，可以据此区分不同源端产生的事务。</li>
+<li>例如，其值可能类似 <code>3e11fa47-71ca-11e1-9e33-c80aa9429562</code> 这样的字符串格式，每个实例的 UUID 都是唯一的。</li>
+<li>transaction_id：</li>
+<li>代表事务在其对应源实例上的编号，也就是在该 <code>source_uuid</code> 所标识的实例范围内，每个事务都有一个唯一的顺序编号。</li>
+<li>它通常是一个数值类型的数据，用来区分同一实例产生的不同事务，按照事务执行的先后顺序依次递增。</li>
+<li>interval_start 和 interval_end：</li>
+<li>这两列常用来表示事务区间，对于一个连续执行的一组 GTID 事务，它们可能会以区间的形式来记录，以节省存储空间并更高效地管理已执行事务信息。</li>
+<li><code>interval_start</code> 是区间起始的事务编号，<code>interval_end</code> 是区间结束的事务编号，比如 <code>interval_start</code> 为 10，<code>interval_end</code> 为 20，表示从事务编号 10 到 20 这一组事务（在同一个 <code>source_uuid</code> 下）都已经被执行了。</li>
+</ol>
+<h4 id="_4">查看主从复制</h4>
+<div class="highlight"><pre><span></span><code>show<span class="w">  </span>slave<span class="w"> </span>status<span class="w"> </span><span class="se">\G</span><span class="p">;</span>
+</code></pre></div>
+<p>!image-20250904114503747](/images/image-20250904114503747.png)</p>
+<h2 id="chrony">时间服务器（chrony）</h2>
+<ul>
+<li>install chrony(所有节点上都需要安装)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum search  chrony</span>
+</code></pre></div>
+<p>时间服务器的配置<br />
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /etc/chrony.conf </span>
+<span class="c1"># Use public servers from the pool.ntp.org project.</span>
+<span class="c1"># Please consider joining the pool (http://www.pool.ntp.org/join.html).</span>
+server<span class="w"> </span>ntp.ntsc.ac.cn<span class="w">  </span>iburst<span class="w">   </span><span class="c1"># 定义同步时间服务器地址 域名/定义IP</span>
+
+<span class="c1"># Allow NTP client access from local network.</span>
+allow<span class="w"> </span><span class="m">192</span>.168.122.0/24<span class="w">   </span><span class="c1">#允许那个网段同步时间</span>
+</code></pre></div></p>
+<h2 id="_5">下午</h2>
+<ul>
+<li>[ ] 实现主从复制</li>
+<li>
+<p>[ ] 备份库</p>
+</li>
+<li>
+<p>[ ] 读写分离</p>
+</li>
+</ul>
+<p>Example: <code>添加一台新的数据库</code></p>
+<div class="highlight"><pre><span></span><code>graph 
+master  --&gt; slave 
+master -.add/gtid.-&gt; slave2
+</code></pre></div>
+<h3 id="_6">数据库备份：</h3>
+<h4 id="_7">备份的类型</h4>
+<ul>
+<li>冷备份</li>
+</ul>
+<blockquote>
+<p>停止服务；数据库数据目录copy 到硬盘中</p>
+</blockquote>
+<ul>
+<li>热备份(在线备份)</li>
+</ul>
+<blockquote>
+<p>在数据库正常运行的情况下进行备份操作;提供给用户服务中；</p>
+<ol>
+<li>什么时间备份？   #根据业务定义： 常规业务 凌晨3-6  </li>
+<li>备份需要注意什么？  # 锁库</li>
+</ol>
+</blockquote>
+<h4 id="_8">备份的策略</h4>
+<ul>
+<li>完整备份</li>
+</ul>
+<blockquote>
+<p>对整个数据库进行完整的备份，包括所有的数据表、存储过程、视图、索引以及相关的数据库配置等信息。例如每周日凌晨对数据库做一次完全备份，备份文件包含了数据库当时的全部内容。</p>
+<p>第一次备份：完整备份</p>
+</blockquote>
+<ul>
+<li>差异备份</li>
+</ul>
+<blockquote>
+<p>基于上一次完全备份，只备份从那次完全备份之后发生变化的数据。比如周一到周六每天凌晨做差异备份，每次备份都是记录从周日那次完全备份后到当天的数据变化情况。</p>
+</blockquote>
+<ul>
+<li><strong>增量备份</strong>：</li>
+</ul>
+<blockquote>
+<p>只备份上一次备份（无论是完全备份、差异备份还是上一次增量备份）之后发生变化的数据。例如周一做了完全备份，周二到周六每天做增量备份，周二的增量备份是记录周一完全备份后的数据变化，周三的增量备份是记录周二增量备份后的数据变化，以此类推</p>
+</blockquote>
+<h4 id="_9">备份工具</h4>
+<ul>
+<li>Mysqldump</li>
+</ul>
+<blockquote>
+<p>可以使用 <code>mysqldump</code> 命令行工具，它能将数据库中的数据和结构以 SQL 语句的形式导出备份</p>
+</blockquote>
+<p>Exmaple 1:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysqldump  -uroot -p  --all-databases   &gt; all_databases.sql</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysqldump    -uroot -pRoot@123.   --databases  mysql  &gt; db_msyql.sql </span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysqldump    -uroot -pRoot@123.   --databases  mysql  &gt; /opt/db_msyql.sql</span>
+</code></pre></div>
+<ul>
+<li>第三方工具 <code>percona</code>：</li>
+</ul>
+<p><a href="https://docs.percona.com/percona-xtrabackup/8.4/quickstart-overview.html">官方地址</a></p>
+<p>基于<code>yum</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span><span class="c1">#安装扩展源</span>
+$<span class="w"> </span>sudo<span class="w">  </span>wget<span class="w"> </span>-O<span class="w"> </span>/etc/yum.repos.d/epel.repo<span class="w"> </span>https://mirrors.aliyun.com/repo/epel-7.repo
+<span class="m">2</span>.<span class="w"> </span><span class="c1">#安装percona源</span>
+$<span class="w"> </span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+<span class="m">3</span>.<span class="w"> </span><span class="c1">#启用percona</span>
+$<span class="w">  </span>sudo<span class="w"> </span>percona-release<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>pxb-80-lts
+<span class="m">4</span>.<span class="w"> </span><span class="c1">#安装percona</span>
+$<span class="w"> </span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>percona-xtrabackup-80
+<span class="m">5</span>.<span class="w"> </span><span class="c1"># 验证</span>
+$<span class="w"> </span>xtrabackup<span class="w"> </span>--version
+</code></pre></div>
+<p>基于<code>glibc</code></p>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<p>全局备份：<code>3306/data 备份到指定目录</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># xtrabackup --backup  --datadir=/usr/local/mysql8/3306/data/ --socket=/tmp/mysql.sock --target-dir=/opt/back/ -uroot -pRoot@123. --no-server-version-check</span>
+</code></pre></div>
+<p>增量备份</p>
+<div class="highlight"><pre><span></span><code>xtrabackup<span class="w"> </span>--backup<span class="w">   </span>--user<span class="o">=</span>root<span class="w">  </span>--password<span class="o">=</span>Root@123.<span class="w"> </span><span class="se">\</span>
+--datadir<span class="o">=</span>/usr/local/mysql8/3306/data/<span class="w"> </span><span class="se">\</span>
+--socket<span class="o">=</span>/tmp/mysql.sock<span class="w"> </span><span class="se">\</span>
+--target-dir<span class="o">=</span>/opt/back/zenlian<span class="w"> </span><span class="se">\</span>
+--incremental-basedir<span class="o">=</span>/opt/back<span class="w"> </span><span class="se">\</span>
+--no-server-version-check
+</code></pre></div>
+<p>还原备份准备工作</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#这一步会完成所有未提交事务的回滚，确保备份处于可恢复状态</span>
+xtrabackup<span class="w"> </span>--prepare<span class="w">  </span>--target-dir<span class="o">=</span>/opt/back
+
+<span class="c1"># 合并日志</span>
+xtrabackup<span class="w"> </span>--prepare<span class="w"> </span>--apply-log-only<span class="w"> </span><span class="se">\</span>
+--target-dir<span class="o">=</span>/opt/back/<span class="se">\</span>
+--incremental-basedir<span class="o">=</span>/opt/zenlian
+
+<span class="c1">#### 如何无法还原：再次执行命令 提示·log· 问题#####</span>
+
+<span class="c1"># xtrabackup --prepare  --target-dir=/opt/back</span>
+</code></pre></div>
+<p>还原:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># xtrabackup --copy-back  --target-dir=/opt/back --datadir=/usr/local/mysql8/3306/data/  --no-server-version-check</span>
+</code></pre></div>
+<p>!image-20250904174409971](/images/image-20250904174409971.png)</p>
+<p>!image-20250904174432678](/images/image-20250904174432678.png)</p>
+<h2 id="_10">还原库工具</h2>
+<ul>
+<li>mysql</li>
+</ul>
+<p>Example： <code>在数据库中还原数据</code></p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span><span class="se">\!</span><span class="w"> </span>ls<span class="w">  </span>/root
+all_databases.sql<span class="w">  </span>anaconda-ks.cfg<span class="w">  </span>mysql-8.0.43-linux-glibc2.17-x86_64.tar.xz
+mysql&gt;<span class="w"> </span><span class="nb">source</span><span class="w"> </span>/root/all_databases.sql
+</code></pre></div>
+<p>Example 2: <code>在命令行中恢复</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql  -uroot  -pRoot@123. &lt; all_databases.sql</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql   -uroot -p -e &quot;source /root/all_databases.sql&quot;</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

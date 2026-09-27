@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电脑端页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #2575fc;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #666;
+        }
+        
+        .device-indicator {
+            display: inline-block;
+            background: #2575fc;
+            color: white;
+            padding: 8px 25px;
+            border-radius: 25px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2575fc;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #2575fc;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #2575fc;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #2575fc;
+            color: #2575fc;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #2575fc;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        footer {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .footer-column h3 {
+            color: #2575fc;
+            margin-bottom: 20px;
+        }
+        
+        .footer-links {
+            list-style-type: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #2575fc;
+        }
+        
+        .copyright {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+        
+        .mobile-only, .tablet-only {
+            display: none;
+        }
+        
+        .desktop-only {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>电脑端页面</h1>
+            <p class="subtitle">专为大屏幕设备优化设计</p>
+            <div class="device-indicator">
+                电脑端视图
+            </div>
+        </header>
+        
+        <nav class="navbar">
+            <div class="logo">企业品牌</div>
+            <div class="nav-links">
+                <a href="#">首页</a>
+                <a href="#">产品</a>
+                <a href="#">解决方案</a>
+                <a href="#">客户案例</a>
+                <a href="#">关于我们</a>
+            </div>
+            <div class="user-actions">
+                <button class="btn btn-outline">登录</button>
+                <button class="btn btn-primary">注册</button>
+            </div>
+        </nav>
+        
+        <div class="content">
+            <div class="main-content">
+                <div class="card">
+                    <h2>桌面端特性</h2>
+                    <p>充分利用大屏幕空间，提供丰富的内容和功能。</p>
+                    <ul class="feature-list">
+                        <li>多列布局展示丰富内容</li>
+                        <li>鼠标悬停交互效果</li>
+                        <li>复杂数据可视化</li>
+                        <li>多任务并行操作</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>生产力工具</h2>
+                    <p>为专业工作流程设计的工具和功能。</p>
+                    <ul class="feature-list">
+                        <li>高级搜索和筛选</li>
+                        <li>批量操作功能</li>
+                        <li>键盘快捷键支持</li>
+                        <li>多窗口管理</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>数据展示</h2>
+                    <p>大屏幕适合展示复杂数据和图表。</p>
+                    <ul class="feature-list">
+                        <li>交互式数据图表</li>
+                        <li>实时数据更新</li>
+                        <li>详细分析报告</li>
+                        <li>自定义仪表盘</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>高级功能</h2>
+                    <p>专为桌面用户设计的增强功能。</p>
+                    <ul class="feature-list">
+                        <li>文件拖拽上传</li>
+                        <li>右键上下文菜单</li>
+                        <li>剪贴板操作</li>
+                        <li>本地文件集成</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="card desktop-only">
+                    <h2>桌面专属</h2>
+                    <p>这些功能仅在电脑端显示，为桌面用户提供特别价值。</p>
+                    <ul class="feature-list">
+                        <li>多标签页管理</li>
+                        <li>高级设置面板</li>
+                        <li>插件和扩展</li>
+                        <li>开发者工具</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>快捷操作</h2>
+                    <ul class="feature-list">
+                        <li>新建项目</li>
+                        <li>导入数据</li>
+                        <li>导出报告</li>
+                        <li>系统设置</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-column">
+                <h3>产品</h3>
+                <ul class="footer-links">
+                    <li><a href="#">功能特性</a></li>
+                    <li><a href="#">定价</a></li>
+                    <li><a href="#">更新日志</a></li>
+                    <li><a href="#">帮助文档</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>公司</h3>
+                <ul class="footer-links">
+                    <li><a href="#">关于我们</a></li>
+                    <li><a href="#">团队介绍</a></li>
+                    <li><a href="#">招聘信息</a></li>
+                    <li><a href="#">联系我们</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>资源</h3>
+                <ul class="footer-links">
+                    <li><a href="#">博客</a></li>
+                    <li><a href="#">案例研究</a></li>
+                    <li><a href="#">白皮书</a></li>
+                    <li><a href="#">活动</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>支持</h3>
+                <ul class="footer-links">
+                    <li><a href="#">帮助中心</a></li>
+                    <li><a href="#">社区论坛</a></li>
+                    <li><a href="#">服务状态</a></li>
+                    <li><a href="#">提交反馈</a></li>
+                </ul>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 电脑端专属页面 | 专为大屏幕设备设计</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

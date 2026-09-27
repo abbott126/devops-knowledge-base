@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>存储管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-storage-存储"># Storage 存储</a></li><li class="toc-l2"><a href="#-volumes-卷">## Volumes 卷</a></li><li class="toc-l3"><a href="#-1.-为什么需要卷">### 1. 为什么需要卷</a></li><li class="toc-l3"><a href="#-2.-how-volumes-work-卷的工作原理">### 2. How volumes work 卷的工作原理</a></li><li class="toc-l3"><a href="#-3.-types-of-volumes-卷类型">### 3. Types of volumes 卷类型</a></li><li class="toc-l4"><a href="#-configmap-配置映射">#### configMap 配置映射</a></li><li class="toc-l4"><a href="#-emptydir-空目录">#### emptyDir 空目录</a></li><li class="toc-l5"><a href="#-emptydir-的核心特性">##### **emptyDir 的核心特性**</a></li><li class="toc-l1"><a href="#-指定-kubernetes-api-版本pod-资源属于-v1-核心组"># 指定 Kubernetes API 版本，Pod 资源属于 v1 核心组</a></li><li class="toc-l1"><a href="#-定义资源类型为-pod"># 定义资源类型为 Pod</a></li><li class="toc-l1"><a href="#-pod-的名称在命名空间内唯一"># Pod 的名称，在命名空间内唯一</a></li><li class="toc-l1"><a href="#-定义-pod-中的容器列表"># 定义 Pod 中的容器列表</a></li><li class="toc-l1"><a href="#-容器的名称在-pod-内唯一"># 容器的名称，在 Pod 内唯一</a></li><li class="toc-l1"><a href="#-定义容器需要挂载的卷"># 定义容器需要挂载的卷</a></li><li class="toc-l1"><a href="#-要挂载的卷名称需与下面-volumes-中定义的卷名一致"># 要挂载的卷名称（需与下面 volumes 中定义的卷名一致）</a></li><li class="toc-l1"><a href="#-定义-pod-可用的卷列表"># 定义 Pod 可用的卷列表</a></li><li class="toc-l1"><a href="#-定义卷类型为-emptydir临时空目录卷"># 定义卷类型为 emptyDir（临时空目录卷）</a></li><li class="toc-l1"><a href="#-限制-emptydir-的最大存储空间为-500mib"># 限制 emptyDir 的最大存储空间为 500MiB</a></li><li class="toc-l1"><a href="#-超出此限制时pod-可能会被-kubernetes-标记为失败"># 超出此限制时，Pod 可能会被 Kubernetes 标记为失败</a></li><li class="toc-l4"><a href="#-hostpath-主机路径">#### hostPath 主机路径</a></li><li class="toc-l5"><a href="#-hostpath-路径卷类型">##### `hostPath` 路径卷类型</a></li><li class="toc-l3"><a href="#-iscsi">### iscsi</a></li><li class="toc-l3"><a href="#-local-本地卷">### local 本地卷</a></li><li class="toc-l3"><a href="#-nfs">### nfs</a></li><li class="toc-l2"><a href="#-persistent-volumes-持久卷-pv">## Persistent Volumes 持久卷 pv</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="storage">Storage 存储</h1>
+<h2 id="volumes">Volumes 卷</h2>
+<h3 id="1">1. 为什么需要卷</h3>
+<h3 id="2-how-volumes-work">2. How volumes work 卷的工作原理</h3>
+<p>Kubernetes 支持多种类型的卷</p>
+<ul>
+<li>
+<p>临时数据卷： K8s 会被清除 </p>
+</li>
+<li>
+<p>永久数据卷： k8s 不会删除</p>
+</li>
+</ul>
+<p>核心来说，一个卷就是一个目录，可能包含一些数据，并且该目录可以被 pod 中的容器访问。该目录是如何形成的，其背后的存储介质以及其中的内容是由所使用的特定卷类型决定的。</p>
+<p>要使用卷，请在 Pod 中指定要提供的卷 <code>.spec.volumes</code> ，并在容器中声明将这些卷挂载到何处 <code>.spec.containers[*].volumeMounts</code> 。</p>
+<p>类似：<code>container</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>创建数据卷<span class="w"> </span>docker<span class="w"> </span>volume<span class="w">  </span>create<span class="w"> </span>
+<span class="m">2</span>.<span class="w"> </span>创建容器<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>
+</code></pre></div>
+<h3 id="3-types-of-volumes">3. Types of volumes 卷类型</h3>
+<h4 id="configmap">configMap 配置映射</h4>
+<blockquote>
+<p><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/">ConfigMap</a> 提供了一种将配置数据注入到 Pod 中的方法。 存储在 ConfigMap 中的数据可以在类型为 的卷中引用。 <code>configMap</code> ，然后由在 pod 中运行的容器化应用程序使用。</p>
+</blockquote>
+<h4 id="emptydir">emptyDir 空目录</h4>
+<blockquote>
+<p>对于定义了 <code>emptyDir</code> 卷的 Pod，该卷会在 Pod 被分配到节点时创建。顾名思义， <code>emptyDir</code>卷初始状态为空。Pod 中的所有容器都可以读写 <code>emptyDir</code> 卷中的相同文件，但每个容器中该卷的挂载路径可以相同也可以不同。<font color=red>当 Pod 由于任何原因从节点移除时， <code>emptyDir</code> 中的数据将被永久删除。</font></p>
+</blockquote>
+<h5 id="emptydir_1"><strong>emptyDir 的核心特性</strong></h5>
+<ol>
+<li><strong>生命周期与 Pod 绑定</strong>：</li>
+<li>emptyDir 随着 Pod 的创建而创建，随着 Pod 的删除而删除（即使 Pod 内的容器重启，数据也会保留）。</li>
+<li>当 Pod 被调度到新节点时，会在新节点上创建新的 emptyDir，原节点上的 emptyDir 会被删除。</li>
+<li><strong>存储位置</strong>：</li>
+<li>默认存储在节点的本地磁盘（由节点的文件系统管理）。</li>
+<li>若节点配置了 tmpfs（内存文件系统），可指定 emptyDir 存储在内存中（速度更快，但数据易失，且受节点内存限制）。</li>
+<li><strong>用途</strong>：</li>
+<li>容器间共享临时数据（例如，前端容器生成的文件需要后端容器处理）。</li>
+<li>存储应用运行时产生的临时缓存、日志（无需持久化的场景）。</li>
+</ol>
+<p>Example:  <code>dome 示例</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 指定 Kubernetes API 版本，Pod 资源属于 v1 核心组</span>
+apiVersion:<span class="w"> </span>v1
+<span class="c1"># 定义资源类型为 Pod</span>
+kind:<span class="w"> </span>Pod
+metadata:
+<span class="w">  </span><span class="c1"># Pod 的名称，在命名空间内唯一</span>
+<span class="w">  </span>name:<span class="w"> </span>test-pd
+spec:
+<span class="w">  </span><span class="c1"># 定义 Pod 中的容器列表</span>
+<span class="w">  </span>containers:
+<span class="w">  </span>-<span class="w"> </span><span class="c1"># 容器使用的镜像（这里是 Kubernetes 官方测试用的 Web 服务器镜像）</span>
+<span class="w">    </span>image:<span class="w"> </span>registry.k8s.io/test-webserver
+<span class="w">    </span><span class="c1"># 容器的名称，在 Pod 内唯一</span>
+<span class="w">    </span>name:<span class="w"> </span>test-container
+<span class="w">    </span><span class="c1"># 定义容器需要挂载的卷</span>
+<span class="w">    </span>volumeMounts:
+<span class="w">    </span>-<span class="w"> </span><span class="c1"># 卷在容器内的挂载路径（容器内的 /cache 目录会关联到 emptyDir 卷）</span>
+<span class="w">      </span>mountPath:<span class="w"> </span>/cache
+<span class="w">      </span><span class="c1"># 要挂载的卷名称（需与下面 volumes 中定义的卷名一致）</span>
+<span class="w">      </span>name:<span class="w"> </span>cache-volume
+<span class="w">  </span><span class="c1"># 定义 Pod 可用的卷列表</span>
+<span class="w">  </span>volumes:
+<span class="w">  </span>-<span class="w"> </span><span class="c1"># 卷的名称（供 volumeMounts 引用）</span>
+<span class="w">    </span>name:<span class="w"> </span>cache-volume
+<span class="w">    </span><span class="c1"># 定义卷类型为 emptyDir（临时空目录卷）</span>
+<span class="w">    </span>emptyDir:
+<span class="w">      </span><span class="c1"># 限制 emptyDir 的最大存储空间为 500MiB</span>
+<span class="w">      </span><span class="c1"># 超出此限制时，Pod 可能会被 Kubernetes 标记为失败</span>
+<span class="w">      </span>sizeLimit:<span class="w"> </span>500Mi
+</code></pre></div>
+<blockquote>
+<ul>
+<li><code>emptyDir</code> 卷是临时存储，生命周期与 Pod 一致，Pod 删除后数据会丢失</li>
+<li><code>sizeLimit</code> 是可选配置，用于限制卷的最大使用空间（防止容器过度占用节点存储）</li>
+<li><code>volumeMounts</code> 实现了将卷挂载到容器内的指定路径，使容器可以读写该卷中的数据</li>
+</ul>
+</blockquote>
+<p>验证： <code>是否在已调度的节点创建临时目录</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@work03<span class="w"> </span>~<span class="o">]</span><span class="c1"># find  /  -name  {volume_name}</span>
+</code></pre></div>
+<h4 id="hostpath">hostPath 主机路径</h4>
+<blockquote>
+<p><code>hostPath</code> 卷会将主机节点文件系统中的文件或目录挂载到您的 Pod 中。大多数 Pod 并不需要此功能，但它为某些应用程序提供了一种强大的备用方案。</p>
+<p>在不是必须hostPath 卷，尽量不使用</p>
+<p>使用 <code>hostPath</code> 卷类型会带来许多安全风险。如果可以避免使用 <code>hostPath</code> 卷，则应尽量避免。例如，可以定义一个 <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local"><code>local</code> PersistentVolume</a> 卷，并使用该卷代替。</p>
+</blockquote>
+<p><code>hostPath</code> 的一些用途包括：</p>
+<ul>
+<li>运行需要访问节点级系统组件的容器（例如，将系统日志传输到中央位置的容器，使用 <code>/var/log</code> 的只读挂载来访问这些日志）</li>
+<li>将存储在主机系统上的配置文件对<a href="https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/">静态 Pod</a> 设置为只读；与普通 Pod 不同，静态 Pod 无法访问 ConfigMap</li>
+</ul>
+<h5 id="hostpath_1"><code>hostPath</code> 路径卷类型</h5>
+<blockquote>
+<p>除了必需的 <code>path</code> 属性外，您还可以选择指定一个 <code>hostPath</code> 卷的 <code>type</code> 。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Value 价值</th>
+<th style="text-align: left;">Behavior 行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>‌""</code></td>
+<td style="text-align: left;">Empty string (default) is for backward compatibility, which means that no checks will be performed before mounting the <code>hostPath</code> volume. 空字符串（默认值）是为了向后兼容，这意味着在挂载 <code>hostPath</code> 卷之前不会执行任何检查。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DirectoryOrCreate 目录创建</code></td>
+<td style="text-align: left;">If nothing exists at the given path, an empty directory will be created there as needed with permission set to 0755, having the same group and ownership with Kubelet. 如果给定路径下不存在任何内容，则会根据需要创建一个空目录，权限设置为 0755，与 Kubelet 具有相同的组和所有权。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Directory 目录</code></td>
+<td style="text-align: left;">A directory must exist at the given path 指定路径下必须存在目录。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>FileOrCreate 文件或创建</code></td>
+<td style="text-align: left;">If nothing exists at the given path, an empty file will be created there as needed with permission set to 0644, having the same group and ownership with Kubelet. 如果给定路径下不存在任何内容，则会根据需要创建一个空文件，权限设置为 0644，与 Kubelet 具有相同的组和所有权。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>File 文件</code></td>
+<td style="text-align: left;">A file must exist at the given path 指定路径下必须存在文件。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Socket 插座</code></td>
+<td style="text-align: left;">A UNIX socket must exist at the given path 给定路径必须存在 UNIX 套接字。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CharDevice 字符设备</code></td>
+<td style="text-align: left;"><em>(Linux nodes only)</em> A character device must exist at the given path <em>（仅限 Linux 节点）</em> 指定路径下必须存在字符设备</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>BlockDevice 块设备</code></td>
+<td style="text-align: left;"><em>(Linux nodes only)</em> A block device must exist at the given path <em>（仅限 Linux 节点）</em> 给定路径必须存在块设备</td>
+</tr>
+</tbody>
+</table>
+<p>Exameple <code>hostPath</code></p>
+<div class="highlight"><pre><span></span><code>在代码仓库中
+</code></pre></div>
+<h3 id="iscsi">iscsi</h3>
+<blockquote>
+<p>ISCSI（Internet Small Computer System Interface，互联网小型计算机系统接口）是一种基于 TCP/IP 协议的存储网络技术，核心作用是将远程存储设备（如磁盘阵列）通过网络模拟为本地块设备，让客户端（服务器）像使用本地硬盘一样读写远程存储。</p>
+</blockquote>
+<p><code>iscsi</code> 卷允许将现有的 iSCSI（基于 IP 的 SCSI）卷挂载到 Pod 中。与 <code>emptyDir</code> 不同，emptyDir 会在 Pod 移除时被擦除，而 <code>iscsi</code> 卷的内容会被保留，卷本身只是被卸载。这意味着 iSCSI 卷可以预先填充数据，并且这些数据可以在 Pod 之间共享。</p>
+<h3 id="local">local 本地卷</h3>
+<p><code>local</code> 卷是指已挂载的本地存储设备，例如磁盘、分区或目录。</p>
+<p>本地卷只能用作静态创建的持久卷。不支持动态配置。</p>
+<p>与 <code>hostPath</code> 卷相比， <code>local</code> 卷以持久且可移植的方式使用，无需手动将 Pod 调度到节点。系统通过查看 PersistentVolume 上的节点亲和性来了解卷的节点约束。</p>
+<h3 id="nfs">nfs</h3>
+<p><code>nfs</code> 卷允许将现有的 NFS（网络文件系统）共享挂载到 Pod 中。与在 Pod 移除时会被擦除的 <code>emptyDir</code> 不同， <code>nfs</code> 卷的内容会被保留，卷本身只是被卸载。这意味着 NFS 卷可以预先填充数据，并且这些数据可以在 Pod 之间共享。NFS 卷可以同时被多个写入器挂载。</p>
+<p><strong>NFS协议</strong>分为以下几个层次：</p>
+<p>应用层：提供文件系统操作接口，如 mount 、 nfsstat 等。</p>
+<p>传输层：使用RPC（远程过程调用）进行<strong>通信</strong>，确保数据传输的可靠性和完整性。 </p>
+<p>网络层：使用TCP或UDP协议进行数据传输。 </p>
+<p><strong>N</strong>FS的工作流程如下： 客户端向服务器发送请求，请求共享文件系统的访问权限。 服务器检查客户端的权限，并返回访问权限。 客户端使用挂载命令将文件系统挂载到本地目录。 客户端可以访问共享文件系统中的文件和目录。 编辑 /etc/exports 文件，添加共享目录和客户端访问权限。 使用 exportfs 命令刷新exports文件，使配置生效。</p>
+<div class="highlight"><pre><span></span><code>graph LR
+subgraph nfs-stroage
+nfs-server
+end
+
+subgraph k8s-cluster
+p{{pod}}
+end
+p  -.rpc.-&gt; nfs-stroage
+</code></pre></div>
+<h2 id="persistent-volumes-pv">Persistent Volumes 持久卷 pv</h2>
+<p>存储管理与计算实例管理是截然不同的问题。PersistentVolume 子系统为用户和管理员提供了一个 API，它将存储的提供方式与使用方式隔离开来。为此，我们引入了两个新的 API 资源：PersistentVolume 和 PersistentVolumeClaim。</p>
+<p><em>持久卷</em> (PV) 是集群中一块已部署的存储区域。 由管理员配置或使用动态方式配置 <a href="https://kubernetes.io/docs/concepts/storage/storage-classes/">存储类 </a>。它就像集群中的节点一样，是一种集群资源。PV 是卷插件，类似于卷，但其生命周期独立于使用该 PV 的任何单个 Pod。此 API 对象捕获存储实现的详细信息，无论是 NFS、iSCSI 还是云提供商特定的存储系统。</p>
+<p><em>持久卷</em>声明 (PVC) 是用户对存储的请求。它类似于 Pod。Pod 消耗节点资源，而 PVC 消耗持久卷资源。Pod 可以请求特定级别的资源（CPU 和内存）。声明可以请求特定大小和访问模式（例如，可以挂载为 ReadWriteOnce、ReadOnlyMany、ReadWriteMany 或 ReadWriteOncePod，请参阅 <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes">AccessModes</a> ）。</p>
+<p>虽然 PersistentVolumeClaims 允许用户使用抽象的存储资源，但用户通常需要具有不同属性（例如性能）的 PersistentVolume 来解决不同的问题。集群管理员需要能够提供各种 PersistentVolume，这些卷的差异不仅体现在大小和访问模式上，还体现在其他方面，同时还要避免让用户了解这些卷的具体实现细节。为了满足这些需求，可以使用 <em>StorageClass</em> 资源。</p>
+<h2 id="lifecycle-of-a-volume-and-claim">Lifecycle of a volume and claim</h2>
+<p>PV 是集群中的资源。PVC 是对这些资源的请求，同时也充当对资源的声明检查。PV 和 PVC 之间的交互遵循以下生命周期</p>
+<h3 id="provisioning">Provisioning：</h3>
+<p>PV 的配置方式有两种：静态配置或动态配置</p>
+<p>静态：</p>
+<p>集群管理员创建多个 PV（持久存储）。这些 PV 承载着实际存储的详细信息，可供集群用户使用。它们存在于 Kubernetes API 中，可供调用。</p>
+<p>动态：</p>
+<p>当管理员创建的静态 PV 中没有一个与用户的 PersistentVolumeClaim 匹配时， 集群可能会尝试动态地专门为 PVC 配置一个卷。 此配置基于存储类：PVC 必须请求一个 要启用动态配置，必须指定<a href="https://kubernetes.io/docs/concepts/storage/storage-classes/">存储类，</a> 并且管理员必须创建并配置该类。请求该类的声明（例如 <code>""</code> 实际上会禁用自身的动态配置。</p>
+<p><img alt="image-20251031142736399" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/storage/assets/image-20251031142736399.png" /></p>
+<h3 id="pv">PV的常用命令</h3>
+<p>查看PV</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>PV<span class="o">]</span><span class="c1"># kubectl  get pv</span>
+<span class="o">[</span>root@master<span class="w"> </span>PV<span class="o">]</span><span class="c1"># kubectl  get  pv  task-pv-volume</span>
+</code></pre></div>
+<p>输出的值：</p>
+<p><img alt="" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/storage/assets/image-20251031150920934.png" /></p>
+<table>
+<thead>
+<tr>
+<th>列名（COLUMN）</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAME</td>
+<td>PersistentVolume（PV）的名称，集群内唯一。</td>
+</tr>
+<tr>
+<td>CAPACITY</td>
+<td>PV 的存储容量（如 10Gi、100Gi）。</td>
+</tr>
+<tr>
+<td>ACCESS MODES</td>
+<td>PV 支持的访问模式（如 RWO、ROX、RWX，对应上文提到的 4 种模式）。</td>
+</tr>
+<tr>
+<td>RECLAIM POLICY</td>
+<td>PV 被释放后的回收策略（Retain/Delete/Recycle，Recycle 已废弃）。</td>
+</tr>
+<tr>
+<td>STATUS</td>
+<td>PV 的当前状态（Pending：待绑定；Bound：已绑定到 PVC；Released：已释放；Failed：故障）。</td>
+</tr>
+<tr>
+<td>CLAIM</td>
+<td>已绑定的 PVC 名称（格式：<code>PVC名称-命名空间</code>，未绑定则为空）。</td>
+</tr>
+<tr>
+<td>STORAGECLASS</td>
+<td>PV 关联的 StorageClass 名称（如 manual、fast-storage，未关联则为空）。</td>
+</tr>
+<tr>
+<td>VOLUMEATTRIBUTESCLASS</td>
+<td>存储属性类（K8s 1.23+ 新增，用于定义存储的通用属性，通常为空）。</td>
+</tr>
+<tr>
+<td>REASON</td>
+<td>PV 处于当前状态的原因（如节点故障导致 PV 不可用，会显示故障原因）。</td>
+</tr>
+<tr>
+<td>AGE</td>
+<td>PV 的创建时间（如 1d、3h）。</td>
+</tr>
+</tbody>
+</table>
+<p>查看PV的信息：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>PV<span class="o">]</span><span class="c1"># kubectl  describe pv</span>
+Name:<span class="w">            </span>task-pv-volume
+Labels:<span class="w">          </span><span class="nv">type</span><span class="o">=</span><span class="nb">local</span>
+Annotations:<span class="w">     </span>&lt;none&gt;
+Finalizers:<span class="w">      </span><span class="o">[</span>kubernetes.io/pv-protection<span class="o">]</span>
+StorageClass:<span class="w">    </span>manual
+Status:<span class="w">          </span>Available
+Claim:
+Reclaim<span class="w"> </span>Policy:<span class="w">  </span>Retain
+Access<span class="w"> </span>Modes:<span class="w">    </span>RWO
+VolumeMode:<span class="w">      </span>Filesystem
+Capacity:<span class="w">        </span>10Gi
+Node<span class="w"> </span>Affinity:<span class="w">   </span>&lt;none&gt;
+Message:
+Source:
+<span class="w">    </span>Type:<span class="w">          </span>HostPath<span class="w"> </span><span class="o">(</span>bare<span class="w"> </span>host<span class="w"> </span>directory<span class="w"> </span>volume<span class="o">)</span>
+<span class="w">    </span>Path:<span class="w">          </span>/mnt/data
+<span class="w">    </span>HostPathType:
+Events:<span class="w">            </span>&lt;none&gt;
+</code></pre></div>
+<p>描述：</p>
+<div class="highlight"><pre><span></span><code>回收策略
+Reclaim<span class="w"> </span>Policy:<span class="w">  </span>Retain/Delete
+
+Retain<span class="w"> </span>回收策略允许手动回收资源。删除<span class="w"> </span>PersistentVolumeClaim<span class="w"> </span>后，PersistentVolume<span class="w"> </span>仍然存在，并且该卷被视为“已释放”。但由于先前声明者的数据仍保留在该卷上，因此它还不能被其他声明者使用。管理员可以按照以下步骤手动回收该卷。
+-<span class="w"> </span>删除持久卷。即使持久卷被删除，外部基础架构中关联的存储资产仍然存在。
+-<span class="w"> </span>手动清理相应存储资产上的数据。
+-<span class="w"> </span>手动删除关联的存储资产。
+
+Delete
+对于支持<span class="w"> </span>Delete<span class="w"> </span>回收策略的卷插件，删除操作会同时从<span class="w"> </span>Kubernetes<span class="w"> </span>中移除<span class="w"> </span>PersistentVolume<span class="w"> </span>对象以及外部基础架构中关联的存储资产。动态配置的卷继承其<span class="w"> </span>StorageClass<span class="w"> </span>的回收策略<span class="w"> </span>，该策略默认为<span class="w"> </span>Delete<span class="w"> </span>。管理员应配置<span class="w"> </span>StorageClass。<span class="w"> </span>根据用户预期；否则，PV<span class="w"> </span>必须进行编辑或修改。
+
+
+<span class="c1"># 访问模式Access Modes: </span>
+</code></pre></div>
+<p>访问模式Access Modes: </p>
+<blockquote>
+<p>在 Kubernetes 中，<code>accessModes</code>（访问模式）用于定义 <code>PersistentVolume（PV）</code> 或 <code>PersistentVolumeClaim（PVC）</code> 对存储资源的访问策略，决定了存储可以被多少节点或 Pod 以何种方式挂载</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>访问模式的值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ReadWriteOnce（RWO）</code></td>
+<td>仅允许 <strong>单个节点</strong> 以 <strong>读写（Read-Write）</strong> 方式挂载该存储。</td>
+</tr>
+<tr>
+<td><code>ReadOnlyMany（ROX）</code></td>
+<td>允许多个节点以 <strong>只读（Read-Only）</strong> 方式挂载该存储。</td>
+</tr>
+<tr>
+<td><code>ReadWriteMany（RWX</code></td>
+<td>允许多个节点以 <strong>读写（Read-Write）</strong> 方式挂载该存储。</td>
+</tr>
+<tr>
+<td><code>ReadWriteOncePod（RWOP）</code></td>
+<td>仅允许 <strong>单个 Pod</strong> 以读写方式挂载该存储（Kubernetes 1.27+ 版本新增）。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="storageclass">StorageClass（存储类)</h2>
+<p>在 Kubernetes 中，<strong>StorageClass（存储类）</strong> 是用于对集群存储资源进行分类和管理的 API 资源，核心作用是 “定义存储类型模板”，实现存储的<strong>动态供给</strong>（自动创建 PV）和<strong>按需匹配</strong>（让 PVC 快速找到符合需求的存储），解决了静态 PV 需手动创建的低效问题。</p>
+<h4 id="storageclass_1">一、核心价值：为什么需要 StorageClass？</h4>
+<p>没有 StorageClass 时，使用存储需管理员手动创建 PV，存在两大痛点：</p>
+<ol>
+<li><strong>效率低</strong>：集群规模大时，手动创建大量 PV 运维成本高。</li>
+<li><strong>匹配难</strong>：用户需了解底层存储细节（如 NFS 路径、云盘类型）才能申请 PVC。</li>
+</ol>
+<p>StorageClass 通过以下方式解决：</p>
+<ul>
+<li><strong>动态供给</strong>：用户创建 PVC 时，K8s 会根据 StorageClass 配置，自动创建对应的 PV 和底层存储（如自动创建 AWS EBS 卷、NFS 目录）。</li>
+<li><strong>抽象存储细节</strong>：用户只需指定 StorageClass 名称（如 <code>fast-ssd</code>、<code>slow-hdd</code>），无需关心底层是云盘还是本地存储。</li>
+<li><strong>分类管理</strong>：按存储性能（SSD/HDD）、用途（数据库 / 日志）、厂商（AWS/Azure）分类，满足不同应用需求。</li>
+</ul>
+<h3 id="storageclass_2">二、StorageClass 的核心配置</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage.k8s.io/v1</span><span class="w">  </span><span class="c1"># 固定 API 版本</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StorageClass</span><span class="w">             </span><span class="c1"># 资源类型</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fast-ssd</span><span class="w">               </span><span class="c1"># StorageClass 名称（用户申请时需指定）</span>
+<span class="nt">provisioner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/aws-ebs</span><span class="w">  </span><span class="c1"># 存储供给器（核心！决定用哪种存储插件）</span>
+<span class="nt">parameters</span><span class="p">:</span><span class="w">                    </span><span class="c1"># 存储参数（随供给器变化，定义存储具体属性）</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3</span><span class="w">                    </span><span class="c1"># AWS EBS 卷类型（通用型 SSD）</span>
+<span class="w">  </span><span class="nt">fsType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">xfs</span><span class="w">                  </span><span class="c1"># 文件系统类型</span>
+<span class="nt">reclaimPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete</span><span class="w">          </span><span class="c1"># 回收策略（PV 释放后自动删除，默认 Delete）</span>
+<span class="nt">allowVolumeExpansion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">     </span><span class="c1"># 是否允许 PVC 扩容（需底层存储支持）</span>
+<span class="nt">volumeBindingMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WaitForFirstConsumer</span><span class="w">  </span><span class="c1"># 卷绑定时机（关键！控制 PV 何时创建）</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provisioner</code></td>
+<td><strong>存储供给器</strong>：对接底层存储的插件（如 <code>kubernetes.io/aws-ebs</code> 对应 AWS 云盘，<code>kubernetes.io/nfs</code> 对应 NFS），决定能否动态创建 PV。👉 注意：若为 “手动管理的存储”（如本地卷），需设为 <code>kubernetes.io/no-provisioner</code>，表示不支持动态供给。</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td>存储的具体属性（随供给器变化）：<br>- 云盘：卷类型（如 <code>gp3</code>）、加密配置等；<br>- NFS：服务器地址（<code>server</code>）、共享目录（<code>path</code>）等。</td>
+</tr>
+<tr>
+<td><code>reclaimPolicy</code></td>
+<td>PV 回收策略，默认 <code>Delete</code>（动态创建的 PV 随 PVC 删除而删除），可选 <code>Retain</code>（保留 PV 和数据，需手动清理）。</td>
+</tr>
+<tr>
+<td><code>allowVolumeExpansion</code></td>
+<td>是否允许 PVC 扩容（如 PVC 申请 5Gi 后可扩容到 10Gi），需底层存储支持（如 AWS EBS、NFS 支持，本地卷部分支持）。</td>
+</tr>
+<tr>
+<td><code>volumeBindingMode</code></td>
+<td>卷绑定时机（控制 PV 何时与 PVC 绑定）：<br>- <code>Immediate</code>（默认）：PVC 创建后立即绑定 PV（适合无节点依赖的存储，如 NFS）；<br>- <code>WaitForFirstConsumer</code>（延迟绑定）：等待第一个使用该 PVC 的 Pod 调度后，再根据 Pod 节点亲和性创建 / 绑定 PV（适合本地卷、云盘等节点绑定的存储，避免 PV 与 Pod 不在同一节点）。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="provisioner">三、 Provisioner 供应者</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Volume Plugin 音量插件</th>
+<th style="text-align: center;">Internal Provisioner 内部配置器</th>
+<th style="text-align: center;">Config Example 配置示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">AzureFile Azure 文件</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#azure-file">Azure File Azure 文件</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">CephFS</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">FC</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">FlexVolume 弹性容积</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">iSCSI</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">Local 当地的</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#local">Local 当地的</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">NFS</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#nfs">NFS</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">PortworxVolume</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#portworx-volume">Portworx Volume Portworx 容量</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">RBD</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#ceph-rbd">Ceph RBD 头孢菌素 RBD</a></td>
+</tr>
+<tr>
+<td style="text-align: left;">VsphereVolume 球体体积</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><a href="https://kubernetes.io/docs/concepts/storage/storage-classes/#vsphere">vSphere</a></td>
+</tr>
+</tbody>
+</table>
+<h4 id="nfs_1">安装NFS 插件</h4>
+<blockquote>
+<p>https://kubernetes.io/docs/concepts/storage/storage-classes/#nfs</p>
+</blockquote>
+<p>下载插件</p>
+<div class="highlight"><pre><span></span><code>sh<span class="w">  </span>/root/114/kubernetes/Storage/storage-class/install-driver.sh
+创建插件的Pod
+</code></pre></div>
+<p>查看Pod</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>-o<span class="w"> </span>wide<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>csi-nfs-controller
+kubectl<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>-o<span class="w"> </span>wide<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>csi-nfs-node
+</code></pre></div>
+<h3 id="clean-up-nfs-csi-driver">clean up NFS CSI driver</h3>
+<ul>
+<li>Option#1. remote uninstall</li>
+</ul>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-skSL<span class="w"> </span>https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.12.1/deploy/uninstall-driver.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>v4.12.1<span class="w"> </span>--
+</code></pre></div>
+<ul>
+<li>Option#2. local uninstall</li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/kubernetes-csi/csi-driver-nfs.git
+<span class="nb">cd</span><span class="w"> </span>csi-driver-nfs
+git<span class="w"> </span>checkout<span class="w"> </span>v4.12.1
+./deploy/uninstall-driver.sh<span class="w"> </span>v4.12.1<span class="w"> </span><span class="nb">local</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

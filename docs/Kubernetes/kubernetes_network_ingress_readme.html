@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingress - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-官网-文档地址"># 官网 文档地址</a></li><li class="toc-l1"><a href="#-install-方式"># install 方式</a></li><li class="toc-l1"><a href="#-install"># install</a></li><li class="toc-l2"><a href="#-查看ingress">## 查看ingress</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">官网 文档地址</h1>
+<p>https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters</p>
+<h1 id="install">install 方式</h1>
+<ul>
+<li>helm 包管理器安装</li>
+<li>kubectl  apply   基于yaml </li>
+<li>最小安装方式</li>
+</ul>
+<p>使用云厂商的ingress 控制器<br />
+使用裸金属设备</p>
+<h1 id="install_1">install</h1>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w">  </span>apply<span class="w">  </span>-f<span class="w">  </span>deploy.yaml
+</code></pre></div>
+<h2 id="ingress">查看ingress</h2>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get po,svc  -n ingress-nginx</span>
+NAME<span class="w">                                            </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+pod/ingress-nginx-controller-5c8ff5744f-756c5<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4m34s
+
+NAME<span class="w">                                         </span>TYPE<span class="w">        </span>CLUSTER-IP<span class="w">      </span>EXTERNAL-IP<span class="w">   </span>PORT<span class="o">(</span>S<span class="o">)</span><span class="w">                      </span>AGE
+service/ingress-nginx-controller<span class="w">             </span>NodePort<span class="w">    </span><span class="m">10</span>.102.35.111<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">80</span>:31783/TCP,443:31277/TCP<span class="w">   </span>4m34s
+service/ingress-nginx-controller-admission<span class="w">   </span>ClusterIP<span class="w">   </span><span class="m">10</span>.105.91.71<span class="w">    </span>&lt;none&gt;<span class="w">        </span><span class="m">443</span>/TCP<span class="w">                      </span>4m34s
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1">#</span>
+</code></pre></div>
+<p><img alt="alt text" src="image.png" /></p>
+<p>查看ingress 的service</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  describe    service  ingress-nginx-controller  -n ingress-nginx</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

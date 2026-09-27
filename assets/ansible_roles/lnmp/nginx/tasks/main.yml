@@ -1,0 +1,10 @@
+---
+# tasks file for lnmp/nginx
+- name: install nginx
+  shell: 'echo hello ansible role nignx  install '
+  when: ansible_hostname  == 'nginx-proxy'
+- name: config nginx
+  template: src=templates/config.j2   dest=/etc/nginx/nginx.conf
+  when: ansible_hostname  == 'nginx-proxy'
+- name: copy porxy file
+  copy: src=file/nginx-proxy.conf  dest=/etc/nignx/conf.d/nginx-proxy.conf

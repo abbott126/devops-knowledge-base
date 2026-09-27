@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LVS 负载均衡 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#-nfs-网络文件系统共享存储组件">## NFS  网络文件系统（共享存储组件）</a></li><li class="toc-l3"><a href="#-部署">### 部署</a></li><li class="toc-l2"><a href="#-负载均衡及高可用">## 负载均衡及高可用</a></li><li class="toc-l3"><a href="#-负载均衡">### 负载均衡</a></li><li class="toc-l4"><a href="#-一核心定义与本质">#### 一、核心定义与本质</a></li><li class="toc-l4"><a href="#-二负载均衡的核心作用">#### 二、负载均衡的核心作用</a></li><li class="toc-l4"><a href="#-架构图">#### 架构图</a></li><li class="toc-l4"><a href="#-负载均衡的分类">#### 负载均衡的分类</a></li><li class="toc-l4"><a href="#-常见负载均衡算法">#### 常见负载均衡算法</a></li><li class="toc-l4"><a href="#-负载均衡的部署架构四层-vs-七层">#### 负载均衡的部署架构（四层 vs 七层）</a></li><li class="toc-l4"><a href="#-网络模型">#### 网络模型</a></li><li class="toc-l3"><a href="#-lvs">### LVS</a></li><li class="toc-l3"><a href="#-what-is-the-linux-virtual-server">### What is the Linux Virtual Server</a></li><li class="toc-l3"><a href="#-调度算法">### 调度算法：</a></li><li class="toc-l2"><a href="#-example">## Example:</a></li><li class="toc-l3"><a href="#-部署lvs">### 部署LVS</a></li><li class="toc-l3"><a href="#-后端真实主机">### 后端真实主机</a></li><li class="toc-l3"><a href="#-配置lvs">### 配置LVS</a></li><li class="toc-l1"><a href="#协议虚拟服务地址端口调度算法标志">#协议、虚拟服务地址:端口、调度算法、标志</a></li><li class="toc-l1"><a href="#后端服务器地址端口转发方式权重活跃连接数非活跃连接数">#后端服务器地址:端口、转发方式、权重、活跃连接数、非活跃连接数</a></li><li class="toc-l1"><a href="#-临时修改"># 临时修改</a></li><li class="toc-l3"><a href="#-常用命令">### 常用命令：</a></li><li class="toc-l1"><a href="#添加规则">#添加规则</a></li><li class="toc-l1"><a href="#-保存规则"># 保存规则</a></li><li class="toc-l1"><a href="#清楚规则">#清楚规则</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><div class="highlight"><pre><span></span><code>graph  LR 
+
+subgraph proxy
+end
+
+subgraph web-server
+web-server01
+web-server02
+web-server03 
+end
+subgraph java-app
+web01
+web02
+end
+subgraph php-server
+end
+subgraph data-server
+end
+c -.phpmyadmin.-&gt; proxy  --&gt; web-server01 &amp; web-server02 &amp;  web-server03 --&gt; php-server --&gt; data-server
+
+c -.zrlog.-&gt;proxy --&gt;  web01 &amp; web02  --&gt; data-server
+
+
+subgraph 网络文件系统
+n(nfs)
+end
+</code></pre></div>
+<h2 id="nfs">NFS  网络文件系统（共享存储组件）</h2>
+<p>NFS是基于<a href="https://baike.baidu.com/item/UDP/571511?fromModule=lemma_inlink">UDP</a>/<a href="https://baike.baidu.com/item/IP/224599?fromModule=lemma_inlink">IP</a>协议的应用，其实现主要是采用<a href="https://baike.baidu.com/item/远程过程调用/7854346?fromModule=lemma_inlink">远程过程调用</a><a href="https://baike.baidu.com/item/RPC/609861?fromModule=lemma_inlink">RPC</a>机制，RPC提供了一组与机器、操作系统以及底层传送协议无关的存取远程文件的操作。<a href="https://baike.baidu.com/item/RPC/0?fromModule=lemma_inlink">RPC</a>采用了<a href="https://baike.baidu.com/item/XDR/8796904?fromModule=lemma_inlink">XDR</a>的支持。<a href="https://baike.baidu.com/item/XDR/8796904?fromModule=lemma_inlink">XDR</a>是一种与机器无关的<a href="https://baike.baidu.com/item/数据描述/22081446?fromModule=lemma_inlink">数据描述</a>编码的协议，他以独立与任意<a href="https://baike.baidu.com/item/机器体系结构/22707109?fromModule=lemma_inlink">机器体系结构</a>的格式对网上传送的数据进行编码和解码，支持在<a href="https://baike.baidu.com/item/异构系统/15677344?fromModule=lemma_inlink">异构系统</a>之间数据的传送.</p>
+<h3 id="_1">部署</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install nfs-utils  rpcbind</span>
+<span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl   enable  --now nfs  rpcbind</span>
+</code></pre></div>
+<p>手动配置文件<code>exports</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /etc/exports</span>
+/<span class="w">         </span><span class="m">192</span>.168.19.0<span class="o">(</span>rw<span class="o">)</span>
+/phpmyadmin<span class="w">  </span><span class="m">192</span>.168.18.0<span class="o">(</span>rw<span class="o">)</span>
+</code></pre></div>
+<p>重启</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl restart  rpcbind nfs </span>
+</code></pre></div>
+<p>客户端：</p>
+<ul>
+<li>windows mac  linux</li>
+</ul>
+<p>Linux: 挂载</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mount  -t  nfs 192.168.18.50:/phpmyadmin  /nfs-mount/</span>
+</code></pre></div>
+<h2 id="_2">负载均衡及高可用</h2>
+<h3 id="_3">负载均衡</h3>
+<p>负载均衡（Load Balancing）是一种<strong>分布式系统核心技术</strong>，通过将客户端的请求（如 HTTP 请求、TCP 连接）<strong>均匀分发到多个后端服务器集群</strong>，实现 “避免单点过载、提升系统并发能力、增强服务可用性” 的目标。它是高可用（HA）、高并发架构的核心组件，广泛应用于网站、API 服务、数据库等场景。</p>
+<h4 id="_4">一、核心定义与本质</h4>
+<p>负载均衡的本质是 “<strong>资源调度优化</strong>”：</p>
+<ul>
+<li>前端用户 / 客户端的请求不直接访问后端服务器，而是先发送到 “负载均衡器（Load Balancer）”；</li>
+<li>负载均衡器根据预设规则（如 “轮询”“最小连接数”）选择一台健康的后端服务器，将请求转发给它；</li>
+<li>后端服务器处理请求后，将响应通过负载均衡器返回给客户端（部分架构支持 “直接响应”，减少负载均衡器压力）。</li>
+</ul>
+<p>简单来说：负载均衡器就像 “交通指挥员”，把大量车辆（请求）引导到不同车道（后端服务器），避免单车道拥堵，同时确保车道（服务器）正常通行。</p>
+<h4 id="_5">二、负载均衡的核心作用</h4>
+<ol>
+<li><strong>提高系统并发能力</strong><br />
+   单台服务器的 CPU、内存、网络带宽有限，并发请求超过阈值会导致响应变慢甚至宕机。通过多台服务器分担请求，可线性提升系统的并发处理能力（如 10 台服务器理论可支撑 10 倍于单台的并发量）。</li>
+<li><strong>避免单点故障（提升可用性）</strong><br />
+   若所有请求集中到一台服务器，该服务器故障会导致整个服务不可用（单点故障）。负载均衡器会通过 “健康检查” 实时监测后端服务器状态，自动剔除故障节点，将请求转发到正常节点，确保服务不中断（可用性通常可达 99.99% 以上）。</li>
+<li><strong>优化资源利用率</strong><br />
+   避免部分服务器闲置、部分服务器过载的 “资源浪费 + 过载崩溃” 问题，让集群中所有服务器的负载（CPU 利用率、连接数、内存占用）趋于均衡。</li>
+<li><strong>增强系统扩展性</strong><br />
+   当业务增长需要提升性能时，无需改造核心架构，只需向负载均衡集群中新增后端服务器，负载均衡器会自动将请求分发到新节点，实现 “水平扩展”。</li>
+<li><strong>附加功能支撑</strong><br />
+   现代负载均衡器还支持<strong>SSL 卸载</strong>（集中处理 HTTPS 加密解密，减轻后端压力）、<strong>会话保持</strong>（确保同一用户的请求始终转发到同一服务器，避免登录状态丢失）、<strong>流量控制</strong>（限制恶意请求，防止 DDoS 攻击）等功能。</li>
+</ol>
+<h4 id="_6">架构图</h4>
+<div class="highlight"><pre><span></span><code>graph TD
+    A[客户端（浏览器/APP）] --&gt;|发送HTTP请求| B[负载均衡器]
+    B --&gt;|1. 健康检查| C[后端服务器集群]
+    B --&gt;|2. 选择算法| D[服务器1]
+    B --&gt;|2. 选择算法| E[服务器2]
+    B --&gt;|2. 选择算法| F[服务器3]
+    D --&gt;|处理请求| B
+    E --&gt;|处理请求| B
+    F --&gt;|处理请求| B
+    B --&gt;|返回响应| A
+</code></pre></div>
+<ul>
+<li><strong>健康检查</strong>：负载均衡器定期向后端服务器发送 “心跳包”（如 TCP 连接测试、HTTP 请求 <code>/health</code>），若某服务器连续失败，则标记为 “不可用”，不再分发请求。</li>
+<li><strong>请求转发</strong>：根据预设算法选择后端服务器，转发请求并建立 “请求链路”。</li>
+<li><strong>响应返回</strong>：后端服务器处理完成后，将响应通过负载均衡器返回给客户端（部分架构支持 “直接返回”，即后端服务器直接向客户端发送响应，减少负载均衡器瓶颈）。</li>
+</ul>
+<h4 id="_7">负载均衡的分类</h4>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>工具名称</th>
+<th>特点</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>硬件设备</td>
+<td>F5 BIG-IP</td>
+<td>性能极强（百万级并发）、稳定性高、支持四层 / 七层 / SSL 卸载，自带冗余机制</td>
+<td>企业核心业务（如金融、电商），对稳定性和性能要求极高，预算充足的场景</td>
+</tr>
+<tr>
+<td>硬件设备</td>
+<td>Citrix NetScaler</td>
+<td>功能全面（负载均衡 + 应用防火墙 + SSL 卸载），兼容性强</td>
+<td>中大型企业，需要一体化网络安全解决方案的场景</td>
+</tr>
+<tr>
+<td>软件工具</td>
+<td>Nginx</td>
+<td>轻量级、开源免费，支持七层负载均衡（HTTP/HTTPS），配置简单</td>
+<td>中小型网站、API 服务、微服务路由，性价比优先的场景</td>
+</tr>
+<tr>
+<td>软件工具</td>
+<td>HAProxy</td>
+<td>开源免费，支持四层 + 七层，会话保持、健康检查功能强大，稳定性高</td>
+<td>对可靠性要求高的场景（如数据库负载均衡、企业内部服务）</td>
+</tr>
+<tr>
+<td>软件工具</td>
+<td>LVS（Linux Virtual Server）</td>
+<td>开源免费，仅支持四层，性能极高（基于内核态转发），无七层功能</td>
+<td>Linux 服务器集群，需要处理百万级 TCP 连接的场景（如高并发数据库服务）</td>
+</tr>
+<tr>
+<td>云服务</td>
+<td>AWS ELB（Elastic Load Balancing）</td>
+<td>云厂商托管服务，支持四层（NLB）、七层（ALB），自动扩容、无需运维</td>
+<td>基于 AWS 云架构的业务，追求 “零运维” 的场景</td>
+</tr>
+<tr>
+<td>云服务</td>
+<td>阿里云 SLB（Server Load Balancer）</td>
+<td>支持四层 / 七层、SSL 卸载、会话保持、跨可用区部署，与阿里云生态深度集成</td>
+<td>基于阿里云的业务，需要高可用、弹性扩展的场景</td>
+</tr>
+<tr>
+<td>云服务</td>
+<td>腾讯云 CLB</td>
+<td>功能类似阿里云 SLB，支持四层 / 七层、负载均衡与云服务器 / 容器无缝对接</td>
+<td>基于腾讯云的业务，适合游戏、直播等高并发场景</td>
+</tr>
+<tr>
+<td>DNS</td>
+<td></td>
+<td>域名的负载均衡</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_8">常见负载均衡算法</h4>
+<blockquote>
+<p>算法决定了负载均衡器 “如何选择后端服务器”，需根据业务场景（如后端服务器配置是否一致、是否需要会话保持）选择，主要分为<strong>静态算法</strong>和<strong>动态算法</strong>两类：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>算法类型</th>
+<th>算法名称</th>
+<th>原理</th>
+<th>适用场景</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>静态算法</td>
+<td>轮询（Round Robin）</td>
+<td>按顺序依次将请求分发到后端服务器（1→2→3→1→2→3...）</td>
+<td>后端服务器配置完全一致（CPU、内存、带宽相同）</td>
+<td>优点：简单高效；缺点：若服务器性能差异大，会导致负载不均</td>
+</tr>
+<tr>
+<td>静态算法</td>
+<td>加权轮询（Weighted RR）</td>
+<td>给性能好的服务器分配更高 “权重”，权重越高接收请求越多（如权重 3:1，服务器 1 接收 3 次、服务器 2 接收 1 次）</td>
+<td>后端服务器配置不一致（如部分服务器 CPU 更强）</td>
+<td>优点：适配性能差异；缺点：无法动态调整权重（需手动配置）</td>
+</tr>
+<tr>
+<td>静态算法</td>
+<td>IP 哈希（IP Hash）</td>
+<td>根据客户端 IP 地址计算哈希值，映射到固定后端服务器</td>
+<td>需要 “会话保持” 的场景（如用户登录状态、购物车数据存储在服务器本地）</td>
+<td>优点：无需额外存储会话；缺点：若某服务器故障，该 IP 段用户请求会失败</td>
+</tr>
+<tr>
+<td>动态算法</td>
+<td>最小连接数（Least Connections）</td>
+<td>实时统计后端服务器的活跃连接数，将请求分发到连接数最少的服务器</td>
+<td>请求处理时间差异大的场景（如部分请求耗时久、部分耗时短）</td>
+<td>优点：动态适配负载；缺点：需实时统计连接数，略增加负载均衡器开销</td>
+</tr>
+<tr>
+<td>动态算法</td>
+<td>最快响应时间（Fastest Response Time）</td>
+<td>选择 “平均响应时间最短” 的服务器，兼顾连接数和处理速度</td>
+<td>对响应延迟敏感的场景（如金融交易、实时通信）</td>
+<td>优点：优先保障低延迟；缺点：需统计响应时间，算法复杂度较高</td>
+</tr>
+<tr>
+<td>动态算法</td>
+<td>最少负载（Least Load）</td>
+<td>综合 CPU 利用率、内存占用、磁盘 I/O 等指标，选择负载最低的服务器</td>
+<td>后端服务器负载类型多样（如混合 CPU 密集型、I/O 密集型任务）</td>
+<td>优点：最精准的负载均衡；缺点：需收集多维度指标，性能开销较大</td>
+</tr>
+</tbody>
+</table>
+<h4 id="vs">负载均衡的部署架构（四层 vs 七层）</h4>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>四层负载均衡（L4）</th>
+<th>七层负载均衡（L7）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工作层级</td>
+<td>OSI 模型第 4 层（传输层），基于<strong>IP 地址 + 端口</strong></td>
+<td>OSI 模型第 7 层（应用层），基于<strong>应用层协议内容</strong>（如 HTTP 路径、域名、请求头）</td>
+</tr>
+<tr>
+<td>分发依据</td>
+<td>客户端 IP、目标 IP、端口（如 TCP 80/443）</td>
+<td>HTTP URL 路径（如<code>/api</code>→服务器 A，<code>/static</code>→服务器 B）、域名、Cookie、请求参数</td>
+</tr>
+<tr>
+<td>核心功能</td>
+<td>转发 TCP/UDP 连接，支持高并发、低延迟</td>
+<td>路径路由、域名路由、SSL 卸载、会话保持、请求过滤（如拦截恶意请求）</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>性能极高（仅处理传输层数据，无需解析应用内容），支持百万级并发</td>
+<td>性能略低（需解析应用层协议），支持十万级并发</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>TCP 协议服务（如数据库、Redis、WebSocket）、高并发 HTTP 服务</td>
+<td>需按应用内容分发的场景（如微服务路由、静态 / 动态资源分离、多域名共享 IP）</td>
+</tr>
+<tr>
+<td>典型工具</td>
+<td>LVS（Linux Virtual Server）、F5 BIG-IP（硬件）</td>
+<td>Nginx、HAProxy、Apache Traffic Server</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_9">网络模型</h4>
+<p>!image-20250827163347567](/images/image-20250827163347567.png)</p>
+<h3 id="lvs">LVS</h3>
+<h3 id="what-is-the-linux-virtual-server">What is the Linux Virtual Server</h3>
+<p>The Linux Virtual Server is a highly scalable    and highly available server built on a cluster of real servers,    with the <a href="http://kb.linuxvirtualserver.org/wiki/Load_balancer">load balancer</a> running on the Linux operating system. The    architecture of the server cluster is fully transparent to end    users, and the users interact as if it were a single    high-performance virtual server. For more information, click    <a href="http://www.linuxvirtualserver.org/whatis.html"> here</a>.      </p>
+<blockquote>
+<p>虚拟服务器是一种高度可扩展和高可用性的服务器 构建在一组真实服务器上。服务器集群的架构 对最终用户完全透明,用户与最终用户进行交互。 集群系统,仿佛它只是一个高性能的虚拟系统 服务器</p>
+<p>The IPVS Netfilter module (version 1.2.1) was in the offical kernel 2.6.10 released on December 25, 2004. It's a Christmas version, click <a href="http://www.linuxvirtualserver.org/software/ipvs.html#kernel-2.6"> the IPVS software page</a> for more information.</p>
+</blockquote>
+<p>网络模式：</p>
+<ul>
+<li>NAT</li>
+<li>DR</li>
+<li>TUN</li>
+</ul>
+<p>NAT 模式</p>
+<blockquote>
+<p>网络地址转换</p>
+</blockquote>
+<p>!image-20250827152951733](/images/image-20250827152951733.png)</p>
+<p>DR 模式</p>
+<p>!image-20250827153432284](/images/image-20250827153432284.png)</p>
+<p>TUN </p>
+<blockquote>
+<p>IP隧道模式</p>
+</blockquote>
+<p>!image-20250827153859398](/images/image-20250827153859398.png)</p>
+<h3 id="_10">调度算法：</h3>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<ul>
+<li>Round-Robin Scheduling  循环调度</li>
+</ul>
+<blockquote>
+<p>循环调度算法将每个传入请求发送到其列表中的下一个服务器。</p>
+</blockquote>
+<ul>
+<li>Weighted Round-Robin Scheduling 加权轮询调度</li>
+</ul>
+<blockquote>
+<p>加权轮询调度旨在更好地处理不同处理能力的服务器。可以为每个服务器分配一个权重，一个表示处理能力的整数值。</p>
+</blockquote>
+<ul>
+<li>Least-Connection Scheduling 最少连接调度</li>
+</ul>
+<blockquote>
+<p>最少连接调度算法将网络连接定向到已建立连接数最少的服务器。这是动态调度算法之一;因为它需要动态计算每个服务器的实时连接。对于管理具有类似性能的服务器集合的虚拟服务器，当请求负载变化很大时，最少连接调度有助于平滑分配。虚拟服务器会将请求定向到活动连接最少的真实服务器。</p>
+</blockquote>
+<ul>
+<li>Weighted Least-Connection Scheduling 加权最小连接调度</li>
+</ul>
+<blockquote>
+<p>加权最小连接调度是最小连接调度的超集，您可以在其中为每个实际服务器分配性能权重。权重值较高的服务器将在任何时候接收更大比例的实时连接。虚拟服务器管理员可以为每个真实服务器分配一个权重，并将网络连接调度到每台服务器，其中每台服务器的当前实时连接数的百分比与其权重成比。默认权重为 1。</p>
+</blockquote>
+<ul>
+<li>Locality-Based Least-Connection Scheduling 基于局部的最小连接调度</li>
+</ul>
+<blockquote>
+<p>基于局部的最小连接调度算法用于目标 IP 负载均衡。它通常用于缓存集群。如果服务器处于活动状态且处于负载状态，则此算法通常会将发往 IP 地址的数据包定向到其服务器。如果服务器过载（其活动连接数大于其权重），并且有一台服务器处于一半负载状态，则将加权最小连接服务器分配给此 IP 地址。</p>
+</blockquote>
+<ul>
+<li>Locality-Based Least-Connection with Replication Scheduling 基于局部的最小连接与复制调度</li>
+</ul>
+<blockquote>
+<p>基于局部的最小连接与复制调度算法也用于目标 IP 负载均衡。它通常用于缓存集群。它与 LBLC 调度的不同之处在于：负载均衡器维护从目标到一组可以为目标提供服务的服务器节点的映射。对目标的请求被分配给目标服务器集中连接最少的节点。如果服务器集中的所有节点都过载，它会在集群中选取一个连接最少的节点，并将其添加到目标的服务器集中。如果服务器集在指定时间内未被修改，则从服务器集中删除负载最多的节点，以避免高度复制。</p>
+</blockquote>
+<ul>
+<li>Destination Hashing Scheduling 目标哈希调度</li>
+</ul>
+<blockquote>
+<p>目标哈希调度算法通过按目标 IP 地址查找静态分配的哈希表，将网络连接分配给服务器。</p>
+</blockquote>
+<ul>
+<li>Source Hashing Scheduling 源哈希调度</li>
+</ul>
+<blockquote>
+<p>源哈希调度算法通过按源 IP 地址查找静态分配的哈希表，将网络连接分配给服务器。</p>
+</blockquote>
+<ul>
+<li>Shortest Expected Delay Scheduling 最短预期延迟调度</li>
+</ul>
+<blockquote>
+<p>最短预期延迟调度算法将网络连接分配给具有最短预期延迟的服务器。如果发送到第 i 台服务器，作业将经历的预期延迟为 （Ci + 1） / Ui，其中 Ci 是第 i 台服务器上的连接数，Ui 是第 i 台服务器的固定服务速率（权重）。</p>
+</blockquote>
+<ul>
+<li>Never Queue Scheduling  从不排队调度</li>
+</ul>
+<blockquote>
+<p>从不排队调度算法采用双速模型。当有空闲服务器可用时，作业将被发送到空闲服务器，而不是等待快速服务器。当没有空闲服务器可用时，作业将被发送到最小化其预期延迟的服务器（最短预期延迟调度算法）。</p>
+</blockquote>
+<h2 id="example">Example:</h2>
+<div class="highlight"><pre><span></span><code>graph LR 
+NAT模式 
+client
+subgraph proxy
+lvs-server
+end
+
+subgraph  web-cluster
+web1-server
+web2-server
+end
+
+client --&gt; proxy --&gt; web1-server &amp; web2-server
+</code></pre></div>
+<p>节点规划：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>IP地址公网/似网</th>
+<th>系统/内核版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LVS</td>
+<td>公网： <code>192.168.19.148</code><br>私网：<code>192.168.18.50</code></td>
+<td>3.10.0-1127.el7.x86_64</td>
+</tr>
+<tr>
+<td>Web-server30.com</td>
+<td>私网：<code>192.168.18.30</code></td>
+<td>3.10.0-1127.el7.x86_64</td>
+</tr>
+<tr>
+<td>Web-server40.com</td>
+<td>私网：<code>192.168.18.40</code></td>
+<td>3.10.0-1127.el7.x86_64</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lvs_1">部署LVS</h3>
+<blockquote>
+<p>lvs 集成到我们系统的内核；只需要安装<code>LVS</code>管理命令 <code>ipvsadm</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install  ipvsadm.x86_64</span>
+</code></pre></div>
+<p><code>ipvsadm</code>命令用法：</p>
+<div class="highlight"><pre><span></span><code>ipvsadm<span class="w"> </span><span class="o">[</span>子命令<span class="o">]</span><span class="w"> </span>虚拟服务<span class="w">  </span><span class="o">[</span>选项<span class="o">]</span><span class="w"> </span>真实主机<span class="w"> </span><span class="o">[</span>模式/调度算法<span class="o">]</span><span class="w"> </span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>ipvsadm<span class="w"> </span>-A<span class="w"> </span>-t<span class="w"> </span><span class="m">207</span>.175.44.110:80<span class="w"> </span>-s<span class="w"> </span>rr
+ipvsadm<span class="w"> </span>-a<span class="w"> </span>-t<span class="w"> </span><span class="m">207</span>.175.44.110:80<span class="w"> </span>-r<span class="w"> </span><span class="m">192</span>.168.10.1:80<span class="w"> </span>-m
+</code></pre></div>
+<blockquote>
+<p>-A  --add-service  add virtual service with options </p>
+<p>-t  --tcp-service    service-address  service-address is host[:port]</p>
+<p>-s  --scheduler    scheduler     one of rr|wrr|lc|wlc|lblc|lblcr|dh|sh|sed|nq, the default scheduler is wlc.</p>
+<p>-L   --list      list the table</p>
+<p>-n   --numeric        numeric output of addresses and ports</p>
+<p>-a --add-server.      add real server with options</p>
+<p>-r   --real-server    server-address  server-address is host (and port)</p>
+<blockquote>
+<p>模式</p>
+<p>--gatewaying  -g          gatewaying (direct routing) (default)</p>
+<p>--ipip     -i          ipip encapsulation (tunneling)</p>
+<p>--masquerading -m          masquerading (NAT)</p>
+</blockquote>
+<p>--save      -S    save rules to stdout</p>
+</blockquote>
+<h3 id="_11">后端真实主机</h3>
+<ol>
+<li>
+<p>主机的基本配置</p>
+</li>
+<li>
+<p>主机上安装服务</p>
+</li>
+<li>
+<p>启动</p>
+</li>
+<li>
+<p>验证</p>
+</li>
+</ol>
+<blockquote>
+<p>使用LVS服务器作为客户端请求后端真实主机服务是否正常</p>
+</blockquote>
+<ol>
+<li>添加网关</li>
+</ol>
+<blockquote>
+<p>nginx 内网地址</p>
+</blockquote>
+<p>!image-20250828112621606](/images/image-20250828112621606.png)</p>
+<p>!image-20250828112651854](/images/image-20250828112651854.png)</p>
+<h3 id="lvs_2">配置LVS</h3>
+<ol>
+<li>创建LVS的规则</li>
+</ol>
+<p>添加虚拟服务</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm   -A  -t 192.168.19.148:80 -s rr</span>
+</code></pre></div>
+<p>添加真实主机</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm  -a -t 192.168.19.148:80  -r 192.168.18.30:80  -m </span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm  -a -t 192.168.19.148:80  -r 192.168.18.40:80  -m </span>
+</code></pre></div>
+<ol>
+<li>查看规则</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm  -Ln</span>
+LVS<span class="w"> </span>模块版本及内存大小
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span><span class="w"> </span>
+<span class="c1">#协议、虚拟服务地址:端口、调度算法、标志</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags<span class="w"> </span>
+<span class="c1">#后端服务器地址:端口、转发方式、权重、活跃连接数、非活跃连接数</span>
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+TCP<span class="w">  </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>rr
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">         </span>
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.40:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">  </span>
+</code></pre></div>
+<ol>
+<li>查看连接状态</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Lnc</span>
+IPVS<span class="w"> </span>connection<span class="w"> </span>entries
+pro<span class="w"> </span>expire<span class="w"> </span>state<span class="w">       </span><span class="nb">source</span><span class="w">             </span>virtual<span class="w">            </span>destination
+TCP<span class="w"> </span><span class="m">00</span>:05<span class="w">  </span>SYN_RECV<span class="w">    </span><span class="m">192</span>.168.19.1:57725<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w">  </span><span class="m">192</span>.168.18.40:80
+TCP<span class="w"> </span><span class="m">00</span>:05<span class="w">  </span>SYN_RECV<span class="w">    </span><span class="m">192</span>.168.19.1:57722<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w">  </span><span class="m">192</span>.168.18.40:80
+TCP<span class="w"> </span><span class="m">00</span>:05<span class="w">  </span>SYN_RECV<span class="w">    </span><span class="m">192</span>.168.19.1:57723<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w">  </span><span class="m">192</span>.168.18.30:80
+</code></pre></div>
+<blockquote>
+<p>state:</p>
+<ul>
+<li><strong><code>ESTABLISHED</code></strong>：已建立的连接，客户端与后端服务器之间的通信正常进行。</li>
+<li><strong><code>SYN_RECV</code></strong>：LVS 已收到客户端的 SYN 报文（连接请求），并已转发给后端服务器，但尚未收到服务器的 SYN-ACK 响应。</li>
+<li><strong><code>FIN_WAIT</code></strong>：连接进入关闭阶段，一端已发送 FIN 报文（终止连接请求），等待另一端确认。</li>
+<li><strong><code>TIME_WAIT</code></strong>：连接已关闭，处于超时等待状态（防止延迟报文干扰新连接）。</li>
+<li><strong><code>NONE</code></strong>：极少数情况下，TCP 连接状态未被正确跟踪时显示（通常为异常状态）</li>
+</ul>
+</blockquote>
+<ol>
+<li>开启路由转发(修改内核)</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat /proc/sys/net/ipv4/ip_forward   #路由转发</span>
+<span class="m">0</span><span class="w"> </span><span class="c1"># 未开启</span>
+<span class="c1"># 临时修改 </span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># echo  &#39;1&#39;   &gt; /proc/sys/net/ipv4/ip_forward</span>
+</code></pre></div>
+<p>验证结果：</p>
+<p>!image-20250828112301104](/images/image-20250828112301104.png)</p>
+<ol>
+<li>查看分发的规则</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Ln</span>
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+TCP<span class="w">  </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>rr
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">1</span><span class="w">         </span>
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.40:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">2</span><span class="w">   </span>
+</code></pre></div>
+<h3 id="_12">常用命令：</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">#添加规则</span>
+
+<span class="c1"># 保存规则</span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Sn</span>
+-A<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-s<span class="w"> </span>rr
+-a<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-r<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w"> </span>-m<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+-a<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-r<span class="w"> </span><span class="m">192</span>.168.18.40:80<span class="w"> </span>-m<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Sn  &gt; ipvsadm.sh</span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat ipvsadm.sh </span>
+-A<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-s<span class="w"> </span>rr
+-a<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-r<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w"> </span>-m<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+-a<span class="w"> </span>-t<span class="w"> </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>-r<span class="w"> </span><span class="m">192</span>.168.18.40:80<span class="w"> </span>-m<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+
+
+<span class="c1">#清楚规则</span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -C </span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Ln</span>
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+
+
+<span class="c1"># 还原规则</span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm  -R  &lt;  ipvsadm.sh </span>
+<span class="o">[</span>root@lvs-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Ln</span>
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+TCP<span class="w">  </span><span class="m">192</span>.168.19.148:80<span class="w"> </span>rr
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">         </span>
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.40:80<span class="w">             </span>Masq<span class="w">    </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">   </span>
+</code></pre></div>
+<h2 id="example-2">Example 2:</h2>
+<p>DR 模式：</p>
+<div class="highlight"><pre><span></span><code>graph  LR
+c((client))  
+
+r((router))
+subgraph proxy
+lvs-server
+end
+
+subgraph  web-cluster
+web-server30.com
+web-server20.com
+end
+c-.公网地址&lt;br&gt;20/24.-&gt;r
+
+r-.私有网络&lt;br&gt;18/24.-&gt;lvs-server
+lvs-server --&gt; web-server30.com &amp; web-server20.com
+</code></pre></div>
+<p>节点规划：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>IP地址</th>
+<th>系统/内核版本</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Router</td>
+<td>公网：<code>192.168.20.0/24</code><br>私有：<code>192.168.18.254/24</code></td>
+<td>Linux 3.10.0-1127.el7.x86_64</td>
+<td>route</td>
+</tr>
+<tr>
+<td>lvs.server.com</td>
+<td>ip: <code>192.168.18.10/24</code><br>gateway: <code>192.168.18.254</code><br/>vip<code>192.168.18.100/32</code></td>
+<td>Linux 3.10.0-1127.el7.x86_64</td>
+<td>LVS 调度器</td>
+</tr>
+<tr>
+<td>web-server20.com</td>
+<td>ip:<code>192.168.18.20/24</code><br>gateway: <code>192.168.18.254</code><br>vip:<code>192.168.18.100/32</code></td>
+<td>Linux 3.10.0-1127.el7.x86_64</td>
+<td>Web server</td>
+</tr>
+<tr>
+<td>web-server30.com</td>
+<td>ip:<code>192.168.18.30/24</code><br/>gateway: <code>192.168.18.254</code><br>vip:<code>192.168.18.100/32</code></td>
+<td>Linux 3.10.0-1127.el7.x86_64</td>
+<td>Web server</td>
+</tr>
+</tbody>
+</table>
+<p>实现步骤：</p>
+<ul>
+<li>配置基础环境</li>
+<li>安装应用组件(中间件)</li>
+<li>配置LVS</li>
+<li>测试</li>
+</ul>
+<h4 id="_13">一、 配置基础环境（所有节点）</h4>
+<ul>
+<li>IP地址（配置网络）</li>
+<li>主机名</li>
+<li>配置源</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl set-hostname router</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># bash</span>
+<span class="o">[</span>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1">#</span>
+</code></pre></div>
+<ul>
+<li>关闭防火墙和SElinux</li>
+</ul>
+<div class="highlight"><pre><span></span><code>setenforce<span class="w">  </span><span class="m">0</span><span class="w">  </span><span class="c1">#修改SElinux 为宽松模式</span>
+systemctl<span class="w">  </span>disable<span class="w">  </span>--now<span class="w"> </span>firewalld
+</code></pre></div>
+<ul>
+<li>配置源(本地源)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1"># mount /dev/sr0 /mnt &amp;&amp; mkdir /etc/yum.repos.d/bak  &amp;&amp; mv  /etc/yum.repos.d/CentOS-* /etc/yum.repos.d/bak &amp;&amp; cp  /etc/yum.repos.d/bak/CentOS-Base.repo  /etc/yum.repos.d/  &amp;&amp; vi  /etc/yum.repos.d/CentOS-Base.repo </span>
+
+mount<span class="w"> </span>/dev/sr0<span class="w"> </span>/mnt<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>/etc/yum.repos.d/bak<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span>mv<span class="w">  </span>/etc/yum.repos.d/CentOS-*<span class="w"> </span>/etc/yum.repos.d/bak
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>base<span class="o">]</span>
+<span class="nv">name</span><span class="o">=</span>CentOS-<span class="nv">$releasever</span><span class="w"> </span>-<span class="w"> </span>Base
+<span class="nv">baseurl</span><span class="o">=</span>file:///mnt
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">0</span>
+<span class="nv">gpgkey</span><span class="o">=</span>file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+</code></pre></div>
+<ul>
+<li>配置临时IP</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ip<span class="w"> </span>address<span class="w"> </span>add<span class="w">  </span><span class="m">192</span>.168.18.100/32<span class="w"> </span>dev<span class="w"> </span>ens33:0
+</code></pre></div>
+<h3 id="_14">二、安装应用组件(中间件)</h3>
+<p>后端真实主机的服务：</p>
+<div class="highlight"><pre><span></span><code>httpd
+</code></pre></div>
+<p>调度器<code>lvs</code>：</p>
+<div class="highlight"><pre><span></span><code>ipvsadm
+</code></pre></div>
+<blockquote>
+<p>开通路由</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1"># echo  &quot;1&quot; &gt;   /proc/sys/net/ipv4/ip_forward</span>
+</code></pre></div>
+<p>路由器：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#开通路由</span>
+<span class="o">[</span>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1"># echo  &quot;1&quot; &gt;   /proc/sys/net/ipv4/ip_forward</span>
+</code></pre></div>
+<p>三、 配置</p>
+<ol>
+<li>后端真实主机上抑制<code>arp</code> 配置文件所在<code>/etc/sysctl.conf</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code>net.ipv4.ip_forward<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+net.ipv4.conf.ens33.arp_ignore<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+net.ipv4.conf.ens33.arp_announce<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+net.ipv4.conf.all.arp_ignore<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+net.ipv4.conf.all.arp_announce<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</code></pre></div>
+<ol>
+<li>刷新</li>
+</ol>
+<div class="highlight"><pre><span></span><code>sysctl<span class="w">  </span>-p
+</code></pre></div>
+<ol>
+<li>配置LVS规则</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># #ipvsadm  -A -t  192.168.18.100:80 -s rr</span>
+<span class="o">[</span>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># #ipvsadm -a -t  192.168.18.100:80 -r 192.168.18.20:80 -g </span>
+<span class="o">[</span>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># #ipvsadm -a -t 192.168.18.100:80 -r 192.168.18.30:80 -g</span>
+
+<span class="c1">#查看规则</span>
+<span class="o">[</span>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Ln</span>
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+TCP<span class="w">  </span><span class="m">192</span>.168.18.100:80<span class="w"> </span>rr
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.20:80<span class="w">             </span>Route<span class="w">   </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">         </span>
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.30:80<span class="w">             </span>Route<span class="w">   </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w">  </span>
+</code></pre></div>
+<ol>
+<li>
+<p>使用路由器测试：</p>
+</li>
+<li>
+<p>测试路由是否可以拼通（ping）</p>
+</li>
+<li>
+<p>通过curl 命令访问</p>
+<div class="highlight"><pre><span></span><code>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.18.100</span>
+&lt;h1&gt;<span class="w"> </span>hello<span class="w"> </span><span class="m">30</span><span class="w"> </span>router<span class="w"> </span>mode&lt;/h1&gt;
+<span class="o">[</span>root@router<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl  192.168.18.100</span>
+&lt;h1&gt;<span class="w"> </span>hello<span class="w"> </span><span class="m">20</span><span class="w"> </span>router<span class="w"> </span>mode&lt;/h1&gt;
+</code></pre></div>
+</li>
+<li>
+<p>查看规则是否进过LVS</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Lnc</span>
+IPVS<span class="w"> </span>connection<span class="w"> </span>entries
+pro<span class="w"> </span>expire<span class="w"> </span>state<span class="w">       </span><span class="nb">source</span><span class="w">             </span>virtual<span class="w">            </span>destination
+TCP<span class="w"> </span><span class="m">00</span>:00<span class="w">  </span>FIN_WAIT<span class="w">    </span><span class="m">192</span>.168.18.254:39042<span class="w"> </span><span class="m">192</span>.168.18.100:80<span class="w">  </span><span class="m">192</span>.168.18.30:80
+TCP<span class="w"> </span><span class="m">00</span>:41<span class="w">  </span>FIN_WAIT<span class="w">    </span><span class="m">192</span>.168.18.254:39044<span class="w"> </span><span class="m">192</span>.168.18.100:80<span class="w">  </span><span class="m">192</span>.168.18.30:80
+TCP<span class="w"> </span><span class="m">00</span>:43<span class="w">  </span>FIN_WAIT<span class="w">    </span><span class="m">192</span>.168.18.254:39046<span class="w"> </span><span class="m">192</span>.168.18.100:80<span class="w">  </span><span class="m">192</span>.168.18.20:80
+</code></pre></div>
+</li>
+</ol>
+<h3 id="linux">Linux  有关路由表</h3>
+<ol>
+<li>查看路由表</li>
+</ol>
+<div class="highlight"><pre><span></span><code>root@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ip route  </span>
+<span class="m">192</span>.168.18.0/24<span class="w"> </span>dev<span class="w"> </span>ens33<span class="w"> </span>proto<span class="w"> </span>kernel<span class="w"> </span>scope<span class="w"> </span>link<span class="w"> </span>src<span class="w"> </span><span class="m">192</span>.168.18.10<span class="w"> </span>metric<span class="w"> </span><span class="m">100</span><span class="w"> </span>
+<span class="m">192</span>.168.20.0/24<span class="w"> </span>dev<span class="w"> </span>ens33<span class="w"> </span>scope<span class="w"> </span>link<span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>添加路由表</li>
+</ol>
+<div class="highlight"><pre><span></span><code>oot@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ip route  add  192.168.20.0/24 dev ens33</span>
+<span class="c1">#添加默认路由</span>
+oot@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ip route  add  default dev ens33    defaulet=`0.0.0.0/0`</span>
+</code></pre></div>
+<ol>
+<li>删除路由表</li>
+</ol>
+<div class="highlight"><pre><span></span><code>oot@lvs<span class="w"> </span>~<span class="o">]</span><span class="c1"># ip route  add 192.168.20.0/24 dev ens33</span>
+</code></pre></div>
+<h2 id="_15">高可用</h2>
+<h4 id="_16">一、 什么是高可用</h4>
+<ol>
+<li>网络高可用</li>
+<li>硬件的高可用</li>
+<li>组件的高可用 （中间件）</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>可用性等级</th>
+<th>年可用时间占比</th>
+<th>每年允许中断时间</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2 个 9（99%）</td>
+<td>99%</td>
+<td>约 87.6 小时（≈3.6 天）</td>
+<td>非核心服务（如内部测试系统）</td>
+</tr>
+<tr>
+<td>3 个 9（99.9%）</td>
+<td>99.9%</td>
+<td>约 8.76 小时</td>
+<td>一般业务服务（如普通企业官网）</td>
+</tr>
+<tr>
+<td>4 个 9（99.99%）</td>
+<td>99.99%</td>
+<td>约 52.56 分钟</td>
+<td>核心业务（如电商平台、支付系统）</td>
+</tr>
+<tr>
+<td>5 个 9（99.999%）</td>
+<td>99.999%</td>
+<td>约 5.26 分钟</td>
+<td>极高要求场景（如金融交易、医疗系统）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_17">二、高可用的组件（方案)</h4>
+<h5 id="_18">业务上高可用</h5>
+<p>软/硬件</p>
+<blockquote>
+<p>开源方案：keepalived  HAproxy </p>
+<p>闭源方案：</p>
+</blockquote>
+<p>硬件高可用（成双成对）</p>
+<p>机房（数据中心）</p>
+<p>高可用（HA）体系的实现依赖于 “<strong>硬件冗余</strong>” 和 “<strong>软件组件</strong>” 的协同配合，硬件是基础（避免物理单点故障），软件是核心（实现故障检测、自动切换、数据同步）。以下从 “硬件层” 和 “软件组件层” 详细拆解高可用体系的核心构成，以及各部分的作用和典型方案：</p>
+<h4 id="_19">一、高可用核心硬件：冗余是核心原则</h4>
+<p>硬件层的目标是<strong>消除物理单点故障</strong>，通过 “多设备备份” 确保电源、网络、存储、服务器等关键物理组件故障时，系统仍能运行。常见高可用硬件及设计思路如下：</p>
+<h5 id="1">1. 服务器硬件：避免单服务器宕机</h5>
+<ul>
+<li><strong>核心需求</strong>：服务器是业务运行的载体，需通过 “多节点冗余” 确保单台服务器故障不影响服务。</li>
+<li><strong>典型方案</strong>：</li>
+<li><strong>主备服务器</strong>：1 台主服务器运行业务，1 台备服务器待机（如 LVS 主备、Nginx 主备），主节点故障后备节点接管；</li>
+<li><strong>集群服务器</strong>：多台服务器同时运行业务（如 Web 集群、数据库集群），通过负载均衡分摊流量，单节点故障后其他节点自动承接；</li>
+<li><strong>硬件规格冗余</strong>：单台服务器内部的 “冗余设计”（如双电源、双网卡），避免电源 / 网卡单点故障导致服务器离线。</li>
+<li><strong>示例</strong>：电商平台部署 3 台 Web 服务器组成集群，即使 1 台宕机，剩余 2 台仍可支撑业务，用户无感知。</li>
+</ul>
+<h5 id="2">2. 网络硬件：避免网络链路中断</h5>
+<ul>
+<li><strong>核心需求</strong>：网络是客户端与服务的连接通道，需通过 “多链路、多设备” 确保网络不中断。</li>
+<li><strong>典型方案</strong>：</li>
+<li><strong>双网卡 / 多网卡</strong>：服务器配置 2 块及以上网卡，分别连接不同交换机，避免单网卡故障导致服务器断网；</li>
+<li><strong>冗余交换机</strong>：核心交换机、接入交换机部署 “主备模式” 或 “堆叠模式”（如华为 IRF、Cisco VSS），单交换机故障后，另一台自动接管所有端口；</li>
+<li><strong>多网络链路</strong>：机房接入多条不同运营商的宽带（如电信 + 联通），通过 BGP 路由或链路聚合（LACP）实现链路冗余，单链路中断后自动切换到备用链路；</li>
+<li><strong>负载均衡器（硬件）</strong>：核心入口部署硬件负载均衡器（如 F5 BIG-IP、Citrix NetScaler），通常采用 “主备模式”，避免负载均衡器成为单点故障。</li>
+<li><strong>示例</strong>：企业核心交换机部署 2 台堆叠，单台交换机断电后，所有接入设备的网络连接不中断，业务正常运行。</li>
+</ul>
+<h5 id="3">3. 存储硬件：避免数据存储故障</h5>
+<ul>
+<li><strong>核心需求</strong>：数据是业务的核心，需通过 “多副本存储” 确保硬盘、存储设备故障时数据不丢失、可访问。</li>
+<li><strong>典型方案</strong>：</li>
+<li><strong>RAID 磁盘阵列</strong>：单台服务器或存储设备内，多块硬盘组成 RAID（如 RAID1、RAID5、RAID6），实现 “硬盘冗余”——RAID1（双盘互备）：1 块硬盘故障，另一块硬盘仍有完整数据；RAID5（至少 3 盘）：允许 1 块硬盘故障，通过校验数据恢复；</li>
+<li><strong>SAN/NAS 集群</strong>：企业级存储设备（如 EMC VMAX、华为 OceanStor）部署 “双控制器” 或 “多节点集群”，单控制器 / 节点故障后，其他节点接管存储服务，确保数据读写不中断；</li>
+<li><strong>分布式存储</strong>：基于多台服务器的本地硬盘构建分布式存储集群（如 Ceph、GlusterFS），数据自动分成多副本（如 3 副本）存储在不同节点，单节点 / 硬盘故障不影响数据可用性。</li>
+<li><strong>示例</strong>：数据库服务器采用 RAID5 阵列（3 块硬盘），若 1 块硬盘损坏，可通过剩余 2 块硬盘的校验数据恢复，数据库无需停机。</li>
+</ul>
+<h5 id="4">4. 电源与机房环境：避免基础设施中断</h5>
+<ul>
+<li><strong>核心需求</strong>：电源、空调等机房环境是硬件运行的基础，需通过 “冗余设计” 应对断电、环境异常。</li>
+<li><strong>典型方案</strong>：</li>
+<li><strong>双电源 + UPS</strong>：服务器、交换机等关键设备配置双电源，分别连接不同的 UPS（不间断电源）；UPS 连接市电 + 备用发电机，市电中断后 UPS 立即供电，发电机启动后接替 UPS，确保设备不宕机；</li>
+<li><strong>机房冗余</strong>：核心业务部署 “异地灾备机房”（如上海主机房 + 杭州灾备机房），主机房因自然灾害（地震、火灾）无法运行时，灾备机房可接管业务。</li>
+<li><strong>示例</strong>：金融机构的核心数据库机房配置双 UPS + 柴油发电机，市电中断后，UPS 支撑 15 分钟，期间发电机启动，确保数据库连续运行。</li>
+</ul>
+<h4 id="_20">二、高可用核心软件组件：实现智能调度与故障处理</h4>
+<p>硬件冗余是基础，但需软件组件实现 “故障检测、自动切换、数据同步、流量调度”，才能真正达成高可用。以下是高可用体系中不可或缺的软件组件：</p>
+<h5 id="1_1">1. 故障检测与自动切换组件：核心 “大脑”</h5>
+<ul>
+<li><strong>作用</strong>：实时监测硬件 / 服务状态，发现故障后自动触发切换（如 VIP 漂移、服务接管），无需人工干预。</li>
+<li><strong>典型工具 / 方案</strong>：</li>
+<li><strong>Keepalived</strong>：基于 VRRP（虚拟路由冗余协议）的开源工具，常用于 LVS、Nginx 等服务的主备切换。主节点正常时，通过 “心跳包” 向备节点发送状态；主节点故障后，备节点检测到心跳丢失，立即接管 VIP 和服务；</li>
+<li><strong>Corosync+Pacemaker</strong>：开源高可用集群套件，Corosync 负责节点间通信和心跳检测，Pacemaker 负责资源管理（如 IP、服务、存储挂载），支持更复杂的切换逻辑（如多节点集群、资源依赖管理）；</li>
+<li><strong>硬件自带软件</strong>：如 F5 BIG-IP 的 “设备服务集群（Device Service Cluster）”、华为存储的 “HyperMetro”，内置故障检测和自动切换功能。</li>
+<li><strong>示例</strong>：LVS 主备集群通过 Keepalived 实现高可用，主节点故障后，备节点在 1-3 秒内接管 VIP，客户端无感知。</li>
+</ul>
+<h5 id="2_1">2. 负载均衡组件：流量调度 + 健康检查</h5>
+<ul>
+<li><strong>作用</strong>：将客户端请求均匀分发到多台后端服务器，同时通过 “健康检查” 剔除故障节点，确保流量仅流向正常节点（既是性能优化工具，也是高可用核心组件）。</li>
+<li><strong>典型工具 / 方案</strong>：</li>
+<li><strong>软件负载均衡</strong>：Nginx（七层，支持 HTTP/HTTPS 路由）、HAProxy（四层 + 七层，支持 TCP/HTTP）、LVS（四层，基于内核，性能极高）；</li>
+<li><strong>硬件负载均衡</strong>：F5 BIG-IP、Citrix NetScaler（性能强、稳定性高，适合核心入口）；</li>
+<li><strong>云负载均衡</strong>：阿里云 SLB、AWS ELB（托管服务，自动扩容，无需维护硬件）。</li>
+<li><strong>示例</strong>：Nginx 负载均衡后端 3 台 Web 服务器，通过 “TCP 端口检测”（每 5 秒检测一次 80 端口），若某台 Web 服务器 80 端口不可用，Nginx 立即停止向其转发流量。</li>
+</ul>
+<h5 id="3_1">3. 数据同步与一致性组件：确保数据不丢失</h5>
+<ul>
+<li><strong>作用</strong>：在多节点冗余场景（如数据库主从、缓存集群）中，确保数据在节点间同步，避免切换后数据丢失或不一致。</li>
+<li><strong>典型工具 / 方案</strong>：</li>
+<li><strong>数据库同步</strong>：MySQL 主从复制（基于 binlog，异步 / 半同步）、PostgreSQL 流复制（同步 / 异步）、MongoDB 副本集（1 主 2 从，自动故障转移）；</li>
+<li><strong>缓存同步</strong>：Redis Cluster（数据分片 + 副本，主节点故障后从节点自动升级）、Redis Sentinel（主从监控 + 自动切换）；</li>
+<li><strong>分布式一致性协议</strong>：Paxos（如 etcd、ZooKeeper）、Raft（如 etcd v3、Consul），用于分布式系统中数据的一致性存储（如服务注册发现、配置中心）。</li>
+<li><strong>示例</strong>：MySQL 主从集群采用 “半同步复制”，主库写入数据后，需至少 1 个从库确认接收 binlog，再向客户端返回成功；主库故障后，从库切换为主库，数据丢失量极小。</li>
+</ul>
+<h5 id="4_1">4. 服务容错与降级组件：避免级联故障</h5>
+<ul>
+<li><strong>作用</strong>：当某部分服务故障时，通过 “熔断、降级、限流” 避免故障扩散到整个系统，确保核心服务正常运行。</li>
+<li><strong>典型工具 / 方案</strong>：</li>
+<li><strong>熔断器</strong>：Sentinel（阿里）、Hystrix（Netflix）、Resilience4j（轻量级），当服务调用失败率超过阈值时，自动 “熔断”（停止调用该服务），避免资源耗尽；</li>
+<li><strong>服务降级</strong>：通过配置中心（如 Nacos、Apollo）动态关闭非核心功能（如推荐系统、积分兑换），优先保障核心功能（如购物、支付）；</li>
+<li><strong>限流</strong>：Nginx 限流（基于 IP / 请求数）、Sentinel 限流（基于 QPS / 线程数），防止突发流量冲垮服务。</li>
+<li><strong>示例</strong>：电商大促期间，若推荐服务压力过大，通过 Sentinel 触发熔断，自动降级为 “默认推荐列表”，避免推荐服务故障影响购物车、结算等核心流程。</li>
+</ul>
+<h5 id="5">5. 监控与告警组件：提前发现问题</h5>
+<ul>
+<li><strong>作用</strong>：实时监控硬件、软件、服务的状态（如 CPU 利用率、内存、服务响应时间、错误率），异常时及时告警，避免故障扩大（高可用的 “预警系统”）。</li>
+<li><strong>典型工具 / 方案</strong>：</li>
+<li><strong>基础设施监控</strong>：Zabbix、Prometheus+Grafana（监控服务器、交换机、存储的硬件指标）；</li>
+<li><strong>应用监控</strong>：SkyWalking、Pinpoint（分布式链路追踪，监控服务调用链和响应时间）；</li>
+<li><strong>告警工具</strong>：AlertManager（配合 Prometheus）、Zabbix Alert、企业微信 / 钉钉机器人（将告警信息推送到指定人员）。</li>
+<li><strong>示例</strong>：通过 Prometheus 监控 Web 服务器的 CPU 利用率，设置阈值 “超过 80% 告警”，运维人员收到告警后及时扩容，避免 CPU 过载导致服务响应变慢。</li>
+</ul>
+<h4 id="_21">三、高可用硬件与软件的协同逻辑（示例）</h4>
+<p>以 “LVS+Nginx+MySQL” 的典型 Web 架构为例，高可用硬件与软件的协同流程如下：</p>
+<ol>
+<li><strong>硬件层</strong>：LVS 主备服务器（双电源 + 双网卡）、Nginx 集群（3 台服务器）、MySQL 主从（主库 RAID5 + 从库 RAID5）、核心交换机（双机堆叠）、UPS + 发电机；</li>
+<li>软件层</li>
+<li>Keepalived：实现 LVS 主备切换，主节点故障后备节点接管 VIP；</li>
+<li>LVS：四层负载均衡，将 HTTP 流量分发到 Nginx 集群；</li>
+<li>Nginx：七层负载均衡，将请求分发到 Web 服务器，同时健康检查剔除故障 Web 节点；</li>
+<li>MySQL 半同步复制：主库写入数据后同步到从库，主库故障后通过 MHA（MySQL 高可用管理器）自动切换到从库；</li>
+<li>Prometheus+Grafana：监控所有节点的硬件和服务状态，异常时告警；</li>
+<li><strong>故障场景</strong>：LVS 主节点突然宕机 → Keepalived 检测到心跳丢失 → 备节点接管 VIP → 流量正常流向 Nginx 集群 → 业务无感知。</li>
+</ol>
+<h4 id="_22">四、总结</h4>
+<p>高可用体系的核心是 “<strong>硬件冗余消除物理单点，软件组件实现智能调度</strong>”：</p>
+<ul>
+<li>硬件层需覆盖 “服务器、网络、存储、电源” 四大核心，确保任何单一物理设备故障不中断服务；</li>
+<li>软件层需通过 “故障检测、负载均衡、数据同步、监控告警”，实现故障自动处理、流量合理分配、数据不丢失；</li>
+<li>硬件是基础，软件是灵魂，二者协同才能构建满足 “3 个 9”“4 个 9” 甚至 “5 个 9” 可用性的系统。</li>
+</ul>
+<h4 id="keepalived">三、部署高可用(keepalived)</h4>
+<p>架构图：</p>
+<p>!image-20250829141939756](/images/image-20250829141939756.png)</p>
+<p>部署<code>keepalived</code></p>
+<blockquote>
+<p>两个节点上都需要安装keepalived;</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lvs-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install  keepalived  ipvsadm</span>
+</code></pre></div>
+<p>关于keepalived的配置文件</p>
+<div class="highlight"><pre><span></span><code>/etc/keepalived/keepalived.conf
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">#全局定义</span>
+global_defs<span class="w"> </span><span class="o">{</span>
+<span class="w">   </span>notification_email<span class="w"> </span><span class="o">{</span>
+<span class="w">     </span>acassen@firewall.loc
+<span class="w">     </span>failover@firewall.loc
+<span class="w">     </span>sysadmin@firewall.loc
+<span class="w">   </span><span class="o">}</span>
+<span class="w">   </span>notification_email_from<span class="w"> </span>Alexandre.Cassen@firewall.loc
+<span class="w">   </span>smtp_server<span class="w"> </span><span class="m">192</span>.168.200.1
+<span class="w">   </span>smtp_connect_timeout<span class="w"> </span><span class="m">30</span>
+<span class="w">   </span>router_id<span class="w"> </span>LVS_DEVEL
+<span class="w">   </span>vrrp_skip_check_adv_addr
+<span class="w">   </span>vrrp_strict
+<span class="w">   </span>v
+<span class="o">}</span>
+<span class="c1"># 定义Vrrp的实例</span>
+vrrp_instance<span class="w"> </span>VI_1<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>state<span class="w"> </span>MASTER<span class="w">   </span><span class="c1">#状态master/backup</span>
+<span class="w">    </span>interface<span class="w"> </span>eth0<span class="w">   </span><span class="c1">#绑定网络接口</span>
+<span class="w">    </span>virtual_router_id<span class="w"> </span><span class="m">51</span><span class="w">   </span><span class="c1">#虚拟路由的ID；作用：判断 51 backup 51    取值范围（1-255）</span>
+<span class="w">    </span>priority<span class="w"> </span><span class="m">100</span><span class="w">   </span><span class="c1">#优先级   取值范围（1-255） 值越高优先级越高</span>
+<span class="w">    </span>advert_int<span class="w"> </span><span class="m">1</span><span class="w">     </span>VRRP<span class="w"> </span>以秒为单位的通告（宣告）间隔<span class="w"> </span>
+<span class="w">    </span>authentication<span class="w"> </span><span class="o">{</span><span class="w">   </span><span class="c1">#验证机制</span>
+<span class="w">        </span>auth_type<span class="w"> </span>PASS
+<span class="w">        </span>auth_pass<span class="w"> </span><span class="m">1111</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">  </span><span class="c1">#定义虚拟IP地址(vip)</span>
+<span class="w">    </span>virtual_ipaddress<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="m">192</span>.168.200.16
+<span class="w">        </span><span class="m">192</span>.168.200.17
+<span class="w">        </span><span class="m">192</span>.168.200.18
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+<span class="c1"># 虚拟主机地址</span>
+virtual_server<span class="w"> </span><span class="m">192</span>.168.200.100<span class="w"> </span><span class="m">443</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>delay_loop<span class="w"> </span><span class="m">6</span><span class="w">   </span><span class="c1">#延迟循环次数</span>
+<span class="w">    </span>lb_algo<span class="w"> </span>rr<span class="w">         </span><span class="c1">#loadblance  算法： rr </span>
+<span class="w">    </span>lb_kind<span class="w"> </span>NAT<span class="w">  </span><span class="c1">#loadblance   调度模式</span>
+<span class="w">    </span>persistence_timeout<span class="w"> </span><span class="m">50</span><span class="w">   </span><span class="c1">#  LVS持续超时间（以秒为单位），默认为6分钟</span>
+<span class="w">    </span>protocol<span class="w"> </span>TCP<span class="w">   </span><span class="c1">#协议类型： TCP</span>
+<span class="c1">#定义后端真实主机地址</span>
+<span class="w">    </span>real_server<span class="w"> </span><span class="m">192</span>.168.201.100<span class="w"> </span><span class="m">443</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>weight<span class="w"> </span><span class="m">1</span>
+<span class="w">        </span><span class="c1">#检查后端真实主机的健康检查的协议类型</span>
+<span class="w">        </span>SSL_GET<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="o">}</span>
+<span class="w">        </span>TCP_CHECK<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="o">}</span>
+<span class="w">        </span>HTTP_GET<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>url<span class="w"> </span><span class="o">{</span>
+<span class="w">                </span>path<span class="w">  </span>/index.html
+<span class="w">            </span><span class="o">}</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1"># https://keepalived.org/manpage.html 官方文档</span>
+</code></pre></div>
+<p>实现步骤：</p>
+<p>修改master的配置文件</p>
+<div class="highlight"><pre><span></span><code>oot@lvs-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat  /etc/keepalived/keepalived.conf</span>
+!<span class="w"> </span>Configuration<span class="w"> </span>File<span class="w"> </span><span class="k">for</span><span class="w"> </span>keepalived
+
+vrrp_instance<span class="w"> </span>VI_1<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>state<span class="w"> </span>MASTER
+<span class="w">    </span>interface<span class="w"> </span>ens33
+<span class="w">    </span>virtual_router_id<span class="w"> </span><span class="m">51</span>
+<span class="w">    </span>priority<span class="w"> </span><span class="m">100</span>
+<span class="w">    </span>advert_int<span class="w"> </span><span class="m">1</span>
+<span class="w">    </span>authentication<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>auth_type<span class="w"> </span>PASS
+<span class="w">        </span>auth_pass<span class="w"> </span><span class="m">1111</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>virtual_ipaddress<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="m">192</span>.168.18.100/32
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+
+virtual_server<span class="w"> </span><span class="m">192</span>.168.18.100<span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>delay_loop<span class="w"> </span><span class="m">6</span>
+<span class="w">    </span>lb_algo<span class="w"> </span>rr
+<span class="w">    </span>lb_kind<span class="w"> </span>DR
+<span class="w">    </span>persistence_timeout<span class="w"> </span><span class="m">50</span>
+<span class="w">    </span>protocol<span class="w"> </span>TCP
+
+<span class="w">    </span>real_server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>weight<span class="w"> </span><span class="m">1</span>
+<span class="w">        </span><span class="c1">#检查后端服务健康检查 SSL   http  TCP_CHECK  </span>
+<span class="w">        </span>HTTP_GET<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>url<span class="w"> </span><span class="o">{</span>
+<span class="w">              </span>path<span class="w"> </span>/index.html
+<span class="w">            </span><span class="o">}</span>
+<span class="w">            </span>connect_timeout<span class="w"> </span><span class="m">3</span>
+<span class="w">            </span>nb_get_retry<span class="w"> </span><span class="m">3</span>
+<span class="w">            </span>delay_before_retry<span class="w"> </span><span class="m">3</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>启动服务</p>
+<div class="highlight"><pre><span></span><code>root@lvs-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl  enable  --now  keepalived</span>
+</code></pre></div>
+<p>检查IP地址是否绑定：</p>
+<p>!image-20250829152055731](/images/image-20250829152055731.png)</p>
+<p>检查LVS 的规则</p>
+<div class="highlight"><pre><span></span><code>root@lvs-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># ipvsadm -Ln</span>
+IP<span class="w"> </span>Virtual<span class="w"> </span>Server<span class="w"> </span>version<span class="w"> </span><span class="m">1</span>.2.1<span class="w"> </span><span class="o">(</span><span class="nv">size</span><span class="o">=</span><span class="m">4096</span><span class="o">)</span>
+Prot<span class="w"> </span>LocalAddress:Port<span class="w"> </span>Scheduler<span class="w"> </span>Flags
+<span class="w">  </span>-&gt;<span class="w"> </span>RemoteAddress:Port<span class="w">           </span>Forward<span class="w"> </span>Weight<span class="w"> </span>ActiveConn<span class="w"> </span>InActConn
+TCP<span class="w">  </span><span class="m">192</span>.168.18.100:80<span class="w"> </span>rr<span class="w"> </span>persistent<span class="w"> </span><span class="m">50</span>
+<span class="w">  </span>-&gt;<span class="w"> </span><span class="m">192</span>.168.18.20:80<span class="w">             </span>Route<span class="w">   </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">          </span><span class="m">0</span><span class="w"> </span>
+</code></pre></div>
+<p>测试：</p>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<p>配置BACKUP节点</p>
+<div class="highlight"><pre><span></span><code>oot@lvs-slave<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat  /etc/keepalived/keepalived.conf</span>
+!<span class="w"> </span>Configuration<span class="w"> </span>File<span class="w"> </span><span class="k">for</span><span class="w"> </span>keepalived
+
+vrrp_instance<span class="w"> </span>VI_1<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>state<span class="w"> </span>BACKUP
+<span class="w">    </span>interface<span class="w"> </span>ens33
+<span class="w">    </span>virtual_router_id<span class="w"> </span><span class="m">51</span>
+<span class="w">    </span>priority<span class="w"> </span><span class="m">100</span>
+<span class="w">    </span>advert_int<span class="w"> </span><span class="m">1</span>
+<span class="w">    </span>authentication<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>auth_type<span class="w"> </span>PASS
+<span class="w">        </span>auth_pass<span class="w"> </span><span class="m">1111</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span>virtual_ipaddress<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="m">192</span>.168.18.100/32
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+
+virtual_server<span class="w"> </span><span class="m">192</span>.168.18.100<span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>delay_loop<span class="w"> </span><span class="m">6</span>
+<span class="w">    </span>lb_algo<span class="w"> </span>rr
+<span class="w">    </span>lb_kind<span class="w"> </span>DR
+<span class="w">    </span>persistence_timeout<span class="w"> </span><span class="m">50</span>
+<span class="w">    </span>protocol<span class="w"> </span>TCP
+
+<span class="w">    </span>real_server<span class="w"> </span><span class="m">192</span>.168.18.20<span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>weight<span class="w"> </span><span class="m">1</span>
+<span class="w">        </span>HTTP_GET<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>url<span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">              </span>path<span class="w"> </span>/index.html
+<span class="w">            </span><span class="o">}</span>
+<span class="w">            </span>connect_timeout<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="c1">#连接超时时间设置为 3 秒</span>
+<span class="w">            </span>nb_get_retry<span class="w"> </span><span class="m">3</span><span class="w">    </span><span class="c1">#最大重试次数设置为 3 次</span>
+<span class="w">            </span>delay_before_retry<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="c1">#重试间隔时间设置为 3 秒。</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>启动服务</p>
+<div class="highlight"><pre><span></span><code>root@lvs-slave<span class="w">  </span>~<span class="o">]</span><span class="c1"># systemctl  enable  --now  keepalived</span>
+</code></pre></div>
+<p>测试: <code>故障转移；查看VIP是否漂移</code></p>
+<ul>
+<li>通过观察日志</li>
+</ul>
+<p>Backup 节点</p>
+<p>!image-20250829154912676](/images/image-20250829154912676.png)</p>
+<p>master 节点</p>
+<p>!image-20250829155002904](/images/image-20250829155002904.png)</p>
+<ul>
+<li>通过查看IP地址是否绑定VIP</li>
+</ul>
+<p>!image-20250829155112739](/images/image-20250829155112739.png)</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

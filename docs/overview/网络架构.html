@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络架构 - 概述 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-网络架构"># 网络架构</a></li><li class="toc-l3"><a href="#-早期网络模型架构c/s单体">### 早期网络模型架构(c/s)单体</a></li><li class="toc-l2"><a href="#-二代网络架构分布式架构">## 二代网络架构（分布式架构）</a></li><li class="toc-l3"><a href="#-三代网络微服务-容器化">### 三代网络（微服务-->容器化）</a></li><li class="toc-l2"><a href="#-单体架构">## 单体架构</a></li><li class="toc-l1"><a href="#创建用户">#创建用户</a></li><li class="toc-l1"><a href="#创建库">#创建库</a></li><li class="toc-l1"><a href="#授权">#授权</a></li><li class="toc-l1"><a href="#解压到/var/www/html/">#解压到`/var/www/html/`</a></li><li class="toc-l3"><a href="#-ltm-单体架构-blog">### LTM 单体架构 `blog`</a></li><li class="toc-l1"><a href="#修改主机名">#修改主机名</a></li><li class="toc-l1"><a href="#获取软件的地址">#获取软件的地址</a></li><li class="toc-l1"><a href="#-java-env"># java  env</a></li><li class="toc-l1"><a href="#刷新环境">#刷新环境</a></li><li class="toc-l1"><a href="#解压">#解压：</a></li><li class="toc-l1"><a href="#-分布式架构"># 分布式架构</a></li><li class="toc-l2"><a href="#-一-部署web-server">## 一、 部署web-server</a></li><li class="toc-l4"><a href="#-httpd服务引擎">#### httpd服务引擎</a></li><li class="toc-l3"><a href="#-关键说明">### 关键说明：</a></li><li class="toc-l2"><a href="#-二-部署mysql">## 二、 部署mysql</a></li><li class="toc-l1"><a href="#创建用户-mysql">#创建用户 mysql</a></li><li class="toc-l1"><a href="#修改权限">#修改权限</a></li><li class="toc-l1"><a href="#初始化">#初始化</a></li><li class="toc-l1"><a href="#启动">#启动</a></li><li class="toc-l1"><a href="#-mysql-env"># mysql  env</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">网络架构</h1>
+<blockquote>
+<p>web  数据库</p>
+<p>Lamp  lnmp  ltm   lnamp lnnmp  lntm </p>
+</blockquote>
+<h3 id="cs">早期网络模型架构(c/s)单体</h3>
+<div class="highlight"><pre><span></span><code>graph LR
+subgraph dns
+172.67.223.214 
+sunshijz.cn
+end
+
+c -.sunshijz-cn.-&gt; dns
+dns -.172-67-223-214.-&gt; c
+c -.172-67-223-214.-&gt; web-server
+</code></pre></div>
+<h2 id="_2">二代网络架构（分布式架构）</h2>
+<div class="highlight"><pre><span></span><code>graph LR
+w(web-server)
+p(php-sever)
+d(data-server)
+n(nginx)
+clinet  -.请求nginx&lt;br&gt;NAT.-&gt; n --&gt; w -.在一台服务器上.-&gt;p --&gt; d
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>graph LR
+subgraph web集群
+w1(web-server)
+w2(web-server)
+w3(web-server)
+end
+subgraph java-web集群
+j1(java-web-server)
+j2(java-web-server)
+j3(java-web-server)
+end
+subgraph 后端语言
+php
+python
+perl
+end
+subgraph data集群
+m(data-server)
+s(data-server)
+end
+n(nginx)
+clinet  -.请求nginx.-&gt; n --&gt; w1 &amp; w2 &amp; w3 --&gt;后端语言 --&gt;data集群
+clinet  -.请求nginx.-&gt; n --&gt; java-web集群 -.cont/j.-&gt; data集群
+</code></pre></div>
+<h3 id="-">三代网络（微服务--&gt;容器化）</h3>
+<div class="highlight"><pre><span></span><code>graph 
+
+c(容器化container)  
+k(容器化编排系统)
+</code></pre></div>
+<h2 id="_3">单体架构</h2>
+<ul>
+<li>lamp</li>
+<li>ltm</li>
+</ul>
+<p>Example:  <code>论坛 wordpress</code></p>
+<div class="highlight"><pre><span></span><code>apache<span class="w"> </span>web<span class="w"> </span><span class="c1">#（静态页面）</span>
+php/python<span class="w"> </span><span class="c1">#后端语言（实现动态）</span>
+mysql<span class="w">   </span><span class="c1">#存储数据库</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lamp<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install  mysql-community-server</span>
+
+<span class="o">[</span>root@lamp<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install  httpd php php-bcmath php-cli php-common php-dba php-devel php-embedded php-enchant php-fpm php-gd php-intl php-ldap php-mbstring php-mysql php-odbc php-pdo php-pear php-pgsql php-process php-pspell php-recode php-snmp php-soap php-xml php-xmlrpc rrdtool-php uuid-php  </span>
+</code></pre></div>
+<p>启动服务</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@lamp<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl  enable  --now   httpd  php-fpm mysqld</span>
+</code></pre></div>
+<p>测试正框架：</p>
+<ul>
+<li>测试是否与PHP交互</li>
+</ul>
+<p>php的测试页面<code>index.php</code></p>
+<p><code>/var/www/html/index.php</code></p>
+<div class="highlight"><pre><span></span><code>&lt;?php
+<span class="w">  </span>phpinfo<span class="o">()</span>
+?&gt;
+</code></pre></div>
+<p>!image-20250825104942396](/images/image-20250825104942396.png)</p>
+<ul>
+<li>测试是否PHP与数据库交互</li>
+</ul>
+<div class="highlight"><pre><span></span><code>&lt;?php
+//<span class="w"> </span>数据库配置信息<span class="w"> </span>-<span class="w"> </span>请根据你的实际情况修改
+<span class="nv">$host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;192.168.1.106&#39;</span><span class="p">;</span><span class="w">      </span>//<span class="w"> </span>数据库主机地址
+<span class="nv">$dbname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test&#39;</span><span class="p">;</span><span class="w">      </span>//<span class="w"> </span>要连接的数据库名称
+<span class="nv">$username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test&#39;</span><span class="p">;</span><span class="w">       </span>//<span class="w"> </span>数据库用户名
+<span class="nv">$password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span><span class="w">          </span>//<span class="w"> </span>数据库密码
+
+try<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>//<span class="w"> </span>创建PDO连接
+<span class="w">    </span><span class="nv">$pdo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>new<span class="w"> </span>PDO<span class="o">(</span>
+<span class="w">        </span><span class="s2">&quot;mysql:host=</span><span class="nv">$host</span><span class="s2">;dbname=</span><span class="nv">$dbname</span><span class="s2">;charset=utf8&quot;</span>,
+<span class="w">        </span><span class="nv">$username</span>,
+<span class="w">        </span><span class="nv">$password</span>,
+<span class="w">        </span><span class="o">[</span>
+<span class="w">            </span>PDO::ATTR_ERRMODE<span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span>PDO::ERRMODE_EXCEPTION,
+<span class="w">            </span>PDO::ATTR_TIMEOUT<span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="m">5</span><span class="w"> </span>//<span class="w"> </span>连接超时时间（秒）
+<span class="w">        </span><span class="o">]</span>
+<span class="w">    </span><span class="o">)</span><span class="p">;</span>
+
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;div style=&#39;color: green; font-family: Arial, sans-serif;&#39;&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;h2&gt;✅ 数据库连接成功！&lt;/h2&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;已成功连接到 MySQL 服务器和 &#39;</span><span class="nv">$dbname</span><span class="s2">&#39; 数据库&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;/div&gt;&quot;</span><span class="p">;</span>
+
+<span class="w">    </span>//<span class="w"> </span>关闭连接（PDO会在脚本结束时自动关闭，这里仅作演示）
+<span class="w">    </span><span class="nv">$pdo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null<span class="p">;</span>
+
+<span class="o">}</span><span class="w"> </span>catch<span class="o">(</span>PDOException<span class="w"> </span><span class="nv">$e</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;div style=&#39;color: red; font-family: Arial, sans-serif;&#39;&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;h2&gt;❌ 数据库连接失败！&lt;/h2&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;错误信息: &quot;</span><span class="w"> </span>.<span class="w"> </span><span class="nv">$e</span>-&gt;getMessage<span class="o">()</span><span class="w"> </span>.<span class="w"> </span><span class="s2">&quot;&lt;/p&gt;&quot;</span><span class="p">;</span>
+
+<span class="w">    </span>//<span class="w"> </span>根据错误代码提供一些常见问题提示
+<span class="w">    </span><span class="nv">$errorCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$e</span>-&gt;getCode<span class="o">()</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;1045&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: 用户名或密码错误&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span><span class="w"> </span>elseif<span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;1049&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: 数据库 &#39;</span><span class="nv">$dbname</span><span class="s2">&#39; 不存在&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span><span class="w"> </span>elseif<span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;2002&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: MySQL服务器未运行或主机地址错误&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;/div&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span>exit<span class="p">;</span>
+<span class="o">}</span>
+?&gt;
+</code></pre></div>
+<p>数据库上：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#创建用户</span>
+mysql&gt;<span class="w"> </span>create<span class="w"> </span>user<span class="w">  </span><span class="s1">&#39;test01&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="w"> </span>identified<span class="w"> </span>with<span class="w"> </span>mysql_native_password<span class="w"> </span>by<span class="w">  </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+<span class="c1">#创建库</span>
+mysql&gt;<span class="w"> </span>create<span class="w"> </span>database<span class="w"> </span>test<span class="p">;</span>
+<span class="c1">#授权</span>
+mysql&gt;<span class="w"> </span>grant<span class="w">  </span>all<span class="w">  </span>on<span class="w"> </span>test.*<span class="w">  </span>to<span class="w"> </span><span class="s1">&#39;test01&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>!image-20250825110737314](/images/image-20250825110737314.png)</p>
+<p>部署应用： <code>wordpress  phpmyadmin</code></p>
+<ul>
+<li>获取应用</li>
+</ul>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://files.phpmyadmin.net/phpMyAdmin/4.0.10.12/phpMyAdmin-4.0.10.12-all-languages.tar.gz
+
+<span class="c1">#解压到`/var/www/html/`</span>
+</code></pre></div>
+<ul>
+<li>创建 phomyadmin 的主配置文件</li>
+</ul>
+<div class="highlight"><pre><span></span><code>cp<span class="w">  </span>config.sample.inc.php<span class="w">  </span>config.inc.php<span class="w"> </span>
+</code></pre></div>
+<ul>
+<li>测试：</li>
+</ul>
+<p>!image-20250825114359264](/images/image-20250825114359264.png)</p>
+<h3 id="ltm-blog">LTM 单体架构 <code>blog</code></h3>
+<blockquote>
+<p>配置Java环境</p>
+</blockquote>
+<p>一、 配置Java</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#修改主机名</span>
+
+<span class="c1">#获取软件的地址</span>
+https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
+<span class="c1"># java  env</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/jdk21
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="c1">#刷新环境</span>
+<span class="nb">source</span><span class="w">  </span>/etc/profile
+</code></pre></div>
+<p>二、 获取项目软件包</p>
+<p>1、 获取项目软件包</p>
+<div class="highlight"><pre><span></span><code>https://dl.zrlog.com/release/zrlog-3.1.6-6ffdb2b-release.zip
+</code></pre></div>
+<p>2、 解压需要使用<code>unzip命令</code></p>
+<div class="highlight"><pre><span></span><code>创建一个管理目录
+mkdir<span class="w">  </span>/app
+mv<span class="w">  </span>zrlog-3.1.6-6ffdb2b-release.zip<span class="w"> </span>/app
+<span class="nb">cd</span><span class="w"> </span>/app
+<span class="c1">#解压：</span>
+unzip<span class="w">  </span>zrlog-3.1.6-6ffdb2b-release.zip
+</code></pre></div>
+<p>三、 运行业务</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/app/
+app<span class="o">]</span><span class="c1"># bin/start.sh </span>
+</code></pre></div>
+<p>四、 查看服务是否运行</p>
+<div class="highlight"><pre><span></span><code>ps<span class="w"> </span>-ef<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>java<span class="w"> </span>
+
+ss<span class="w"> </span>-luntp<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w">  </span>java<span class="w"> </span>
+</code></pre></div>
+<p>五、 项目初始化；</p>
+<div class="highlight"><pre><span></span><code>http://serverIP:8080
+</code></pre></div>
+<ol>
+<li>配置数据库</li>
+<li>配置博客系统的信息</li>
+<li>完成</li>
+</ol>
+<p>!image-20250825150045211](/images/image-20250825150045211.png)</p>
+<p>六、 配置项目数据库</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>create<span class="w">  </span>database<span class="w">  </span>zrlog<span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">1</span><span class="w"> </span>row<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+mysql&gt;<span class="w"> </span>create<span class="w">  </span>user<span class="w">  </span><span class="s1">&#39;zrlog&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="w"> </span>identified<span class="w">  </span>with<span class="w"> </span>mysql_native_password<span class="w"> </span>by<span class="w"> </span><span class="s1">&#39;Zrlog@123.&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span>grant<span class="w">  </span>all<span class="w"> </span>on<span class="w"> </span>zrlog.*<span class="w">  </span>to<span class="w"> </span><span class="s1">&#39;zrlog&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<h1 id="_4">分布式架构</h1>
+<blockquote>
+<p>存储 raid </p>
+<p>分布式计算    --&gt; AI </p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>graph LR
+w(web-server)
+p(php-server)
+m(mysql-server)
+w1(web-server)
+
+c -.phpmyadmin.-&gt; w 
+c -.zrlog.-&gt; w1
+w1 --&gt; m
+w--&gt;p--&gt;m
+</code></pre></div>
+<p>准备环境：（源码）</p>
+<table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP地址</th>
+<th>系统版本/内核</th>
+<th>软件版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mysql-server.com</td>
+<td>192.168.19.181</td>
+<td>3.10.0-1160.119.1.el7.x86_64</td>
+<td>Mysql-8</td>
+</tr>
+<tr>
+<td>php-server.com</td>
+<td>192.168.19.188</td>
+<td>3.10.0-1160.119.1.el7.x86_64</td>
+<td>Php</td>
+</tr>
+<tr>
+<td>web-server.com</td>
+<td>192.168.19.191</td>
+<td>3.10.0-1160.119.1.el7.x86_64</td>
+<td>apache</td>
+</tr>
+</tbody>
+</table>
+<p>实现步骤：</p>
+<h2 id="web-server">一、 部署web-server</h2>
+<ul>
+<li>安装apr</li>
+<li>安装apr-utils</li>
+<li>安装httpd</li>
+<li>验证</li>
+</ul>
+<h4 id="httpd">httpd服务引擎</h4>
+<p><code>--with-mpm=MPM</code> 是 Apache HTTP 服务器在源码编译时的一个核心配置选项，用于指定默认使用的 <strong>MPM（Multi-Processing Module，多处理模块）</strong>—— 即 Apache 处理并发请求的进程 / 线程模型。</p>
+<p>核心作用：</p>
+<p>MPM 决定了 Apache 如何管理进程和线程来响应客户端请求，直接影响服务器的并发处理能力、资源占用和稳定性。通过 <code>--with-mpm=XXX</code> 可以指定默认启用的 MPM 类型，可选值包括：</p>
+<table>
+<thead>
+<tr>
+<th>MPM 类型</th>
+<th>适用场景与特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prefork</code></td>
+<td>传统的进程模型，为每个请求创建一个独立进程（无线程），稳定性高（一个进程崩溃不影响其他），但内存占用大，并发能力有限。适合需要兼容线程不安全模块（如旧版 mod_php）的场景。</td>
+</tr>
+<tr>
+<td><code>worker</code></td>
+<td>混合进程 + 线程模型，先创建多个进程，每个进程包含多个线程，每个线程处理一个请求。内存占用低于 prefork，并发能力更强，但线程安全要求高。</td>
+</tr>
+<tr>
+<td><code>event</code></td>
+<td>基于 worker 模型的改进版，引入 “事件驱动” 机制，能更高效地处理长连接（如 Keep-Alive），减少线程阻塞，并发性能最优，是现代 Apache 的推荐选择。</td>
+</tr>
+<tr>
+<td><code>winnt</code></td>
+<td>专为 Windows 系统优化的单进程多线程模型，利用 Windows 系统的线程特性，是 Windows 环境下的默认选项。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_5">关键说明：</h3>
+<ol>
+<li><strong>静态链接特性</strong>：默认情况下，通过 <code>--with-mpm=MPM</code> 指定的 MPM 会被 <strong>静态编译</strong> 到 Apache 中，成为唯一可用的进程模型（其他 MPM 无法动态切换）。</li>
+<li><strong>动态切换支持</strong>：若需要在运行时切换 MPM，需同时添加 <code>--enable-mpms-shared</code> 选项，此时指定的 MPM 会作为默认值，但其他 MPM 会被编译为动态模块，可通过配置文件切换。</li>
+<li><strong>选择建议</strong>：</li>
+<li>Linux/Unix 环境优先选择 <code>event</code>（性能最优）；</li>
+<li>需兼容旧模块（如非线程安全的 PHP 扩展）时用 <code>prefork</code>；</li>
+<li>Windows 环境默认使用 <code>winnt</code> 即可</li>
+</ol>
+<div class="highlight"><pre><span></span><code>./configure<span class="w"> </span>--with-mpm<span class="o">=</span>event<span class="w"> </span>...<span class="w">  </span><span class="c1"># 其他配置选项</span>
+</code></pre></div>
+<h2 id="mysql">二、 部署mysql</h2>
+<p><font color=red>切记：安装依赖</font></p>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>install<span class="w">   </span>libaio
+</code></pre></div>
+<ol>
+<li>
+<p>获取二进制预编</p>
+</li>
+<li>
+<p>创建管理目录</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">]</span><span class="c1"># mkdir  /usr/local/mysql8043  </span>
+</code></pre></div>
+<ol>
+<li>解压并创建软链接</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">]</span><span class="c1"># tar xf  mysql-8.0.43-linux-glibc2.17-x86_64.tar.xz  -C /usr/local/mysql8043/</span>
+<span class="nb">cd</span><span class="w"> </span>/usr/local/mysql8043/
+<span class="nb">cd</span><span class="w"> </span>mysql-8.0.43-linux-glibc2.17-x86_64/
+ln<span class="w"> </span>-s<span class="w">  </span>mysql-8.0.43-linux-glibc2.17-x86_64<span class="w"> </span>mysql
+</code></pre></div>
+<ol>
+<li>初始化</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1">#创建用户 mysql </span>
+<span class="o">[</span>root@mysql-server<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># id  mysql</span>
+<span class="nv">uid</span><span class="o">=</span><span class="m">27</span><span class="o">(</span>mysql<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">27</span><span class="o">(</span>mysql<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">27</span><span class="o">(</span>mysql<span class="o">)</span>
+
+<span class="c1">#修改权限</span>
+<span class="o">[</span>root@mysql-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># chown   mysql:mysql  mysql8043 -R</span>
+<span class="c1">#初始化</span>
+<span class="o">[</span>root@mysql-server<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># bin/mysqld --initialize --user=mysql</span>
+<span class="m">2025</span>-08-17T13:42:22.807017Z<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">[</span>System<span class="o">]</span><span class="w"> </span><span class="o">[</span>MY-013169<span class="o">]</span><span class="w"> </span><span class="o">[</span>Server<span class="o">]</span><span class="w"> </span>/usr/local/mysql8043/mysql-8.0.43-linux-glibc2.17-x86_64/bin/mysqld<span class="w"> </span><span class="o">(</span>mysqld<span class="w"> </span><span class="m">8</span>.0.43<span class="o">)</span><span class="w"> </span>initializing<span class="w"> </span>of<span class="w"> </span>server<span class="w"> </span><span class="k">in</span><span class="w"> </span>progress<span class="w"> </span>as<span class="w"> </span>process<span class="w"> </span><span class="m">27333</span>
+<span class="m">2025</span>-08-17T13:42:22.857132Z<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">[</span>System<span class="o">]</span><span class="w"> </span><span class="o">[</span>MY-013576<span class="o">]</span><span class="w"> </span><span class="o">[</span>InnoDB<span class="o">]</span><span class="w"> </span>InnoDB<span class="w"> </span>initialization<span class="w"> </span>has<span class="w"> </span>started.
+<span class="m">2025</span>-08-17T13:42:23.643670Z<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">[</span>System<span class="o">]</span><span class="w"> </span><span class="o">[</span>MY-013577<span class="o">]</span><span class="w"> </span><span class="o">[</span>InnoDB<span class="o">]</span><span class="w"> </span>InnoDB<span class="w"> </span>initialization<span class="w"> </span>has<span class="w"> </span>ended.
+<span class="m">2025</span>-08-17T13:42:26.502751Z<span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="o">[</span>Note<span class="o">]</span><span class="w"> </span><span class="o">[</span>MY-010454<span class="o">]</span><span class="w"> </span><span class="o">[</span>Server<span class="o">]</span><span class="w"> </span>A<span class="w"> </span>temporary<span class="w"> </span>password<span class="w"> </span>is<span class="w"> </span>generated<span class="w"> </span><span class="k">for</span><span class="w"> </span>root@localhost:<span class="w"> </span><span class="o">=</span>_XKVr,-W1d1
+<span class="c1">#启动</span>
+<span class="o">[</span>root@mysql-server<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># bin/mysqld_safe --user=mysql &amp;</span>
+</code></pre></div>
+<ol>
+<li>登陆数据库</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>更新命令<span class="w"> </span>
+<span class="o">[</span>root@mysql-server<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># bin/mysql  -uroot -p</span>
+Enter<span class="w"> </span>password:<span class="w">   </span><span class="c1">#在初始化的时候提供的密码</span>
+<span class="m">2</span>.<span class="w"> </span>更新密码
+mysql&gt;<span class="w"> </span>alter<span class="w">  </span>user<span class="w"> </span><span class="s1">&#39;root&#39;</span>@<span class="s1">&#39;localhost&#39;</span><span class="w"> </span>identified<span class="w">  </span>by<span class="w"> </span><span class="s1">&#39;Admin@123.&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.02<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>配置环境变量</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># mysql  env</span>
+<span class="nb">export</span><span class="w">  </span><span class="nv">MYSQL_HOME</span><span class="o">=</span>/usr/local/mysql8043/mysql
+<span class="nb">export</span><span class="w">  </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$MYSQL_HOME</span>/bin
+</code></pre></div>
+<ol>
+<li>测试再次登陆</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">databases</span><span class="p">;</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="k">Database</span><span class="w">           </span><span class="o">|</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">information_schema</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">mysql</span><span class="w">              </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">performance_schema</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">sys</span><span class="w">                </span><span class="o">|</span>
+<span class="o">+--------------------+</span>
+<span class="mi">4</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="php">三、 部署PHP</h2>
+<blockquote>
+<p>php 是一个脚本语言</p>
+</blockquote>
+<ol>
+<li>获取安装包</li>
+</ol>
+<div class="highlight"><pre><span></span><code>https://www.php.net/releases/
+</code></pre></div>
+<ol>
+<li>解压且编译</li>
+</ol>
+<div class="highlight"><pre><span></span><code>./configure<span class="w"> </span><span class="se">\</span>
+--prefix<span class="o">=</span>/usr/local/php8/<span class="w"> </span><span class="se">\ </span>
+--with-config-file-path<span class="o">=</span>/usr/local/php8/etc/<span class="w">  </span><span class="se">\</span>
+--with-curl<span class="w"> </span><span class="se">\</span>
+--with-freetype-dir<span class="w"> </span><span class="se">\</span>
+--with-gd<span class="w"> </span><span class="se">\</span>
+--with-iconv-dir<span class="w"> </span><span class="se">\</span>
+--with-kerberos<span class="w"> </span><span class="se">\</span>
+--with-libdir<span class="o">=</span>lib64<span class="w"> </span><span class="se">\</span>
+--with-libxml-dir<span class="w"> </span><span class="se">\</span>
+--with-mysqli<span class="w"> </span><span class="se">\</span>
+--with-openssl<span class="w"> </span><span class="se">\</span>
+--with-pcre-regex<span class="w"> </span><span class="se">\</span>
+--with-pdo-sqlite<span class="w"> </span><span class="se">\</span>
+--with-pear<span class="w"> </span><span class="se">\</span>
+--with-png-dir<span class="w"> </span><span class="se">\</span>
+--with-jpeg<span class="w"> </span><span class="se">\</span>
+--with-xmlrpc<span class="w"> </span><span class="se">\</span>
+--with-xsl<span class="w"> </span><span class="se">\</span>
+--with-zlib<span class="w"> </span><span class="se">\</span>
+--with-bz2<span class="w"> </span><span class="se">\</span>
+--enable-fpm<span class="w"> </span><span class="se">\</span>
+--enable-bcmath<span class="w"> </span><span class="se">\</span>
+--enable-libxml<span class="w"> </span><span class="se">\</span>
+--enable-inline-optimization<span class="w"> </span><span class="se">\</span>
+--enable-gd-native-ttf<span class="w"> </span><span class="se">\</span>
+--enable-mbregex<span class="w">  </span><span class="se">\</span>
+--with-pdo-mysql<span class="w"> </span><span class="se">\</span>
+--enable-gd<span class="w"> </span><span class="se">\</span>
+--enable-opcache<span class="w"> </span><span class="se">\</span>
+--enable-pcntl<span class="w"> </span><span class="se">\</span>
+--enable-shmop<span class="w"> </span><span class="se">\</span>
+--enable-soap<span class="w"> </span><span class="se">\</span>
+--enable-sockets<span class="w"> </span><span class="se">\</span>
+--enable-sysvsem<span class="w"> </span><span class="se">\</span>
+--enable-zip<span class="w"> </span><span class="se">\</span>
+--with-ldap
+</code></pre></div>
+<ol>
+<li>运行前配置</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp  php-8.1.31/php.ini-development   etc/php.ini</span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/p</span>
+pear.conf<span class="w">             </span>php-fpm.conf.default<span class="w">  </span>php-fpm.d/<span class="w">            </span>php.ini
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/php</span>
+php-fpm.conf.default<span class="w">  </span>php-fpm.d/<span class="w">            </span>php.ini<span class="w">               </span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/php-fpm.d/www.conf.default  etc/php-fpm.d/www.conf</span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/php</span>
+php-fpm.conf.default<span class="w">  </span>php-fpm.d/<span class="w">            </span>php.ini<span class="w">               </span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/php</span>
+php-fpm.conf.default<span class="w">  </span>php-fpm.d/<span class="w">            </span>php.ini<span class="w">               </span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cp etc/php-fpm.conf.default  etc/php-fpm.conf</span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># ls</span>
+bin<span class="w">  </span>etc<span class="w">  </span>include<span class="w">  </span>lib<span class="w">  </span>php<span class="w">  </span>php-8.1.31<span class="w">  </span>sbin<span class="w">  </span>var
+
+
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># sbin/php-fpm   #管理PHP服务</span>
+</code></pre></div>
+<ol>
+<li>查看进程</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># ss -luntp  | grep  php</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">    </span><span class="m">127</span>.0.0.1:9000<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121667</span>,fd<span class="o">=</span><span class="m">5</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121666</span>,fd<span class="o">=</span><span class="m">5</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121665</span>,fd<span class="o">=</span><span class="m">7</span><span class="o">))</span>
+</code></pre></div>
+<ol>
+<li>修改PHP的配置文件（监听地址）</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># grep  &#39;9000&#39;  etc/php-fpm.d/www.conf</span>
+<span class="p">;</span><span class="nv">listen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">127</span>.0.0.1:9000
+<span class="p">;</span><span class="nv">listen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.0.0.0:9000
+<span class="nv">listen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">192</span>.168.19.188:9000
+</code></pre></div>
+<ol>
+<li>重启PHP</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1">#关于进程</span>
+pgrep<span class="w">  </span><span class="c1">#process grep  </span>
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># pgrep  -l php </span>
+<span class="m">121686</span><span class="w"> </span>php-fpm
+<span class="m">121687</span><span class="w"> </span>php-fpm
+<span class="m">121688</span><span class="w"> </span>php-fpm
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># pgrep  -la php </span>
+<span class="m">121686</span><span class="w"> </span>php-fpm:<span class="w"> </span>master<span class="w"> </span>process<span class="w"> </span><span class="o">(</span>/usr/local/php8/etc/php-fpm.conf<span class="o">)</span>
+<span class="m">121687</span><span class="w"> </span>php-fpm:<span class="w"> </span>pool<span class="w"> </span>www
+<span class="m">121688</span><span class="w"> </span>php-fpm:<span class="w"> </span>pool<span class="w"> </span>www
+
+
+
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># ss -luntp  | grep php </span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">    </span><span class="m">192</span>.168.19.188:9000<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121688</span>,fd<span class="o">=</span><span class="m">5</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121687</span>,fd<span class="o">=</span><span class="m">5</span><span class="o">)</span>,<span class="o">(</span><span class="s2">&quot;php-fpm&quot;</span>,pid<span class="o">=</span><span class="m">121686</span>,fd<span class="o">=</span><span class="m">7</span><span class="o">))</span>
+
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># pkill php </span>
+
+<span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># sbin/php-fpm </span>
+</code></pre></div>
+<ol>
+<li>验证：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># ps  -ef | grep  php</span>
+root<span class="w">     </span><span class="m">121686</span><span class="w">      </span><span class="m">1</span><span class="w">  </span><span class="m">0</span><span class="w"> </span><span class="m">10</span>:37<span class="w"> </span>?<span class="w">        </span><span class="m">00</span>:00:00<span class="w"> </span>php-fpm:<span class="w"> </span>master<span class="w"> </span>process<span class="w"> </span><span class="o">(</span>/usr/local/php8/etc/php-fpm.conf<span class="o">)</span>
+nobody<span class="w">   </span><span class="m">121687</span><span class="w"> </span><span class="m">121686</span><span class="w">  </span><span class="m">0</span><span class="w"> </span><span class="m">10</span>:37<span class="w"> </span>?<span class="w">        </span><span class="m">00</span>:00:00<span class="w"> </span>php-fpm:<span class="w"> </span>pool<span class="w"> </span>www
+nobody<span class="w">   </span><span class="m">121688</span><span class="w"> </span><span class="m">121686</span><span class="w">  </span><span class="m">0</span><span class="w"> </span><span class="m">10</span>:37<span class="w"> </span>?<span class="w">        </span><span class="m">00</span>:00:00<span class="w"> </span>php-fpm:<span class="w"> </span>pool<span class="w"> </span>www
+root<span class="w">     </span><span class="m">121723</span><span class="w">   </span><span class="m">1995</span><span class="w">  </span><span class="m">0</span><span class="w"> </span><span class="m">10</span>:43<span class="w"> </span>pts/0<span class="w">    </span><span class="m">00</span>:00:00<span class="w"> </span>grep<span class="w"> </span>--color<span class="o">=</span>auto<span class="w"> </span>php
+</code></pre></div>
+<h2 id="_6">四、测试所有组件的联动性</h2>
+<ol>
+<li>
+<p>Web-server 与PHP-server</p>
+</li>
+<li>
+<p>web-server 配置 <code>httpd.conf</code></p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1">#开启代理模块</span>
+LoadModule<span class="w"> </span>proxy_module<span class="w"> </span>modules/mod_proxy.so
+LoadModule<span class="w"> </span>proxy_fcgi_module<span class="w"> </span>modules/mod_proxy_fcgi.so
+
+&lt;IfModule<span class="w"> </span>dir_module&gt;
+<span class="w">    </span>DirectoryIndex<span class="w"> </span>index.html<span class="w"> </span>index.php
+&lt;/IfModule&gt;
+
+<span class="w">    </span>AddType<span class="w"> </span>application/x-compress<span class="w"> </span>.Z
+<span class="w">    </span>AddType<span class="w"> </span>application/x-gzip<span class="w"> </span>.gz<span class="w"> </span>.tgz
+<span class="w">    </span>AddType<span class="w"> </span>application/x-httpd-php<span class="w"> </span>.php<span class="w">       </span><span class="c1">#增加对php的支持</span>
+<span class="w">    </span>AddType<span class="w"> </span>application/x-httpd-php-source<span class="w"> </span>.phps<span class="w">   </span><span class="c1">#增加对php的支持</span>
+<span class="c1"># Virtual hosts</span>
+Include<span class="w"> </span>conf/extra/httpd-vhosts.conf
+</code></pre></div>
+<ul>
+<li>
+<p>创建一个虚拟主机（test）</p>
+<div class="highlight"><pre><span></span><code>listen<span class="w"> </span><span class="m">81</span>
+&lt;VirtualHost<span class="w"> </span>*:81&gt;
+<span class="w"> </span><span class="c1">#   ServerAdmin webmaster@dummy-host2.example.com</span>
+<span class="w">    </span>DocumentRoot<span class="w"> </span><span class="s2">&quot;/usr/local/http1/apache/htdocs/test.com&quot;</span>
+<span class="w"> </span><span class="c1">#   ServerName dummy-host2.example.com</span>
+<span class="w"> </span><span class="c1">#   ErrorLog &quot;logs/dummy-host2.example.com-error_log&quot;</span>
+<span class="w"> </span><span class="c1">#   CustomLog &quot;logs/dummy-host2.example.com-access_log&quot; common</span>
+<span class="w">    </span>ProxyRequests<span class="w"> </span>Off<span class="w">   </span>
+<span class="w">    </span>ProxyPassMatch<span class="w"> </span>^/<span class="o">(</span>.*<span class="se">\.</span>php<span class="o">)</span>$<span class="w"> </span>fcgi://192.168.19.188:9000/usr/local/php8/vhosts/test.com/<span class="nv">$1</span>
+&lt;/VirtualHost&gt;
+</code></pre></div>
+</li>
+<li>
+<p>创建项目</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@web-server<span class="w"> </span>apache<span class="o">]</span><span class="c1"># cat  htdocs/test.com/index.php </span>
+&lt;?php
+phpinfo<span class="o">()</span><span class="p">;</span>
+?&gt;
+</code></pre></div>
+</li>
+<li>
+<p>重启服务</p>
+</li>
+</ul>
+<p>PHP服务器上创建项目</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cat vhosts/test.com/index.php </span>
+&lt;?php
+<span class="w"> </span>phpinfo<span class="o">()</span><span class="p">;</span>
+?&gt;
+</code></pre></div>
+<p>访问测试</p>
+<p>!image-20250826112020232](/images/image-20250826112020232.png)</p>
+<ol>
+<li>PHP -&gt; mysql </li>
+</ol>
+<blockquote>
+<p>在PHP服务器上创建数据库的测试脚本</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@php-server<span class="w"> </span>php8<span class="o">]</span><span class="c1"># cat  vhosts/test.com/index.php </span>
+&lt;?php
+//<span class="w"> </span>数据库配置信息<span class="w"> </span>-<span class="w"> </span>请根据你的实际情况修改
+<span class="nv">$host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;192.168.19.181&#39;</span><span class="p">;</span><span class="w">      </span>//<span class="w"> </span>数据库主机地址
+<span class="nv">$dbname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test_db&#39;</span><span class="p">;</span><span class="w">      </span>//<span class="w"> </span>要连接的数据库名称
+<span class="nv">$username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;test&#39;</span><span class="p">;</span><span class="w">       </span>//<span class="w"> </span>数据库用户名
+<span class="nv">$password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span><span class="w">           </span>//<span class="w"> </span>数据库密码
+
+try<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>//<span class="w"> </span>创建PDO连接
+<span class="w">    </span><span class="nv">$pdo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>new<span class="w"> </span>PDO<span class="o">(</span>
+<span class="w">        </span><span class="s2">&quot;mysql:host=</span><span class="nv">$host</span><span class="s2">;dbname=</span><span class="nv">$dbname</span><span class="s2">;charset=utf8&quot;</span>,
+<span class="w">        </span><span class="nv">$username</span>,
+<span class="w">        </span><span class="nv">$password</span>,
+<span class="w">        </span><span class="o">[</span>
+<span class="w">            </span>PDO::ATTR_ERRMODE<span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span>PDO::ERRMODE_EXCEPTION,
+<span class="w">            </span>PDO::ATTR_TIMEOUT<span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="m">5</span><span class="w"> </span>//<span class="w"> </span>连接超时时间（秒）
+<span class="w">        </span><span class="o">]</span>
+<span class="w">    </span><span class="o">)</span><span class="p">;</span>
+
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;div style=&#39;color: green; font-family: Arial, sans-serif;&#39;&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;h2&gt;✅ 数据库连接成功！&lt;/h2&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;已成功连接到 MySQL 服务器和 &#39;</span><span class="nv">$dbname</span><span class="s2">&#39; 数据库&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;/div&gt;&quot;</span><span class="p">;</span>
+
+<span class="w">    </span>//<span class="w"> </span>关闭连接（PDO会在脚本结束时自动关闭，这里仅作演示）
+<span class="w">    </span><span class="nv">$pdo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null<span class="p">;</span>
+
+<span class="o">}</span><span class="w"> </span>catch<span class="o">(</span>PDOException<span class="w"> </span><span class="nv">$e</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;div style=&#39;color: red; font-family: Arial, sans-serif;&#39;&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;h2&gt;❌ 数据库连接失败！&lt;/h2&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;错误信息: &quot;</span><span class="w"> </span>.<span class="w"> </span><span class="nv">$e</span>-&gt;getMessage<span class="o">()</span><span class="w"> </span>.<span class="w"> </span><span class="s2">&quot;&lt;/p&gt;&quot;</span><span class="p">;</span>
+
+<span class="w">    </span>//<span class="w"> </span>根据错误代码提供一些常见问题提示
+<span class="w">    </span><span class="nv">$errorCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$e</span>-&gt;getCode<span class="o">()</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;1045&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: 用户名或密码错误&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span><span class="w"> </span>elseif<span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;1049&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: 数据库 &#39;</span><span class="nv">$dbname</span><span class="s2">&#39; 不存在&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span><span class="w"> </span>elseif<span class="o">(</span>strpos<span class="o">(</span><span class="nv">$errorCode</span>,<span class="w"> </span><span class="s1">&#39;2002&#39;</span><span class="o">)</span><span class="w"> </span>!<span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;可能原因: MySQL服务器未运行或主机地址错误&lt;/p&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;/div&gt;&quot;</span><span class="p">;</span>
+<span class="w">    </span>exit<span class="p">;</span>
+<span class="o">}</span>
+?&gt;
+</code></pre></div>
+<ol>
+<li>操作数据库</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">user</span><span class="w">  </span><span class="s1">&#39;test&#39;</span><span class="nv">@&#39;192.168.19.188&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w">  </span><span class="k">with</span><span class="w"> </span><span class="n">mysql_native_password</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.60</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">grant</span><span class="w"> </span><span class="k">all</span><span class="w">  </span><span class="k">on</span><span class="w">  </span><span class="o">*</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="k">to</span><span class="w">  </span><span class="s1">&#39;test&#39;</span><span class="err">@</span><span class="o">^</span><span class="n">C</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">database</span><span class="w">  </span><span class="n">test_db</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.03</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">grant</span><span class="w">  </span><span class="k">all</span><span class="w">  </span><span class="k">on</span><span class="w"> </span><span class="n">test_db</span><span class="p">.</span><span class="o">*</span><span class="w">  </span><span class="k">to</span><span class="w"> </span><span class="s1">&#39;test&#39;</span><span class="nv">@&#39;192.168.19.188&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.02</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">flush</span><span class="w"> </span><span class="k">tables</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.10</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>测试连接</li>
+</ol>
+<p>!image-20250826112951628](/images/image-20250826112951628.png)</p>
+<h2 id="phpmyadmin">发布项目： <code>phpmyadmin</code></h2>
+<div class="highlight"><pre><span></span><code>listen<span class="w"> </span><span class="m">82</span>
+&lt;VirtualHost<span class="w"> </span>*:82&gt;
+<span class="w"> </span><span class="c1">#   ServerAdmin webmaster@dummy-host2.example.com</span>
+<span class="w">    </span>DocumentRoot<span class="w"> </span><span class="s2">&quot;/usr/local/http1/apache/htdocs/phpmyadmin.com&quot;</span>
+<span class="w"> </span><span class="c1">#   ServerName dummy-host2.example.com</span>
+<span class="w">    </span>ErrorLog<span class="w"> </span><span class="s2">&quot;logs/phpmyadmin.com-error_log&quot;</span>
+<span class="w">    </span>CustomLog<span class="w"> </span><span class="s2">&quot;logs/phpmyadmin.com-access_log&quot;</span><span class="w"> </span>common
+<span class="w">    </span>ProxyRequests<span class="w"> </span>Off<span class="w">   </span>
+<span class="w">    </span>ProxyPassMatch<span class="w"> </span>^/<span class="o">(</span>.*<span class="se">\.</span>php<span class="o">)</span>$<span class="w"> </span>fcgi://192.168.19.188:9000/usr/local/php8/vhosts/phpmyadmin.com/<span class="nv">$1</span>
+&lt;/VirtualHost&gt;
+</code></pre></div>
+<p>!image-20250826114759126](/images/image-20250826114759126.png)</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-secrets-密钥"># Secrets 密钥</a></li><li class="toc-l2"><a href="#-案例">## 案例：</a></li><li class="toc-l1"><a href="#-redis-pod.yaml"># redis-pod.yaml</a></li><li class="toc-l1"><a href="#-从-secret-中读取环境变量用户名和密码"># 从 Secret 中读取环境变量（用户名和密码）</a></li><li class="toc-l1"><a href="#-启动-redis-时配置密码认证通过命令行参数"># 启动 Redis 时配置密码认证（通过命令行参数）</a></li><li class="toc-l1"><a href="#-可选挂载-secret-为文件如需通过文件读取密码"># 可选：挂载 Secret 为文件（如需通过文件读取密码）</a></li><li class="toc-l1"><a href="#-定义-secret-卷用于文件挂载方式"># 定义 Secret 卷（用于文件挂载方式）</a></li><li class="toc-l2"><a href="#-部署dashboard管理k8s-集群">## 部署Dashboard管理k8s 集群</a></li><li class="toc-l3"><a href="#-安全的章节">### 安全的章节</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="secrets">Secrets 密钥</h1>
+<p>A Secret is an object that contains a small amount of sensitive data such as a password, a token, or a key. Such information might otherwise be put in a <a href="https://kubernetes.io/docs/concepts/workloads/pods/">Pod</a> specification or in a<a href="https://kubernetes.io/docs/reference/glossary/?all=true#term-image">container image</a>. Using a Secret means that you don't need to include confidential data in your application code.<br />
+秘密对象是指包含少量敏感数据的对象，例如： 密码、令牌或密钥。此类信息也可能被放入……<a href="https://kubernetes.io/docs/concepts/workloads/pods/">Pod</a> 规格或在 <a href="https://kubernetes.io/docs/reference/glossary/?all=true#term-image">容器镜像 </a>。使用密钥意味着您无需在应用程序代码中包含机密数据。</p>
+<p>由于 Secret 的创建可以独立于使用它们的 Pod，因此在创建、查看和编辑 Pod 的工作流程中，Secret（及其数据）泄露的风险更低。Kubernetes 以及在集群中运行的应用程序还可以对 Secret 采取额外的预防措施，例如避免将敏感数据写入非易失性存储。</p>
+<p>警告：</p>
+<blockquote>
+<p>默认情况下，Kubernetes Secret 以未加密的形式存储在 API 服务器的底层数据存储（etcd）中。任何拥有 API 访问权限的用户都可以检索或修改 Secret，任何拥有 etcd 访问权限的用户也可以这样做。此外，任何被授权在命名空间中创建 Pod 的用户都可以使用该权限读取该命名空间中的任何 Secret；这包括间接访问，例如创建 Deployment 的权限</p>
+</blockquote>
+<p>创建 <code>ex-secrets.yaml</code></p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dotfile-secret</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">.secret-file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cm9vdEAxMjMK</span>
+</code></pre></div>
+<p>生成密码文件: <code>十进制文件</code> --&gt; <code>二进制</code></p>
+<p>命令：<code>base64</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># echo  &quot;root@123&quot; | base64</span>
+cm9vdEAxMjMK
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># echo  &quot;cm9vdEAxMjMK&quot;  | base64 -d</span>
+root@123
+</code></pre></div>
+<h2 id="_1">案例：</h2>
+<blockquote>
+<p>以下是结合 <code>db-secret</code> 密钥创建 Redis Pod 的完整配置，实现通过密码（密码）登录 Redis 的功能。配置中会从 Secret 中读取 Redis 密码，并通过环境变量注入到容器中，确保密码安全存储和使用。</p>
+</blockquote>
+<p>实现步骤：创建一个密钥文件</p>
+<p>首先确保之前创建的 <code>db-secret</code> 已存在（若不存在，先执行创建命令）</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>security<span class="o">]</span><span class="c1"># kubectl get secret db-secret</span>
+</code></pre></div>
+<p>编译yaml文件<code>redis-secret.yaml</code></p>
+<div class="highlight"><pre><span></span><code>apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Secret
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>db-secret
+type:<span class="w"> </span>Opaque
+data:
+<span class="w">  </span>db-user:<span class="w"> </span><span class="nv">cmVkaXNhZG1pbg</span><span class="o">==</span><span class="w">      </span><span class="c1"># 编码后的用户名（redisadmin）</span>
+<span class="w">  </span>db-password:<span class="w"> </span>cmVkaXNAMTIz<span class="w">      </span><span class="c1"># 编码后的密码（redis@123）</span>
+</code></pre></div>
+<p>创建<code>secret</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>redis-example<span class="o">]</span><span class="c1"># ka  -f redis-secret.yaml</span>
+</code></pre></div>
+<p>编辑一个<code>redis-pod</code>示例文件</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># redis-pod.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis-with-secret</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis:latest</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+<span class="w">    </span><span class="c1"># 从 Secret 中读取环境变量（用户名和密码）</span>
+<span class="w">    </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REDIS_USER</span><span class="w">       </span><span class="c1"># 自定义环境变量名（Redis 用户名）</span>
+<span class="w">      </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-secret</span><span class="w">    </span><span class="c1"># 引用的 Secret 名称</span>
+<span class="w">          </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-user</span><span class="w">       </span><span class="c1"># Secret 中的键（用户名）</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REDIS_PASSWORD</span><span class="w">   </span><span class="c1"># 自定义环境变量名（Redis 密码）</span>
+<span class="w">      </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-secret</span>
+<span class="w">          </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-password</span><span class="w">   </span><span class="c1"># Secret 中的键（密码）</span>
+<span class="w">    </span><span class="c1"># 启动 Redis 时配置密码认证（通过命令行参数）</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;redis-server&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;--requirepass&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;$(REDIS_PASSWORD)&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># 可选：挂载 Secret 为文件（如需通过文件读取密码）</span>
+<span class="w">    </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">secret-volume</span>
+<span class="w">      </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/redis/secret</span>
+<span class="w">      </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># 只读挂载，增强安全性</span>
+<span class="w">  </span><span class="c1"># 定义 Secret 卷（用于文件挂载方式）</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">secret-volume</span>
+<span class="w">    </span><span class="nt">secret</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-secret</span><span class="w">  </span><span class="c1"># 关联 db-secret</span>
+</code></pre></div>
+<p>创建Pod</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>redis-example<span class="o">]</span><span class="c1"># ka  -f redis-pod.yaml</span>
+</code></pre></div>
+<p>等待Pod 创建完成之后验证： <code>进入redis的Pod</code></p>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<h2 id="dashboardk8s">部署Dashboard管理k8s 集群</h2>
+<p>基于<code>web</code></p>
+<ul>
+<li>
+<p>官方： <code>Dashboard</code></p>
+</li>
+<li>
+<p>第三方： <code>kabor</code></p>
+</li>
+</ul>
+<p>基于桌面</p>
+<ul>
+<li>Lens</li>
+</ul>
+<p><img alt="image-20251101153539169" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/security/assets/image-20251101153539169.png" /></p>
+<p>创建用户及角色绑定  <code>admin-user.yaml</code></p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ServiceAccount</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin-user</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes-dashboard</span>
+</code></pre></div>
+<p>创建角色<code>admin-role-binding.yaml</code></p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRoleBinding</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin-user</span>
+<span class="nt">roleRef</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+<span class="w">  </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cluster-admin</span>
+<span class="nt">subjects</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ServiceAccount</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin-user</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes-dashboard</span>
+</code></pre></div>
+<p>创建</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w">  </span>apply<span class="w"> </span>-f<span class="w">  </span>.
+</code></pre></div>
+<p>获取<code>token</code></p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>kubernetes-dashboard<span class="w"> </span>create<span class="w"> </span>token<span class="w"> </span>admin-user
+</code></pre></div>
+<h3 id="_2">安全的章节</h3>
+<blockquote>
+<p>https://kubernetes.io/docs/concepts/security/rbac-good-practices/</p>
+</blockquote>
+<p><code>ServiceAccount rbac</code> 访问控制</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

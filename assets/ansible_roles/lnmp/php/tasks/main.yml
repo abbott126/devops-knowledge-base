@@ -1,0 +1,12 @@
+---
+# tasks file for lnmp/php
+
+
+- name:  install  php
+  shell: 'echo hello ansible role php install '
+  when: ansible_hostname  == 'php-server'
+
+
+- name:  start php
+  shell: 'echo hello ansible role run php'
+  when: ansible_hostname  == 'php-server'

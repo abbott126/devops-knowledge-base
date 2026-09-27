@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceph 简化版 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-ceph-分布式存储"># ceph 分布式存储</a></li><li class="toc-l2"><a href="#-前言">## 前言</a></li><li class="toc-l2"><a href="#-一环境说明">## 一、环境说明</a></li><li class="toc-l2"><a href="#-二实现步骤">## 二、实现步骤</a></li><li class="toc-l3"><a href="#-准备主机">### 准备主机</a></li><li class="toc-l1"><a href="#-allow-ntp-client-access-from-local-network."># Allow NTP client access from local network.</a></li><li class="toc-l1"><a href="#allow-192.168.0.0/16">#allow 192.168.0.0/16</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#pool-2.pool.ntp.org-iburst">#pool 2.pool.ntp.org iburst</a></li><li class="toc-l3"><a href="#-安装cephadm的管理命令">### 安装cephadm的管理命令</a></li><li class="toc-l3"><a href="#-通过-cephadm-引导">### 通过 cephadm 引导</a></li><li class="toc-l3"><a href="#-ceph-客户端命令">### ceph 客户端命令</a></li><li class="toc-l3"><a href="#-管理主机">### 管理主机</a></li><li class="toc-l3"><a href="#-管理-osd">### 管理 OSD</a></li><li class="toc-l4"><a href="#-1.-添加osd">#### 1. 添加OSD</a></li><li class="toc-l4"><a href="#-2移除osd">#### 2、移除OSD</a></li><li class="toc-l2"><a href="#-三ceph-存储类型与使用">## 三、Ceph 存储类型与使用</a></li><li class="toc-l3"><a href="#-1.-ceph-的三大存储类型">### 1. Ceph 的三大存储类型</a></li><li class="toc-l3"><a href="#-块存储rbd">### 块存储（RBD）</a></li><li class="toc-l4"><a href="#-rbd-原理与使用场景">#### **RBD 原理与使用场景**</a></li><li class="toc-l4"><a href="#-rbd-核心原理架构">#### RBD 核心原理&架构</a></li><li class="toc-l3"><a href="#-核心组成">### **核心组成**</a></li><li class="toc-l2"><a href="#-三导出为-nfs-服务">## 三、导出为 NFS 服务</a></li><li class="toc-l3"><a href="#-实现步骤">### 实现步骤：</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="ceph">ceph 分布式存储</h1>
+<h2 id="_1">前言</h2>
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  Ceph 是一款分布式存储系统，支持三种存储方式：对象存储、块存储和文件存储。Ceph 的部署工具有很多，但是 Ceph v15.2 (Octopus) 开始，推荐使用 cephadm 和 rook。其中 rook 是针对 kubernetes 的 ceph 部署工具，不在本例范围。</p>
+cephadm 为单独部署工具，使用容器化技术进行集群部署和管理，容器技术目前支持使用 docker 和 podman，本例以 podman 为例进行部署。本例以 Ceph v16.2 (Pacific) 为例进行安装演示。
+</div>
+
+<div style="border:1px solid #f90; background-color:#fff3cd; padding:10px; border-radius:5px;">
+  <strong>警告：</strong> </p>由于 Ceph 自带的 Ingress 还在开发，虽然可以配置成功，但是不能平滑切换，高可用 NFS 可能要等到 Ceph v17.2 (Quincy) 实现，如果真的可以，到时再测试一下。具体说法可以参考官方文档
+</div>
+
+<h2 id="_2">一、环境说明</h2>
+<hr />
+<div style="background-color: #ffffcc; padding: 10px; border-left: 5px solid #ffcc00;">
+  Rocky 8（Minimal Install）
+</div>
+
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>/etc/system-release
+Rocky<span class="w"> </span>Linux<span class="w"> </span>release<span class="w"> </span><span class="m">8</span>.10<span class="w"> </span><span class="o">(</span>Green<span class="w"> </span>Obsidian<span class="o">)</span>
+</code></pre></div>
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong></p> Ceph 分布式存储集群中一般分为两种类型主机: MON （Monitor）监控节点 和 OSD (Object Storage Device) 对象存储设备节点。Ceph 存储集群最少需要一个 MON 和 两个 OSD （作为复制）组成。
+</div>
+
+<div style="border:1px solid #f90; background-color:#fff3cd; padding:10px; border-radius:5px;">
+  <strong>警告：</strong> 生产环境里一般 MON 节点是 3 或 5 个， OSD 节点是越多越好，而且这两种节点应在不同主机安装，但是本例为实验目的，就安装在一起了。
+</div>
+
+<p>主机的分配</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">HostName</th>
+<th style="text-align: left;">IP addr</th>
+<th style="text-align: left;">cpu</th>
+<th style="text-align: left;">Disk</th>
+<th style="text-align: left;">Disk</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ceph1</td>
+<td style="text-align: left;">192.168.19.136</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Sda,sdb</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">MON,OSD</td>
+</tr>
+<tr>
+<td style="text-align: left;">ceph2</td>
+<td style="text-align: left;">192.168.19.137</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Sda,sdb</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">OSD</td>
+</tr>
+<tr>
+<td style="text-align: left;">ceph3</td>
+<td style="text-align: left;">192.168.19.138</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Sda,sdb</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">OSD</td>
+</tr>
+</tbody>
+</table>
+<div style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>⚠️ 警告：</strong> </p>每个虚拟机配置两块网卡（一块 NIC 设置为 NAT，另一块 NIC 设置为 Host-only）。
+<ul>
+  1. 使用 NAT 网络，虚拟机可以访问外网，下载安装包。</p>
+2. 使用 Host-only 的好处是虚拟机网络不会受外界的网络变化影响.
+</ul>
+</div>
+
+<div style="border:1px solid #0099cc; background-color:#e6f7ff; padding:10px; border-radius:5px;">
+  <strong>注意：</strong> 这是一个信息提示框。
+  <ul>
+    <li>操作系统安装到 sda 盘上。</li>
+    <li>sdb 盘不需要格式化，因为 cephadm 只支持 BlueStore OSDs 就是直接管理裸设备，这样会极大的提升性能。</li>
+    <li>Ceph 支持管理网络和公用网络分开，本例没有设置，使用同一个网络。</li>
+  </ul>
+</div>
+
+<h2 id="_3">二、实现步骤</h2>
+<h3 id="_4">准备主机</h3>
+<ol>
+<li>三个主机都执行：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1/2/3<span class="w"> </span>~<span class="o">]</span><span class="c1"># dnf install  python3 podman chrony</span>
+<span class="o">[</span>root@ceph1/2/3<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl enable chronyd &amp;&amp; systemctl start chronyd</span>
+</code></pre></div>
+<ol>
+<li>查看一下版本：</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# python3 --version
+Python 3.6.8
+[root@ceph1 ~]# podman --version
+podman version 3.3.1
+[root@ceph1 ~]# chronyc --version
+chronyc (chrony) version 4.1 (+READLINE +SECHASH +IPV6 +DEBUG)
+
+[root@ceph1 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.18.10 ceph1
+192.168.18.20 ceph2
+192.168.18.30 ceph3
+</code></pre></div>
+<div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 5px;">
+  <strong>注意：</strong> </p>由于 Ceph 对于节点之间的时间同步要求较高，本试验由于没有本地的 ntp 服务器，添加其他节点之前，设置 ceph1 节点的 chrony 服务为本地 ntp 服务器。</p>
+<a href="#切记" style="display: inline-block; background-color: #f5222d; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+  ❌ 切记操作
+</a></p>
+生产环境应该是一个独立的 ntp 服务，防止万一 ceph1 节点出问题，导致集群时间都不同步了。
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Allow NTP client access from local network.</span>
+<span class="c1">#allow 192.168.0.0/16</span>
+allow<span class="w"> </span><span class="m">192</span>.168.18.0/16
+</code></pre></div>
+<div style="background-color: #f0f0f0; border-left: 5px solid #555; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>📌 注意：</strong></p>实验环境的网段 CIDR 为 <code>192.168.18.0/24</code>，请根据您的实际情况进行更改。
+</div>
+
+<ol>
+<li>修改完之后，需要重启一下 <code>chrony</code> 服务,并且打开防火墙端口</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl restart chronyd</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># firewall-cmd --permanent --add-service=ntp</span>
+success
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># firewall-cmd --reload</span>
+success
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># firewall-cmd --list-all</span>
+public<span class="w"> </span><span class="o">(</span>active<span class="o">)</span>
+<span class="w">  </span>target:<span class="w"> </span>default
+<span class="w">  </span>icmp-block-inversion:<span class="w"> </span>no
+<span class="w">  </span>interfaces:<span class="w"> </span>ens160<span class="w"> </span>ens224
+<span class="w">  </span>sources:<span class="w"> </span>
+<span class="w">  </span>services:<span class="w"> </span>cockpit<span class="w"> </span>dhcpv6-client<span class="w"> </span>ntp<span class="w"> </span>ssh
+<span class="w">  </span>ports:<span class="w"> </span>
+<span class="w">  </span>protocols:<span class="w"> </span>
+<span class="w">  </span>forward:<span class="w"> </span>no
+<span class="w">  </span>masquerade:<span class="w"> </span>no
+<span class="w">  </span>forward-ports:<span class="w"> </span>
+<span class="w">  </span>source-ports:<span class="w"> </span>
+<span class="w">  </span>icmp-blocks:<span class="w"> </span>
+<span class="w">  </span>rich<span class="w"> </span>rules:<span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>再另外两个节点设置与 ceph1 时间进行同步</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph2/3 ~]# vi /etc/chrony.conf
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+#pool 2.pool.ntp.org iburst
+server 192.168.18.10 iburst
+</code></pre></div>
+<ol>
+<li>然后也重启一下 chronyd 服务</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph2/3 ~]# systemctl restart chronyd
+</code></pre></div>
+<div style="background-color: #d4edda; border-left: 5px solid #28a745; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>✅ 完成：</strong> 这样基本就完成了准备工作。
+</div>
+
+<h3 id="cephadm">安装cephadm的管理命令</h3>
+<hr />
+<div style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>⚠️ 警告：</strong> 所有节点都要执行操作
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># curl --silent --remote-name --location https://github.com/ceph/ceph/raw/pacific/src/cephadm/cephadm</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># chmod +x cephadm</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ./cephadm add-repo --release pacific</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ./cephadm install</span>
+</code></pre></div>
+<p>使用 <code>cephadm prepare-host</code> 查看准备情况</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1/2/3<span class="w"> </span>~<span class="o">]</span><span class="c1"># cephadm prepare-host</span>
+Verifying<span class="w"> </span>podman<span class="p">|</span>docker<span class="w"> </span>is<span class="w"> </span>present...
+Verifying<span class="w"> </span>lvm2<span class="w"> </span>is<span class="w"> </span>present...
+Verifying<span class="w"> </span><span class="nb">time</span><span class="w"> </span>synchronization<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>place...
+Unit<span class="w"> </span>chronyd.service<span class="w"> </span>is<span class="w"> </span>enabled<span class="w"> </span>and<span class="w"> </span>running
+Repeating<span class="w"> </span>the<span class="w"> </span>final<span class="w"> </span>host<span class="w"> </span>check...
+podman<span class="w"> </span><span class="o">(</span>/usr/bin/podman<span class="o">)</span><span class="w"> </span>version<span class="w"> </span><span class="m">3</span>.3.1<span class="w"> </span>is<span class="w"> </span>present
+systemctl<span class="w"> </span>is<span class="w"> </span>present
+lvcreate<span class="w"> </span>is<span class="w"> </span>present
+Unit<span class="w"> </span>chronyd.service<span class="w"> </span>is<span class="w"> </span>enabled<span class="w"> </span>and<span class="w"> </span>running
+Host<span class="w"> </span>looks<span class="w"> </span>OK
+</code></pre></div>
+<h3 id="cephadm_1">通过 cephadm 引导</h3>
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <ul>
+  <li>通过 cephadm “引导”一个单节点Ceph集群起来，只在 ceph1 节点运行即可。</li>
+<li>只在 bootstrap 节点上（本例使用 ceph1）执行</li>
+<li>先使用 cephadm 引导安装</li>
+  </ul>
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># cephadm bootstrap --mon-ip 192.168.18.10</span>
+Creating<span class="w"> </span>directory<span class="w"> </span>/etc/ceph<span class="w"> </span><span class="k">for</span><span class="w"> </span>ceph.conf
+Verifying<span class="w"> </span>podman<span class="p">|</span>docker<span class="w"> </span>is<span class="w"> </span>present...
+Verifying<span class="w"> </span>lvm2<span class="w"> </span>is<span class="w"> </span>present...
+Verifying<span class="w"> </span><span class="nb">time</span><span class="w"> </span>synchronization<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>place...
+Unit<span class="w"> </span>chronyd.service<span class="w"> </span>is<span class="w"> </span>enabled<span class="w"> </span>and<span class="w"> </span>running
+Repeating<span class="w"> </span>the<span class="w"> </span>final<span class="w"> </span>host<span class="w"> </span>check...
+podman<span class="w"> </span><span class="o">(</span>/usr/bin/podman<span class="o">)</span><span class="w"> </span>version<span class="w"> </span><span class="m">3</span>.3.1<span class="w"> </span>is<span class="w"> </span>present
+systemctl<span class="w"> </span>is<span class="w"> </span>present
+lvcreate<span class="w"> </span>is<span class="w"> </span>present
+Unit<span class="w"> </span>chronyd.service<span class="w"> </span>is<span class="w"> </span>enabled<span class="w"> </span>and<span class="w"> </span>running
+Host<span class="w"> </span>looks<span class="w"> </span>OK
+Cluster<span class="w"> </span>fsid:<span class="w"> </span>9cad419e-7d8d-11ec-8335-080027b919a0
+Verifying<span class="w"> </span>IP<span class="w"> </span><span class="m">192</span>.168.56.221<span class="w"> </span>port<span class="w"> </span><span class="m">3300</span><span class="w"> </span>...
+Verifying<span class="w"> </span>IP<span class="w"> </span><span class="m">192</span>.168.56.221<span class="w"> </span>port<span class="w"> </span><span class="m">6789</span><span class="w"> </span>...
+Mon<span class="w"> </span>IP<span class="w"> </span><span class="sb">`</span><span class="m">192</span>.168.56.221<span class="sb">`</span><span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>CIDR<span class="w"> </span>network<span class="w"> </span><span class="sb">`</span><span class="m">192</span>.168.56.0/24<span class="sb">`</span>
+-<span class="w"> </span>internal<span class="w"> </span>network<span class="w"> </span><span class="o">(</span>--cluster-network<span class="o">)</span><span class="w"> </span>has<span class="w"> </span>not<span class="w"> </span>been<span class="w"> </span>provided,<span class="w"> </span>OSD<span class="w"> </span>replication<span class="w"> </span>will<span class="w"> </span>default<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>public_network
+Pulling<span class="w"> </span>container<span class="w"> </span>image<span class="w"> </span>quay.io/ceph/ceph:v16...
+Ceph<span class="w"> </span>version:<span class="w"> </span>ceph<span class="w"> </span>version<span class="w"> </span><span class="m">16</span>.2.7<span class="w"> </span><span class="o">(</span>dd0603118f56ab514f133c8d2e3adfc983942503<span class="o">)</span><span class="w"> </span>pacific<span class="w"> </span><span class="o">(</span>stable<span class="o">)</span>
+Extracting<span class="w"> </span>ceph<span class="w"> </span>user<span class="w"> </span>uid/gid<span class="w"> </span>from<span class="w"> </span>container<span class="w"> </span>image...
+Creating<span class="w"> </span>initial<span class="w"> </span>keys...
+Creating<span class="w"> </span>initial<span class="w"> </span>monmap...
+Creating<span class="w"> </span>mon...
+firewalld<span class="w"> </span>ready
+Enabling<span class="w"> </span>firewalld<span class="w"> </span>service<span class="w"> </span>ceph-mon<span class="w"> </span><span class="k">in</span><span class="w"> </span>current<span class="w"> </span>zone...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mon<span class="w"> </span>to<span class="w"> </span>start...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mon...
+mon<span class="w"> </span>is<span class="w"> </span>available
+Assimilating<span class="w"> </span>anything<span class="w"> </span>we<span class="w"> </span>can<span class="w"> </span>from<span class="w"> </span>ceph.conf...
+Generating<span class="w"> </span>new<span class="w"> </span>minimal<span class="w"> </span>ceph.conf...
+Restarting<span class="w"> </span>the<span class="w"> </span>monitor...
+Setting<span class="w"> </span>mon<span class="w"> </span>public_network<span class="w"> </span>to<span class="w"> </span><span class="m">192</span>.168.56.0/24
+Wrote<span class="w"> </span>config<span class="w"> </span>to<span class="w"> </span>/etc/ceph/ceph.conf
+Wrote<span class="w"> </span>keyring<span class="w"> </span>to<span class="w"> </span>/etc/ceph/ceph.client.admin.keyring
+Creating<span class="w"> </span>mgr...
+Verifying<span class="w"> </span>port<span class="w"> </span><span class="m">9283</span><span class="w"> </span>...
+firewalld<span class="w"> </span>ready
+Enabling<span class="w"> </span>firewalld<span class="w"> </span>service<span class="w"> </span>ceph<span class="w"> </span><span class="k">in</span><span class="w"> </span>current<span class="w"> </span>zone...
+firewalld<span class="w"> </span>ready
+Enabling<span class="w"> </span>firewalld<span class="w"> </span>port<span class="w"> </span><span class="m">9283</span>/tcp<span class="w"> </span><span class="k">in</span><span class="w"> </span>current<span class="w"> </span>zone...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mgr<span class="w"> </span>to<span class="w"> </span>start...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mgr...
+mgr<span class="w"> </span>not<span class="w"> </span>available,<span class="w"> </span>waiting<span class="w"> </span><span class="o">(</span><span class="m">1</span>/15<span class="o">)</span>...
+mgr<span class="w"> </span>is<span class="w"> </span>available
+Enabling<span class="w"> </span>cephadm<span class="w"> </span>module...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>mgr<span class="w"> </span>to<span class="w"> </span>restart...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mgr<span class="w"> </span>epoch<span class="w"> </span><span class="m">4</span>...
+mgr<span class="w"> </span>epoch<span class="w"> </span><span class="m">4</span><span class="w"> </span>is<span class="w"> </span>available
+Setting<span class="w"> </span>orchestrator<span class="w"> </span>backend<span class="w"> </span>to<span class="w"> </span>cephadm...
+Generating<span class="w"> </span>ssh<span class="w"> </span>key...
+Wrote<span class="w"> </span>public<span class="w"> </span>SSH<span class="w"> </span>key<span class="w"> </span>to<span class="w"> </span>/etc/ceph/ceph.pub
+Adding<span class="w"> </span>key<span class="w"> </span>to<span class="w"> </span>root@localhost<span class="w"> </span>authorized_keys...
+Adding<span class="w"> </span>host<span class="w"> </span>ceph1...
+Deploying<span class="w"> </span>mon<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>mgr<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>crash<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>prometheus<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>grafana<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>node-exporter<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Deploying<span class="w"> </span>alertmanager<span class="w"> </span>service<span class="w"> </span>with<span class="w"> </span>default<span class="w"> </span>placement...
+Enabling<span class="w"> </span>the<span class="w"> </span>dashboard<span class="w"> </span>module...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>mgr<span class="w"> </span>to<span class="w"> </span>restart...
+Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>mgr<span class="w"> </span>epoch<span class="w"> </span><span class="m">8</span>...
+mgr<span class="w"> </span>epoch<span class="w"> </span><span class="m">8</span><span class="w"> </span>is<span class="w"> </span>available
+Generating<span class="w"> </span>a<span class="w"> </span>dashboard<span class="w"> </span>self-signed<span class="w"> </span>certificate...
+Creating<span class="w"> </span>initial<span class="w"> </span>admin<span class="w"> </span>user...
+Fetching<span class="w"> </span>dashboard<span class="w"> </span>port<span class="w"> </span>number...
+firewalld<span class="w"> </span>ready
+Enabling<span class="w"> </span>firewalld<span class="w"> </span>port<span class="w"> </span><span class="m">8443</span>/tcp<span class="w"> </span><span class="k">in</span><span class="w"> </span>current<span class="w"> </span>zone...
+Ceph<span class="w"> </span>Dashboard<span class="w"> </span>is<span class="w"> </span>now<span class="w"> </span>available<span class="w"> </span>at:
+
+<span class="w">         </span>URL:<span class="w"> </span>https://ceph1:8443/
+<span class="w">        </span>User:<span class="w"> </span>admin
+<span class="w">    </span>Password:<span class="w"> </span>gzziclqs79
+
+Enabling<span class="w"> </span>client.admin<span class="w"> </span>keyring<span class="w"> </span>and<span class="w"> </span>conf<span class="w"> </span>on<span class="w"> </span>hosts<span class="w"> </span>with<span class="w"> </span><span class="s2">&quot;admin&quot;</span><span class="w"> </span>label
+You<span class="w"> </span>can<span class="w"> </span>access<span class="w"> </span>the<span class="w"> </span>Ceph<span class="w"> </span>CLI<span class="w"> </span>with:
+
+<span class="w">    </span>sudo<span class="w"> </span>/usr/sbin/cephadm<span class="w"> </span>shell<span class="w"> </span>--fsid<span class="w"> </span>9cad419e-7d8d-11ec-8335-080027b919a0<span class="w"> </span>-c<span class="w"> </span>/etc/ceph/ceph.conf<span class="w"> </span>-k<span class="w"> </span>/etc/ceph/ceph.client.admin.keyring
+
+Please<span class="w"> </span>consider<span class="w"> </span>enabling<span class="w"> </span>telemetry<span class="w"> </span>to<span class="w"> </span><span class="nb">help</span><span class="w"> </span>improve<span class="w"> </span>Ceph:
+
+<span class="w">    </span>ceph<span class="w"> </span>telemetry<span class="w"> </span>on
+
+For<span class="w"> </span>more<span class="w"> </span>information<span class="w"> </span>see:
+
+<span class="w">    </span>https://docs.ceph.com/docs/pacific/mgr/telemetry/
+
+Bootstrap<span class="w"> </span>complete.
+</code></pre></div>
+<div style="border:1px solid #28a745; background-color:#d4edda; padding:10px; border-radius:5px;">
+  <strong>成功：</strong> </p>看到 <code>Bootstrap complete</code> 表示引导完成。
+<ul>
+  <li>1. 访问 <code>https://ceph1:8443</code>, 输入用户名和密码登录之后，修改密码。</li>
+ <li> 2. 同意 telemetry，即可使用 `Dashboard GUI`，使用网页查看比较方便.</li>
+</ul>
+</div>
+
+<h3 id="ceph_1">ceph 客户端命令</h3>
+<ul>
+<li><code>cephadm shell</code> 命令模式</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># cephadm shell</span>
+Inferring<span class="w"> </span>fsid<span class="w"> </span>ad3f72f2-798c-11ec-9e79-080027b919a0
+Using<span class="w"> </span>recent<span class="w"> </span>ceph<span class="w"> </span>image<span class="w"> </span>quay.io/ceph/ceph@sha256:bb6a71f7f481985f6d3b358e3b9ef64c6755b3db5aa53198e0aac38be5c8ae54
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1">#</span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># exit</span>
+<span class="nb">exit</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1">#</span>
+</code></pre></div>
+<div style="background-color: #ffffcc; padding: 10px; border-left: 5px solid #ffcc00;">
+这样就回到了本机的 shell 模式。
+</div>
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]#ceph -v
+ceph version 16.2.7 (dd0603118f56ab514f133c8d2e3adfc983942503) pacific (stable)
+</code></pre></div>
+<div style="background-color: #ffffcc; padding: 10px; border-left: 5px solid #ffcc00;">
+ 查看编排服务的状态
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch status</span>
+Backend:<span class="w"> </span>cephadm
+Available:<span class="w"> </span>Yes
+Paused:<span class="w"> </span>No
+</code></pre></div>
+<div style="background-color: #ffffcc; padding: 10px; border-left: 5px solid #ffcc00;">
+  查看容器编排服务
+</div>
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch ls
+NAME           PORTS        RUNNING  REFRESHED  AGE  PLACEMENT
+alertmanager   ?:9093,9094      1/1  2s ago     2m   count:1
+crash                           1/1  2s ago     2m   *
+grafana        ?:3000           1/1  2s ago     2m   count:1
+mgr                             1/2  2s ago     2m   count:2
+mon                             1/5  2s ago     2m   count:5
+node-exporter  ?:9100           1/1  2s ago     2m   *
+prometheus     ?:9095           1/1  2s ago     2m   count:1
+</code></pre></div>
+<div style="border:1px solid #28a745; background-color:#d4edda; padding:10px; border-radius:5px;">
+  <strong>成功：</strong> 安装了 7 个容器服务。
+  <ul>
+    <li>mgr: ceph-manager (Ceph 管理程序) 也就是 Dashboard</li>
+    <li>mon: ceph-monitor (Ceph 监视器)</li>
+    <li>crash: ceph-crash 崩溃数据收集模块</li>
+    <li>prometheus: prometheus监控组件</li>
+    <li>grafana: 监控数据展示 dashboard</li>
+    <li>alertmanager: prometheus告警组件</li>
+  <li>node_exporter: prometheus节点数据收集组件</li>
+  </ul>
+  <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 5px;">
+    <strong>注意：</strong> </p>
+  <ul>
+    <li>mon 服务默认需要安装 5 个，由于目前只安装了一个节点，所以是 1/5.</li>
+    <li>同理 mgr 服务默认需要安装 2 个，当前为 1/2。</li>
+  </ul>
+</div>
+</div>
+
+<p>查看一下容器的进程</p>
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch ps
+NAME                 HOST   PORTS        STATUS          REFRESHED   AGE  MEM USE  MEM LIM  VERSION  IMAGE ID      CONTAINER ID
+alertmanager.ceph1   ceph1  *:9093,9094  running (107s)    36s ago    3m    14.7M        -  0.20.0   0881eb8f169f  3fd92369ad05
+crash.ceph1          ceph1               running (3m)      36s ago    3m    6953k        -  16.2.7   cc266d6139f4  7b0cb81a82b6
+grafana.ceph1        ceph1  *:3000       running (104s)    36s ago    2m    27.9M        -  6.7.4    557c83e11646  841ac47ee29a
+mgr.ceph1.jhzbvt     ceph1  *:9283       running (4m)      36s ago    4m     436M        -  16.2.7   cc266d6139f4  9415d4d83d3e
+mon.ceph1            ceph1               running (4m)      36s ago    4m    42.9M    2048M  16.2.7   cc266d6139f4  3f363410d2a1
+node-exporter.ceph1  ceph1  *:9100       running (2m)      36s ago    2m    8456k        -  0.18.1   e5a616e4b9cf  9bfd6a8485f9
+prometheus.ceph1     ceph1  *:9095       running (117s)    36s ago  117s    27.4M        -  2.18.1   de242295e225  ac00e5fb6eb8
+</code></pre></div>
+<div style="background-color: #ffffcc; padding: 10px; border-left: 5px solid #ffcc00;">
+  最后查看一下 ceph 的总体状态
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph status   </span>
+<span class="w">  </span>cluster:
+<span class="w">    </span>id:<span class="w">     </span>2dbe1130-6f49-11f0-bc8d-000c29e5ca98
+<span class="w">    </span>health:<span class="w"> </span>HEALTH_WARN
+<span class="w">            </span>OSD<span class="w"> </span>count<span class="w"> </span><span class="m">0</span><span class="w"> </span>&lt;<span class="w"> </span>osd_pool_default_size<span class="w"> </span><span class="m">3</span>
+
+<span class="w">  </span>services:
+<span class="w">    </span>mon:<span class="w"> </span><span class="m">1</span><span class="w"> </span>daemons,<span class="w"> </span>quorum<span class="w"> </span>ceph1<span class="w"> </span><span class="o">(</span>age<span class="w"> </span>6m<span class="o">)</span>
+<span class="w">    </span>mgr:<span class="w"> </span>ceph1.oyxxcr<span class="o">(</span>active,<span class="w"> </span>since<span class="w"> </span>3m<span class="o">)</span>
+<span class="w">    </span>osd:<span class="w"> </span><span class="m">0</span><span class="w"> </span>osds:<span class="w"> </span><span class="m">0</span><span class="w"> </span>up,<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="k">in</span>
+
+<span class="w">  </span>data:
+<span class="w">    </span>pools:<span class="w">   </span><span class="m">0</span><span class="w"> </span>pools,<span class="w"> </span><span class="m">0</span><span class="w"> </span>pgs
+<span class="w">    </span>objects:<span class="w"> </span><span class="m">0</span><span class="w"> </span>objects,<span class="w"> </span><span class="m">0</span><span class="w"> </span>B
+<span class="w">    </span>usage:<span class="w">   </span><span class="m">0</span><span class="w"> </span>B<span class="w"> </span>used,<span class="w"> </span><span class="m">0</span><span class="w"> </span>B<span class="w"> </span>/<span class="w"> </span><span class="m">0</span><span class="w"> </span>B<span class="w"> </span>avail
+<span class="w">    </span>pgs:<span class="w">     </span>
+</code></pre></div>
+<div style="border:1px solid #0099cc; background-color:#e6f7ff; padding:10px; border-radius:5px;">
+  <strong>信息：</strong></p> 可以看到，<code>HEALTH_WARN</code>，因为没有添加 OSD，<code>OSD count 0 < osd_pool_default_size 3</code> 可以看到，默认最少 3 个 OSD。
+</div>
+
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong> 查看一下引导节点 `ceph1` 的防火墙开放情况
+</div>
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: enp0s3 enp0s8
+  sources:
+  services: ceph ceph-mon cockpit dhcpv6-client ssh
+  ports: 9283/tcp 8443/tcp 9093/tcp 9094/tcp 3000/tcp 9100/tcp 9095/tcp
+  protocols:
+  forward: no
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+</code></pre></div>
+<div style="border:1px solid #0099cc; background-color:#e6f7ff; padding:10px; border-radius:5px;">
+  <strong>信息：</strong><ul>
+  <li>可以看到 <code>cephadm</code> 部署过程中，会自动打开需要开放防火墙端口和服务端口（ntp 的服务端口是前面设置开放的）。</li>
+  <li>本例使用 podman 进行容器管理，也可以查一下 podman 下载了哪些镜像</li>
+  </ul> 
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># podman image ls</span>
+REPOSITORY<span class="w">                        </span>TAG<span class="w">         </span>IMAGE<span class="w"> </span>ID<span class="w">      </span>CREATED<span class="w">        </span>SIZE
+quay.io/ceph/ceph<span class="w">                 </span>v16<span class="w">         </span>cc266d6139f4<span class="w">  </span><span class="m">5</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">    </span><span class="m">1</span>.24<span class="w"> </span>GB
+quay.io/ceph/ceph-grafana<span class="w">         </span><span class="m">6</span>.7.4<span class="w">       </span>557c83e11646<span class="w">  </span><span class="m">5</span><span class="w"> </span>months<span class="w"> </span>ago<span class="w">   </span><span class="m">496</span><span class="w"> </span>MB
+quay.io/prometheus/prometheus<span class="w">     </span>v2.18.1<span class="w">     </span>de242295e225<span class="w">  </span><span class="m">20</span><span class="w"> </span>months<span class="w"> </span>ago<span class="w">  </span><span class="m">141</span><span class="w"> </span>MB
+quay.io/prometheus/alertmanager<span class="w">   </span>v0.20.0<span class="w">     </span>0881eb8f169f<span class="w">  </span><span class="m">2</span><span class="w"> </span>years<span class="w"> </span>ago<span class="w">    </span><span class="m">53</span>.5<span class="w"> </span>MB
+quay.io/prometheus/node-exporter<span class="w">  </span>v0.18.1<span class="w">     </span>e5a616e4b9cf<span class="w">  </span><span class="m">2</span><span class="w"> </span>years<span class="w"> </span>ago<span class="w">    </span><span class="m">24</span>.3<span class="w"> </span>MB
+</code></pre></div>
+<h3 id="_5">管理主机</h3>
+<ul>
+<li>先拷贝公钥到其他主机，使引导节点 <code>ceph1</code> 可以免密登录到其他主机。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id -f -i /etc/ceph/ceph.pub root@ceph2</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id -f -i /etc/ceph/ceph.pub root@ceph3</span>
+</code></pre></div>
+<ul>
+<li>执行如下命令添加主机</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch host add ceph2 192.168.18.20</span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch host add ceph3 192.168.18.30</span>
+</code></pre></div>
+<ul>
+<li>查看一下：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch host ls</span>
+HOST<span class="w">   </span>ADDR<span class="w">            </span>LABELS<span class="w">  </span>STATUS
+ceph1<span class="w">  </span><span class="m">192</span>.168.18.10<span class="w">  </span>_admin
+ceph2<span class="w">  </span><span class="m">192</span>.168.18.20
+ceph3<span class="w">  </span><span class="m">192</span>.168.18.30
+</code></pre></div>
+<div style="background-color: #e6f7ff; border-left: 5px solid #1890ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>💡 信息：</strong> 这是一个信息提示区块，用于传达背景知识或额外说明。
+  <ul>
+    <li>可以看到 bootstrap 节点默认的标签是 `_admin`</li>
+    <li>也可以给其他主机添加 `_admin` 标签</li>
+  </ul>
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch host label add ceph2 _admin</span>
+</code></pre></div>
+<div style="border:1px solid #f90; background-color:#fff3cd; padding:10px; border-radius:5px;">
+  <strong>警告：</strong> 过一段时间再查看一下容器部署情况;快慢取决于网速
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch ls</span>
+NAME<span class="w">           </span>PORTS<span class="w">        </span>RUNNING<span class="w">  </span>REFRESHED<span class="w">  </span>AGE<span class="w">  </span>PLACEMENT
+alertmanager<span class="w">   </span>?:9093,9094<span class="w">      </span><span class="m">1</span>/1<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>55m<span class="w">  </span>count:1
+crash<span class="w">                           </span><span class="m">3</span>/3<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>55m<span class="w">  </span>*
+grafana<span class="w">        </span>?:3000<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>55m<span class="w">  </span>count:1
+mgr<span class="w">                             </span><span class="m">2</span>/2<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>56m<span class="w">  </span>count:2
+mon<span class="w">                             </span><span class="m">3</span>/5<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>56m<span class="w">  </span>count:5
+node-exporter<span class="w">  </span>?:9100<span class="w">           </span><span class="m">3</span>/3<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>55m<span class="w">  </span>*
+prometheus<span class="w">     </span>?:9095<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>6m<span class="w"> </span>ago<span class="w">     </span>55m<span class="w">  </span>count:1
+</code></pre></div>
+<ul>
+<li>可以看一下具体的部署情况</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch ps</span>
+NAME<span class="w">                 </span>HOST<span class="w">   </span>PORTS<span class="w">        </span>STATUS<span class="w">         </span>REFRESHED<span class="w">  </span>AGE<span class="w">  </span>MEM<span class="w"> </span>USE<span class="w">  </span>MEM<span class="w"> </span>LIM<span class="w">  </span>VERSION<span class="w">  </span>IMAGE<span class="w"> </span>ID<span class="w">      </span>CONTAINER<span class="w"> </span>ID
+alertmanager.ceph1<span class="w">   </span>ceph1<span class="w">  </span>*:9093,9094<span class="w">  </span>running<span class="w"> </span><span class="o">(</span>21m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>59m<span class="w">    </span><span class="m">23</span>.2M<span class="w">        </span>-<span class="w">  </span><span class="m">0</span>.20.0<span class="w">   </span>0881eb8f169f<span class="w">  </span>b0768c563aa5
+crash.ceph1<span class="w">          </span>ceph1<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>49m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>59m<span class="w">    </span><span class="m">21</span>.1M<span class="w">        </span>-<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>d4499df1c025
+crash.ceph2<span class="w">          </span>ceph2<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>26m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>26m<span class="w">    </span>7226k<span class="w">        </span>-<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>194e4c9bbd7e
+crash.ceph3<span class="w">          </span>ceph3<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>22m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>22m<span class="w">    </span>8967k<span class="w">        </span>-<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>e511a891c88e
+grafana.ceph1<span class="w">        </span>ceph1<span class="w">  </span>*:3000<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>49m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>58m<span class="w">    </span><span class="m">87</span>.5M<span class="w">        </span>-<span class="w">  </span><span class="m">6</span>.7.4<span class="w">    </span>557c83e11646<span class="w">  </span>9d429ed860aa
+mgr.ceph1.jhzbvt<span class="w">     </span>ceph1<span class="w">  </span>*:9283<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>49m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>60m<span class="w">     </span>565M<span class="w">        </span>-<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>f7f8e2b2f598
+mgr.ceph2.nyvgyk<span class="w">     </span>ceph2<span class="w">  </span>*:8443,9283<span class="w">  </span>running<span class="w"> </span><span class="o">(</span>26m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>26m<span class="w">     </span>391M<span class="w">        </span>-<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>69d79592715b
+mon.ceph1<span class="w">            </span>ceph1<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>49m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>60m<span class="w">     </span>230M<span class="w">    </span>2048M<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>dd554eefde37
+mon.ceph2<span class="w">            </span>ceph2<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>26m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>26m<span class="w">     </span>120M<span class="w">    </span>2048M<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>a918d88f9ccb
+mon.ceph3<span class="w">            </span>ceph3<span class="w">               </span>running<span class="w"> </span><span class="o">(</span>22m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>22m<span class="w">     </span>129M<span class="w">    </span>2048M<span class="w">  </span><span class="m">16</span>.2.7<span class="w">   </span>cc266d6139f4<span class="w">  </span>516ed7cd5edd
+node-exporter.ceph1<span class="w">  </span>ceph1<span class="w">  </span>*:9100<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>49m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>58m<span class="w">    </span><span class="m">31</span>.8M<span class="w">        </span>-<span class="w">  </span><span class="m">0</span>.18.1<span class="w">   </span>e5a616e4b9cf<span class="w">  </span>c6d106db5a98
+node-exporter.ceph2<span class="w">  </span>ceph2<span class="w">  </span>*:9100<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>24m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>24m<span class="w">    </span><span class="m">14</span>.0M<span class="w">        </span>-<span class="w">  </span><span class="m">0</span>.18.1<span class="w">   </span>e5a616e4b9cf<span class="w">  </span>9e67734ba9e4
+node-exporter.ceph3<span class="w">  </span>ceph3<span class="w">  </span>*:9100<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>22m<span class="o">)</span><span class="w">    </span>18s<span class="w"> </span>ago<span class="w">  </span>22m<span class="w">    </span><span class="m">16</span>.0M<span class="w">        </span>-<span class="w">  </span><span class="m">0</span>.18.1<span class="w">   </span>e5a616e4b9cf<span class="w">  </span>64b88ba334e2
+prometheus.ceph1<span class="w">     </span>ceph1<span class="w">  </span>*:9095<span class="w">       </span>running<span class="w"> </span><span class="o">(</span>21m<span class="o">)</span><span class="w">    </span>16s<span class="w"> </span>ago<span class="w">  </span>57m<span class="w">    </span><span class="m">56</span>.9M<span class="w">        </span>-<span class="w">  </span><span class="m">2</span>.18.1<span class="w">   </span>de242295e225<span class="w">  </span>02c4906b7a5d
+</code></pre></div>
+<div style="background-color: #e6f7ff; border-left: 5px solid #1890ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>💡 信息：</strong> 
+  <ul>
+    <li>mgr 也到默认的上限 2 个，部署到了 2 个节点上。</li>
+    <li>mon 也是部署了 3 个，但是默认最多是 5 个，所以还没有到默认的上限</li>
+  </ul>
+</div>
+
+<p>本实验没有那么多主机，修改一下 <code>mon</code> 的部署数量上限，</p>
+<div style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>⚠️ 注意：</strong></p> mon 一般 3 或 5 个，修改的时候一定要包含 bootstrap 节点（本例为 ceph1)
+</div>
+
+<ol>
+<li>修改一下 <code>mon</code> 节点到 <code>ceph1</code>,<code>ceph2</code>,<code>ceph3</code> 上</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch apply mon ceph1,ceph2,ceph3</span>
+Scheduled<span class="w"> </span>mon<span class="w"> </span>update...
+</code></pre></div>
+<ol>
+<li>再次查看一下</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch ls
+NAME           PORTS        RUNNING  REFRESHED  AGE  PLACEMENT
+alertmanager   ?:9093,9094      1/1  3m ago     73m  count:1
+crash                           3/3  3m ago     73m  *
+grafana        ?:3000           1/1  3m ago     73m  count:1
+mgr                             2/2  3m ago     73m  count:2
+mon                             3/3  3m ago     2s   ceph1;ceph2;ceph3
+node-exporter  ?:9100           3/3  3m ago     73m  *
+prometheus     ?:9095           1/1  3m ago     73m  count:1
+</code></pre></div>
+<blockquote>
+<p>可以看到 <code>RUNNING</code> 列上，mon 已经是 <code>3/3</code> 了, <code>PLACEMENT</code> 列上，可以看到运行在那台电脑主机上。</p>
+</blockquote>
+<ol>
+<li>也可以只指定数量</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch apply mon 3
+Scheduled mon update...
+</code></pre></div>
+<ol>
+<li>再次查看一下</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch ls
+NAME           PORTS        RUNNING  REFRESHED  AGE  PLACEMENT
+alertmanager   ?:9093,9094      1/1  9m ago     69m  count:1
+crash                           3/3  9m ago     69m  *
+grafana        ?:3000           1/1  9m ago     69m  count:1
+mgr                             2/2  9m ago     69m  count:2
+mon                             3/3  9m ago     8s   count:3
+node-exporter  ?:9100           3/3  9m ago     69m  *
+prometheus     ?:9095           1/1  9m ago     69m  count:1
+</code></pre></div>
+<ol>
+<li>再看一下</li>
+</ol>
+<div style="background-color: #e2f7e1; border-left: 5px solid #28a745; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>⏱️ 注意：</strong> PLACEMENT 列
+  <ul>
+    <li>如果是 `*`， 表示每个节点都有，不受控制（unmanaged)。</li>
+    <li>如果是 `count:3`，表示部署的上限数量，具体位置可以 `ceph orch ps` 查看一下。</li>
+    <li>如果是 `ceph1;ceph2;ceph3`，表示直接显示了所在的主机位置。</li>
+  </ul>
+</div>
+
+<h3 id="osd">管理 OSD</h3>
+<div style="background-color: #d4edda; border-left: 5px solid #28a745; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>添加 OSD 需要满足以下所有条件：</strong> 
+  <div style="background-color: #f8d7da; border-left: 5px solid #dc3545; padding: 10px; border-radius: 5px; margin: 10px 0;">
+    <ul>
+      <li>设备必须没有分区。</li>
+      <li>设备不得具有任何 LVM 状态。</li>
+      <li>不得安装设备。</li>
+      <li>该设备不得包含文件系统。</li>
+      <li>该设备不得包含 Ceph BlueStore OSD。</li>
+      <li>设备必须大于 5 GiB。</li>
+    </ul>
+  </div>
+
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong>查看磁盘
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># lsblk</span>
+NAME<span class="w">        </span>MAJ:MIN<span class="w"> </span>RM<span class="w">  </span>SIZE<span class="w"> </span>RO<span class="w"> </span>TYPE<span class="w"> </span>MOUNTPOINT
+sda<span class="w">           </span><span class="m">8</span>:0<span class="w">    </span><span class="m">0</span><span class="w">   </span>20G<span class="w">  </span><span class="m">0</span><span class="w"> </span>disk
+├─sda1<span class="w">        </span><span class="m">8</span>:1<span class="w">    </span><span class="m">0</span><span class="w">    </span>1G<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/boot
+└─sda2<span class="w">        </span><span class="m">8</span>:2<span class="w">    </span><span class="m">0</span><span class="w">   </span>19G<span class="w">  </span><span class="m">0</span><span class="w"> </span>part
+<span class="w">  </span>├─rl-root<span class="w"> </span><span class="m">253</span>:0<span class="w">    </span><span class="m">0</span><span class="w">   </span>17G<span class="w">  </span><span class="m">0</span><span class="w"> </span>lvm<span class="w">  </span>/
+<span class="w">  </span>└─rl-swap<span class="w"> </span><span class="m">253</span>:1<span class="w">    </span><span class="m">0</span><span class="w">    </span>2G<span class="w">  </span><span class="m">0</span><span class="w"> </span>lvm<span class="w">  </span><span class="o">[</span>SWAP<span class="o">]</span>
+sdb<span class="w">           </span><span class="m">8</span>:16<span class="w">   </span><span class="m">0</span><span class="w">   </span>20G<span class="w">  </span><span class="m">0</span><span class="w"> </span>disk
+sr0<span class="w">          </span><span class="m">11</span>:0<span class="w">    </span><span class="m">1</span><span class="w"> </span>1024M<span class="w">  </span><span class="m">0</span><span class="w"> </span>rom
+</code></pre></div>
+
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong> 列出节点上的所有可用设备
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch device ls</span>
+HOST<span class="w">   </span>PATH<span class="w">      </span>TYPE<span class="w">  </span>DEVICE<span class="w"> </span>ID<span class="w">                           </span>SIZE<span class="w">  </span>AVAILABLE<span class="w">  </span>REJECT<span class="w"> </span>REASONS
+ceph1<span class="w">  </span>/dev/sdb<span class="w">  </span>hdd<span class="w">   </span>VBOX_HARDDISK_VB1e5ef148-884f7c83<span class="w">  </span><span class="m">21</span>.4G<span class="w">  </span>Yes
+ceph2<span class="w">  </span>/dev/sdb<span class="w">  </span>hdd<span class="w">   </span>VBOX_HARDDISK_VB6aef18c7-3d8548b1<span class="w">  </span><span class="m">21</span>.4G<span class="w">  </span>Yes
+ceph3<span class="w">  </span>/dev/sdb<span class="w">  </span>hdd<span class="w">   </span>VBOX_HARDDISK_VB6b51415b-6e91c2d1<span class="w">  </span><span class="m">21</span>.4G<span class="w">  </span>Yes
+</code></pre></div>
+
+#### 1. 添加OSD
+
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong> 添加有两种方式，可以任选一种。
+</div>
+
+- 方法 1
+
+>  使用 orch 命令，自动添加所有满足条件的OSD（本例使用这个）。
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch apply osd --all-available-devices</span>
+Scheduled<span class="w"> </span>osd.all-available-devices<span class="w"> </span>update...
+</code></pre></div>
+
+- 方法 2
+
+> 使用 osd 命令，手工指定的方式添加OSD。
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1">#  ceph orch daemon add osd ceph1:/dev/sdb</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1">#  ceph orch daemon add osd ceph2:/dev/sdb</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1">#  ceph orch daemon add osd ceph3:/dev/sdb</span>
+</code></pre></div>
+
+部署完之后，查看一下
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph osd tree
+ID  CLASS  WEIGHT   TYPE NAME       STATUS  REWEIGHT  PRI-AFF
+-1         0.05846  root default
+-7         0.01949      host ceph1
+ 2    hdd  0.01949          osd.2       up   1.00000  1.00000
+-3         0.01949      host ceph2
+ 1    hdd  0.01949          osd.1       up   1.00000  1.00000
+-5         0.01949      host ceph3
+ 0    hdd  0.01949          osd.0       up   1.00000  1.00000
+</code></pre></div>
+
+可以看到 `ID` 列，从 osd.0 开始，由于是容器化部署，所以顺序是随机的，如：osd.0 标识在 ceph3 上。
+
+查看一下 ceph 的状态
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph status
+  cluster:
+    id:     ad3f72f2-798c-11ec-9e79-080027b919a0
+    health: HEALTH_OK
+
+  services:
+    mon: 3 daemons, quorum ceph1,ceph2,ceph3 (age 4m)
+    mgr: ceph1.jhzbvt(active, since 4m), standbys: ceph2.nyvgyk
+    osd: 3 osds: 3 up (since 4m), 3 in (since 27h)
+
+  data:
+    pools:   1 pools, 1 pgs
+    objects: 0 objects, 0 B
+    usage:   0 B used, 60 GiB / 60 GiB avail
+    pgs:     1 active+clean
+</code></pre></div>
+
+<div style="background-color: #d4edda; border-left: 5px solid #28a745; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>✅ 成功：</strong> 可以看到， ceph 集群的状态已经是 `HEALTH_OK` 了，集群已经好了。
+</div>
+
+<div style="background-color: #e6f7ff; border-left: 5px solid #1890ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>💡 信息：</strong></p> Ceph 集群，只要有 ceph-mon 和 ceph-osd 这两个就基本搭建完成了。但是如果需要使用其分布式存储功能（如对象存储，块存储和文件存储），则需要添加其他的模块。
+</div>
+
+再查看一下容器服务
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch ls
+NAME                       PORTS        RUNNING  REFRESHED  AGE  PLACEMENT
+alertmanager               ?:9093,9094      1/1  71s ago    91m  count:1
+crash                                       3/3  74s ago    91m  *
+grafana                    ?:3000           1/1  71s ago    91m  count:1
+mgr                                         2/2  74s ago    91m  count:2
+mon                                         3/3  74s ago    18m  count:3
+node-exporter              ?:9100           3/3  74s ago    91m  *
+osd.all-available-devices                     3  74s ago    90s  *
+prometheus                 ?:9095           1/1  71s ago    91m  count:1
+</code></pre></div>
+
+> 可以看到，多了一个 `osd.all-available-devices` 的服务，PLACEMENT 是 `*` 表示所有节点都会安装。
+
+部署好 osd 共享池后，会自动安装一个归置组（Placement groups），归置组（PGs) 是 ceph 的重要概念。
+
+查看一下
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool ls</span>
+device_health_metrics
+</code></pre></div>
+
+> 可以看到，安装了设备健康指标的归置组。
+
+<div style="background-color: #e6f7ff; border-left: 5px solid #1890ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+  <strong>💡 信息：</strong> Ceph 从 v14（Nautilus）开始支持归置组自动伸缩的，可以查看一下状态
+</div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool autoscale-status</span>
+POOL<span class="w">                     </span>SIZE<span class="w">  </span>TARGET<span class="w"> </span>SIZE<span class="w">  </span>RATE<span class="w">  </span>RAW<span class="w"> </span>CAPACITY<span class="w">   </span>RATIO<span class="w">  </span>TARGET<span class="w"> </span>RATIO<span class="w">  </span>EFFECTIVE<span class="w"> </span>RATIO<span class="w">  </span>BIAS<span class="w">  </span>PG_NUM<span class="w">  </span>NEW<span class="w"> </span>PG_NUM<span class="w">  </span>AUTOSCALE<span class="w">  </span>PROFILE
+device_health_metrics<span class="w">      </span><span class="m">0</span><span class="w">                 </span><span class="m">3</span>.0<span class="w">        </span>61428M<span class="w">  </span><span class="m">0</span>.0000<span class="w">                                  </span><span class="m">1</span>.0<span class="w">       </span><span class="m">1</span><span class="w">              </span>on<span class="w">         </span>scale-up
+</code></pre></div>
+
+可以看到 `AUTOSCALE` 是 on，表示默认设置的是自动伸缩。
+
+#### 2、移除OSD
+
+1. **将 OSD 踢出集群**：
+
+   <div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.0  </span>
+osd.0<span class="w"> </span>is<span class="w"> </span>already<span class="w"> </span>out.<span class="w"> </span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.1 </span>
+osd.1<span class="w"> </span>is<span class="w"> </span>already<span class="w"> </span>out.<span class="w"> </span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.2</span>
+^<span class="o">[[</span>marked<span class="w"> </span>out<span class="w"> </span>osd.2.<span class="w"> </span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.3</span>
+marked<span class="w"> </span>out<span class="w"> </span>osd.3.<span class="w"> </span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.4</span>
+marked<span class="w"> </span>out<span class="w"> </span>osd.4.<span class="w"> </span>
+<span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph osd out   osd.5</span>
+marked<span class="w"> </span>out<span class="w"> </span>osd.5.<span class="w"> </span>
+</code></pre></div>
+
+2. **停止 OSD 进程**
+
+3. **删除 OSD**
+
+   <div class="highlight"><pre><span></span><code><span class="o">[</span>ceph:<span class="w"> </span>root@ceph01<span class="w"> </span>/<span class="o">]</span><span class="c1"># ceph orch osd rm   3 4 5   --force  --zap </span>
+Scheduled<span class="w"> </span>OSD<span class="o">(</span>s<span class="o">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>removal
+</code></pre></div>
+
+## 三、Ceph 存储类型与使用
+
+### 1. Ceph 的三大存储类型
+
+| 存储类型 | 接口名称 | 特点与用途                                     |
+| -------- | -------- | ---------------------------------------------- |
+| 块存储   | RBD      | 提供类似磁盘的虚拟块设备，适用于虚拟机、数据库 |
+| 对象存储 | RGW      | 支持 S3/Swift 接口，适合备份、大文件、云服务   |
+| 文件系统 | CephFS   | 类似 NFS 的 POSIX 文件系统，适合共享文件服务   |
+
+### 块存储（RBD）
+
+- RBD 原理与使用场景
+- 创建、挂载与格式化 RBD 镜像
+- RBD 快照与克隆
+- RBD 映射到本地/虚拟机（KVM）
+
+#### **RBD 原理与使用场景**
+
+<div style="background-color: #e6f7ff; border-left: 5px solid #1890ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+RBD（RADOS Block Device）是 Ceph 提供的一种 高性能、可扩展、分布式的块存储解决方案，它将块设备（类似硬盘）直接构建在 Ceph 的对象存储（RADOS）之上。它适合于虚拟机磁盘、数据库等对性能和可靠性要求较高的场景。
+</div>
+
+#### RBD 核心原理&架构
+
+<div class="highlight"><pre><span></span><code>graph LR
+
+subgraph ceph-cluster
+RADOS 
+end
+
+subgraph 系统/用户
+l([librdb])
+k([krdb])
+end
+
+subgraph client
+vm
+QEMU
+KVM
+end
+
+vm &amp; QEMU &amp; KVM&lt;-.使用场景.-&gt;系统/用户--&gt;ceph-cluster
+</code></pre></div>
+
+### **核心组成**
+
+| 组件                  | 说明                                                       |
+| --------------------- | ---------------------------------------------------------- |
+| **librbd**            | 用户空间库，用于访问 RBD，支持通过 QEMU、OpenStack 等调用  |
+| **krbd**              | 内核模块 `rbd.ko`，将 RBD 映射为本地块设备，如 `/dev/rbd0` |
+| **RADOS**             | Ceph 的核心对象存储层，RBD 的块数据被切分为对象并存储其中  |
+| **Ceph OSD**          | 存储数据的守护进程，负责对象的读写操作                     |
+| **Monitor / Manager** | 管理集群状态和调度                                         |
+
+![image-20251011160224512](/Users/xiaobo/Library/Mobile Documents/com~apple~CloudDocs/Documents/assets/image-20251011160224512.png)
+
+
+
+## 三、导出为 NFS 服务
+
+<div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
+  <strong>提示：</strong> 要导出 NFS 服务，CephFS 和 RGW 都可以导出，本例演示 CephFS 的导出。</p>
+<ul>
+  <li>1. 新建文件系统 CephFS</li>
+  <li>2. 新建存储池</li>
+  <li>3.在存储池上开启 nfs 应用</li>
+  <li>4.新建 nfs 集群</li>
+  <li>5.新建 CephFS 的 nfs 导出 （这个会将存储池和 CephFS 联系在一起）</li>
+</ul>
+</div>
+
+### 实现步骤：
+
+#### 新建文件系统 CephFS
+
+> 两种方法，任选一种
+
+- 方法 1
+
+1. 使用的是 `ceph fs` 命令该命令会自动创建相应的存储池
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph fs volume create myfs --placement=3</span>
+</code></pre></div>
+
+这样 ceph 编排器会自动创建和配置 MDS
+
+2. 可以查看一下编排服务
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch ls</span>
+NAME<span class="w">                       </span>PORTS<span class="w">        </span>RUNNING<span class="w">  </span>REFRESHED<span class="w">  </span>AGE<span class="w">   </span>PLACEMENT
+alertmanager<span class="w">               </span>?:9093,9094<span class="w">      </span><span class="m">1</span>/1<span class="w">  </span>90s<span class="w"> </span>ago<span class="w">    </span>4d<span class="w">    </span>count:1
+crash<span class="w">                                       </span><span class="m">3</span>/3<span class="w">  </span>9m<span class="w"> </span>ago<span class="w">     </span>4d<span class="w">    </span>*
+grafana<span class="w">                    </span>?:3000<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>90s<span class="w"> </span>ago<span class="w">    </span>4d<span class="w">    </span>count:1
+mds.myfs<span class="w">                                    </span><span class="m">2</span>/2<span class="w">  </span>92s<span class="w"> </span>ago<span class="w">    </span>100s<span class="w">  </span>count:2
+mgr<span class="w">                                         </span><span class="m">2</span>/2<span class="w">  </span>92s<span class="w"> </span>ago<span class="w">    </span>4d<span class="w">    </span>count:2
+mon<span class="w">                                         </span><span class="m">3</span>/3<span class="w">  </span>9m<span class="w"> </span>ago<span class="w">     </span>2h<span class="w">    </span>count:3
+node-exporter<span class="w">              </span>?:9100<span class="w">           </span><span class="m">3</span>/3<span class="w">  </span>9m<span class="w"> </span>ago<span class="w">     </span>4d<span class="w">    </span>*
+osd.all-available-devices<span class="w">                     </span><span class="m">3</span><span class="w">  </span>9m<span class="w"> </span>ago<span class="w">     </span>4d<span class="w">    </span>*
+prometheus<span class="w">                 </span>?:9095<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>90s<span class="w"> </span>ago<span class="w">    </span>4d<span class="w">    </span>count:1
+</code></pre></div>
+
+可以看到，多了一个 `mds.myfs` 的容器服务
+
+3. 再次查看一下存储池的情况
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool ls</span>
+device_health_metrics
+cephfs.myfs.meta
+cephfs.myfs.data
+</code></pre></div>
+
+> 可以看到，多了两个，`cephfs.myfs.meta` 和 `cephfs.myfs.data`
+
+4. 也可以 `ceph fs ls` 查看一下
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph fs ls</span>
+name:<span class="w"> </span>myfs,<span class="w"> </span>metadata<span class="w"> </span>pool:<span class="w"> </span>cephfs.myfs.meta,<span class="w"> </span>data<span class="w"> </span>pools:<span class="w"> </span><span class="o">[</span>cephfs.myfs.data<span class="w"> </span><span class="o">]</span>
+</code></pre></div>
+
+- 方法 2
+
+1. 手工创建 osd 存储池并创建 CephFS 服务
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool create myfs_data 32</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool create myfs_metadata 32</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph fs new myfs myfs_metadata myfs_data</span>
+<span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph orch apply mds myfs --placement=3</span>
+</code></pre></div>
+
+2. 如果想删除存储池，需要先设置如下参数 `mon_allow_pool_delete`
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph config set mon mon_allow_pool_delete true</span>
+</code></pre></div>
+
+3. 删除命令如下，注意 `--yes-i-really-mean-it` 参数一定要加
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph fs volume rm myfs --yes-i-really-mean-it</span>
+metadata<span class="w"> </span>pool:<span class="w"> </span>cephfs.myfs.meta<span class="w"> </span>data<span class="w"> </span>pool:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;cephfs.myfs.data&#39;</span><span class="o">]</span><span class="w"> </span>removed
+</code></pre></div>
+
+#### 新建存储池
+
+1. 启动 nfs 服务
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>ceph<span class="w"> </span>root@ceph1<span class="w"> </span>/<span class="o">]</span><span class="w"> </span>ceph<span class="w"> </span>mgr<span class="w"> </span>module<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>nfs
+module<span class="w"> </span><span class="s1">&#39;nfs&#39;</span><span class="w"> </span>is<span class="w"> </span>already<span class="w"> </span>enabled
+</code></pre></div>
+
+> 可以看到 nfs 模块默认是启用的。
+
+2. 创建 NFS 所需的存储池。
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool create mynfs_data</span>
+</code></pre></div>
+
+> 如果想删除存储池，默认是不允许的，需要先设置一个参数 `mon_allow_pool_delete`，本处再介绍一种方式：
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph tell mon.* injectargs --mon_allow_pool_delete true</span>
+mon.ceph1:<span class="w"> </span><span class="o">{}</span>
+mon.ceph1:<span class="w"> </span><span class="nv">mon_allow_pool_delete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;true&#39;</span>
+mon.ceph2:<span class="w"> </span><span class="o">{}</span>
+mon.ceph2:<span class="w"> </span><span class="nv">mon_allow_pool_delete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;true&#39;</span>
+mon.ceph3:<span class="w"> </span><span class="o">{}</span>
+mon.ceph3:<span class="w"> </span><span class="nv">mon_allow_pool_delete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;true&#39;</span>
+</code></pre></div>
+
+之后删除
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>ceph<span class="o">]</span><span class="c1"># ceph osd pool delete mynfs_data mynfs_data --yes-i-really-really-mean-it</span>
+pool<span class="w"> </span><span class="s1">&#39;ganesha_data&#39;</span><span class="w"> </span>removed
+<span class="o">[</span>root@ceph1<span class="w"> </span>ceph<span class="o">]</span><span class="c1"># ceph osd pool delete .nfs .nfs --yes-i-really-really-mean-it</span>
+pool<span class="w"> </span><span class="s1">&#39;.nfs&#39;</span><span class="w"> </span>removed
+</code></pre></div>
+
+#### 在存储池上开启 nfs 应用
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph osd pool application enable mynfs_data nfs</span>
+</code></pre></div>
+
+#### 新建 NFS 集群
+
+1. 创建集群, 使用 `ceph nfs cluster create` 命令
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ceph1<span class="w"> </span>~<span class="o">]</span><span class="c1"># ceph nfs cluster create mynfs 3 --ingress --virtual_ip 192.168.19.18</span>
+</code></pre></div>
+
+> `注意`
+> 本例使用了 `--ingress` 参数，目前 ingress 的高可用还没有完全完成，等到 `Ceph Quincy` 发布才支持
+
+这个命令会新建两个编排服务 `ingress.nfs.mynfs` 和 `nfs.mynfs`
+
+2. 查看一下
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph nfs cluster ls
+</code></pre></div>
+
+3. 修改配置，可以先导出 yaml 格式
+
+<div class="highlight"><pre><span></span><code>ceph orch ls --service-name nfs.mynfs --export &gt; nfs.mynfs.yaml
+</code></pre></div>
+
+> 删除 NFS 集群，以下两种方法：
+
+- 方法 1
+
+使用 `ceph nfs cluster rm <cluster_id>` 命令
+
+<div class="highlight"><pre><span></span><code>ceph nfs cluster rm mynfs
+</code></pre></div>
+
+- 方法 2
+
+使用 `ceph orch rm` 删除
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph orch rm ingress.nfs.mynfs
+Removed service ingress.nfs.mynfs
+[root@ceph1 ~]# ceph orch rm nfs.mynfs
+Removed service nfs.mynfs
+</code></pre></div>
+
+#### 新建 CephFS 的 nfs 导出
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph nfs export create cephfs --cluster-id mynfs --pseudo-path /data --fsname myfs --squash no_root_squash
+</code></pre></div>
+
+查看 nfs 信息
+
+<div class="highlight"><pre><span></span><code>[root@ceph1 ~]# ceph nfs export info mynfs /data
+</code></pre></div>
+
+> 也可以在 Ceph Dashboard 中新建 NFS，但在 Dashboard 中和 CLI 中的新建的，查看最后参数不一样，Dashboard 的多一些。
+
+#### 客户端配置
+
+参考 [NFS MOUNTING](https://docs.ceph.com/en/pacific/mgr/nfs/#mounting)
+
+> `注意`
+> 只支持 NFS v4.0+ 的协议
+
+挂载的命令
+
+<div class="highlight"><pre><span></span><code>mount -t nfs -o nfsvers=4.1,proto=tcp &lt;ganesha-host-name&gt;:&lt;ganesha-pseudo-path&gt; &lt;mount-point&gt;
+</code></pre></div>
+
+本例如下：
+
+<div class="highlight"><pre><span></span><code>[root@cephclient1 ~]# mount -t nfs  192.168.19.18:/data /mnt
+</code></pre></div>
+
+这样客户端就将存储中的 /data 挂载到了本地 /mnt 目录
+
+卸掉挂载
+
+<div class="highlight"><pre><span></span><code>[root@cephclient1 ~]# umount /mnt
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

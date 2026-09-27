@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceph 分布式存储 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"></ul></nav>
+                    </div>
+                    <div class="doc-content"><table>
+<thead>
+<tr>
+<th style="text-align: left;">IP地址</th>
+<th>系统/内核版本</th>
+<th>角色</th>
+<th>组件</th>
+<th>磁盘</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">192.168.1.54</td>
+<td>Red Hat Enterprise Linux 8.8 (Ootpa)<br>Linux 4.18.0-477.10.1.el8_8.x86_64</td>
+<td>Ceph01</td>
+<td>MON,OSD</td>
+<td>sda,sdb,sdc</td>
+</tr>
+<tr>
+<td style="text-align: left;">192.168.1.65</td>
+<td>Red Hat Enterprise Linux 8.8 (Ootpa)<br/>Linux 4.18.0-477.10.1.el8_8.x86_64</td>
+<td>Ceph02</td>
+<td>MON,OSD</td>
+<td>sda,sdb,sdc</td>
+</tr>
+<tr>
+<td style="text-align: left;">192.168.1.82</td>
+<td>Red Hat Enterprise Linux 8.8 (Ootpa)<br/>Linux 4.18.0-477.10.1.el8_8.x86_64</td>
+<td>Ceph03</td>
+<td>MON,OSD</td>
+<td>sda,sdb,sdc</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>sda是系统盘</p>
+</blockquote>
+<p>准备基础环境</p>
+<p>1、配置源（根据系统决定）</p>
+<p>2、安装基础软件</p>
+<div class="highlight"><pre><span></span><code>NAME<span class="w">           </span>PORTS<span class="w">        </span>RUNNING<span class="w">  </span>REFRESHED<span class="w">  </span>AGE<span class="w">  </span>PLACEMENT<span class="w">  </span>
+alertmanager<span class="w">   </span>?:9093,9094<span class="w">      </span><span class="m">1</span>/1<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>count:1<span class="w">    </span>
+crash<span class="w">                           </span><span class="m">1</span>/1<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>*<span class="w">          </span>
+grafana<span class="w">        </span>?:3000<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>count:1<span class="w">    </span>
+mgr<span class="w">                             </span><span class="m">1</span>/2<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>count:2<span class="w">    </span>
+mon<span class="w">                             </span><span class="m">1</span>/5<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>count:5<span class="w">    </span>
+node-exporter<span class="w">  </span>?:9100<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>*<span class="w">          </span>
+prometheus<span class="w">     </span>?:9095<span class="w">           </span><span class="m">1</span>/1<span class="w">  </span>95s<span class="w"> </span>ago<span class="w">    </span>13m<span class="w">  </span>count:1<span class="w">   </span>
+</code></pre></div>
+<p>注释：</p>
+<table>
+<thead>
+<tr>
+<th>列名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NAME</strong></td>
+<td>服务名称（容器 / 应用组件）</td>
+</tr>
+<tr>
+<td><strong>PORTS</strong></td>
+<td>暴露的端口（如果有的话）</td>
+</tr>
+<tr>
+<td><strong>RUNNING</strong></td>
+<td>当前运行数量 / 期望数量（如果不相等，说明服务未完全启动或异常）</td>
+</tr>
+<tr>
+<td><strong>REFRESHED</strong></td>
+<td>最后一次状态刷新时间</td>
+</tr>
+<tr>
+<td><strong>AGE</strong></td>
+<td>服务运行时长</td>
+</tr>
+<tr>
+<td><strong>PLACEMENT</strong></td>
+<td>部署位置策略（<code>count:N</code> 表示集群中共部署 N 个实例，<code>*</code> 表示所有节点都部署）</td>
+</tr>
+</tbody>
+</table></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

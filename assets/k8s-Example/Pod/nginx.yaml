@@ -1,0 +1,13 @@
+# 这是一个简单的 Kubernetes Pod 配置文件，运行 nginx 容器
+apiVersion: v1                # API 版本
+kind: Pod                     # 资源类型为 Pod
+metadata:
+  name: nginx                 # Pod 的名称
+  labels:
+    app: nginx                # Pod 的标签，可用于选择器
+spec:
+  containers:
+  - name: nginx               # 容器名称
+    image: nginx:1.14.2       # 使用的 nginx 镜像及版本
+    ports:
+    - containerPort: 80       # 容器暴露的端口

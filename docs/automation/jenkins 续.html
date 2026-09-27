@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenkins 进阶 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-jenkins-续"># jenkins 续</a></li><li class="toc-l2"><a href="#-基于scm-自动化">## 基于SCM 自动化</a></li><li class="toc-l3"><a href="#-gitlab设置开通webhook">### gitlab设置开通webhook</a></li><li class="toc-l2"><a href="#-jenkins-构建java-应用">## jenkins 构建`Java` 应用</a></li><li class="toc-l3"><a href="#-jenkins中配置环境">### jenkins中配置环境</a></li><li class="toc-l4"><a href="#-测试java环境和maven环境">#### 测试Java环境和maven环境</a></li><li class="toc-l4"><a href="#-创建-java项目gitlab">#### 创建 Java项目`gitlab`</a></li><li class="toc-l3"><a href="#-jenkins-结合ansible批量管理服务">### jenkins 结合`ansible`批量管理服务</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="jenkins">jenkins 续</h1>
+<ul>
+<li>[x] 基于SCM 自动化</li>
+<li>[x] jenkins 构建<code>Java</code> <code>npm</code>应用</li>
+<li>[x] jenkins 结合<code>ansible</code>批量管理服务</li>
+<li>[ ] jenkins 流水线 <code>Pipeline</code></li>
+</ul>
+<h2 id="scm">基于SCM 自动化</h2>
+<p>Jekins 服务器上安装插件 <code>gitlab</code></p>
+<p>!image-20250919091550474](/images/image-20250919091550474.png)</p>
+<p>新建工程</p>
+<p>配置工程：源码仓库</p>
+<p>!image-20250919104359796](/images/image-20250919104359796.png)</p>
+<p>配置触发器</p>
+<p>!image-20250919104508992](/images/image-20250919104508992.png)</p>
+<p>构建后的操作</p>
+<p>!image-20250919104623283](/images/image-20250919104623283.png)</p>
+<h3 id="gitlabwebhook">gitlab设置开通webhook</h3>
+<ol>
+<li>开通gitlab的网络；可以通过webhook 发送数据包</li>
+</ol>
+<p>!image-20250919100342760](/images/image-20250919100342760.png)</p>
+<p>找到设置</p>
+<div class="codehilite"><pre><span></span><code><span class="sx">!image-20250919100449914](/images/image-20250919100449914.png)</span>
+</code></pre></div>
+
+<p>设置</p>
+<p>!image-20250919100633165](/images/image-20250919100633165.png)</p>
+<ol>
+<li>在gitlab 中进入项目中集成<code>jenkins</code></li>
+</ol>
+<p>进入项目</p>
+<p>!image-20250919100738453](/images/image-20250919100738453.png)</p>
+<p>!image-20250919100817515](/images/image-20250919100817515.png)</p>
+<p>!image-20250919100859390](/images/image-20250919100859390.png)</p>
+<p>集成<code>jenkins</code></p>
+<p>!image-20250919101029056](/images/image-20250919101029056.png)</p>
+<p>!image-20250919101239199](/images/image-20250919101239199.png)</p>
+<p>!image-20250919101701112](/images/image-20250919101701112.png)</p>
+<p>实现效果：</p>
+<p>!image-20250919104252020](/images/image-20250919104252020.png)</p>
+<h2 id="jenkins-java">jenkins 构建<code>Java</code> 应用</h2>
+<p>准备： Java的环境  <code>maven</code></p>
+<p>实施过程：</p>
+<ol>
+<li>
+<p>jenkins中配置环境</p>
+</li>
+<li>
+<p>创建 Java项目<code>gitlab</code></p>
+</li>
+<li>
+<p>jenkins 创建工程</p>
+</li>
+<li>
+<p>配置自动化</p>
+</li>
+</ol>
+<h3 id="jenkins_1">jenkins中配置环境</h3>
+<ol>
+<li>配置jdk环境</li>
+</ol>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w">   </span>/usr/local/java
+tar<span class="w"> </span>xf<span class="w"> </span>jdk-21_linux-x64_bin.tar.gz<span class="w">  </span>-C<span class="w"> </span>/usr/local/java/
+sudo<span class="w">  </span>tar<span class="w"> </span>xf<span class="w"> </span>jdk-21_linux-x64_bin.tar.gz<span class="w">  </span>-C<span class="w"> </span>/usr/local/java/
+ll<span class="w"> </span>/usr/local/java/jdk-21.0.8/
+</code></pre></div>
+<p>!image-20250919111205078](/images/image-20250919111205078.png)</p>
+<p>配置maven 环境</p>
+<p>获取maven</p>
+<ul>
+<li>https://maven.apache.org/download.cgi</li>
+</ul>
+<p>主机上配置</p>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
+sudo<span class="w">  </span>mkdir<span class="w">  </span>/usr/local/maven39
+sudo<span class="w"> </span>tar<span class="w"> </span>-xf<span class="w"> </span>apache-maven-3.9.11-bin.tar.gz<span class="w">  </span>-C<span class="w"> </span>/usr/local/maven39/
+</code></pre></div>
+<p>jenkins 配置</p>
+<p>!image-20250919111933218](/images/image-20250919111933218.png)</p>
+<h4 id="javamaven">测试Java环境和maven环境</h4>
+<p>创建工程测试<code>java-web-app</code></p>
+<p>!image-20250919131243714](/images/image-20250919131243714.png)</p>
+<p>构建项目：</p>
+<p>执行结果：</p>
+<p>!image-20250919131127476](/images/image-20250919131127476.png)</p>
+<blockquote>
+<p>以上错误信息：<code>没有找到mvn命令</code></p>
+</blockquote>
+<ol>
+<li>检查本地是否没有<code>mvn</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>mvn<span class="w">  </span>--version
+</code></pre></div>
+<blockquote>
+<p>如果输出mvn版本；表示系统已配置<code>mvn</code>环境；还是执行工程的是时候还是提示<code>mvn not found</code> 命令；表示你是基于二进制安装<code>maven</code>;无法在系统环境中找到命令。</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>ln<span class="w"> </span>-s<span class="w">  </span>/usr/local/maven39/apache-maven-3.9.11/bin/mvn<span class="w">   </span>/usr/local/bin/
+</code></pre></div>
+<p>再次执行工程：</p>
+<p>!image-20250919132041324](/images/image-20250919132041324.png)</p>
+<h4 id="javagitlab">创建 Java项目<code>gitlab</code></h4>
+<ol>
+<li><code>jenkins</code>创建<code>free</code>工程</li>
+</ol>
+<p>!image-20250919142135137](/images/image-20250919142135137.png)</p>
+<ol>
+<li>
+<p><code>gitlab</code>创建仓库</p>
+</li>
+<li>
+<p>配置</p>
+</li>
+<li>
+<p>定义部署到<code>server</code></p>
+</li>
+</ol>
+<h3 id="jenkins-ansible">jenkins 结合<code>ansible</code>批量管理服务</h3>
+<blockquote>
+<p>批量管理服务</p>
+</blockquote>
+<p>安装<code>anisble</code>插件</p>
+<p>创建工程<code>test-ansible</code></p>
+<p>!image-20250919152614448](/images/image-20250919152614448.png)</p>
+<p>!image-20250919161401524](/images/image-20250919161401524.png)</p>
+<p>定义主机清单： <code>/etc/ansible/hosts</code></p>
+<div class="highlight"><pre><span></span><code>abbott@abbott:~$<span class="w"> </span>sudo<span class="w">  </span>cat<span class="w">  </span>/etc/ansible/hosts<span class="w"> </span>
+<span class="m">192</span>.168.1.101<span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>root<span class="w"> </span>
+<span class="m">192</span>.168.1.135<span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>root<span class="w"> </span>
+<span class="m">192</span>.168.1.136<span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>root<span class="w"> </span>
+</code></pre></div>
+<p>测试工程：</p>
+<p>!image-20250919153609545](/images/image-20250919153609545.png)</p>
+<p>故障原因：</p>
+<blockquote>
+<p>ansible 需要免密登陆；而对于Jenkins应用需要使用jenkins 远程后端主机</p>
+</blockquote>
+<p>给jenkins用户创建公/私钥</p>
+<div class="highlight"><pre><span></span><code>jenkins@abbott:~$<span class="w"> </span>ssh-keygen<span class="w">   </span>
+Generating<span class="w"> </span>public/private<span class="w"> </span>ed25519<span class="w"> </span>key<span class="w"> </span>pair.
+Enter<span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>which<span class="w"> </span>to<span class="w"> </span>save<span class="w"> </span>the<span class="w"> </span>key<span class="w"> </span><span class="o">(</span>/var/lib/jenkins/.ssh/id_ed25519<span class="o">)</span>:<span class="w"> </span>
+/var/lib/jenkins/.ssh/id_ed25519<span class="w"> </span>already<span class="w"> </span>exists.
+Overwrite<span class="w"> </span><span class="o">(</span>y/n<span class="o">)</span>?<span class="w"> </span>y
+Enter<span class="w"> </span>passphrase<span class="w"> </span><span class="o">(</span>empty<span class="w"> </span><span class="k">for</span><span class="w"> </span>no<span class="w"> </span>passphrase<span class="o">)</span>:<span class="w"> </span>
+Enter<span class="w"> </span>same<span class="w"> </span>passphrase<span class="w"> </span>again:<span class="w"> </span>
+Your<span class="w"> </span>identification<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>saved<span class="w"> </span><span class="k">in</span><span class="w"> </span>/var/lib/jenkins/.ssh/id_ed25519
+Your<span class="w"> </span>public<span class="w"> </span>key<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>saved<span class="w"> </span><span class="k">in</span><span class="w"> </span>/var/lib/jenkins/.ssh/id_ed25519.pub
+The<span class="w"> </span>key<span class="w"> </span>fingerprint<span class="w"> </span>is:
+SHA256:LMKdv4vqhAL7Si4xH0I421pfdJO3/7kjCDVA/C/xYIE<span class="w"> </span>jenkins@abbott
+The<span class="w"> </span>key<span class="err">&#39;</span>s<span class="w"> </span>randomart<span class="w"> </span>image<span class="w"> </span>is:
++--<span class="o">[</span>ED25519<span class="w"> </span><span class="m">256</span><span class="o">]</span>--+
+<span class="p">|</span><span class="w">       </span>o..<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span><span class="w">        </span>E<span class="w"> </span>.<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span>.<span class="w">        </span>+<span class="w"> </span>.<span class="w">     </span><span class="p">|</span>
+<span class="p">|</span>o.<span class="w"> </span>.<span class="w"> </span>..o+<span class="w"> </span>O<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span>o+<span class="w">  </span>o.+.S<span class="o">=</span><span class="w"> </span>B<span class="w">     </span><span class="p">|</span>
+<span class="p">|</span>*.+.<span class="w"> </span>..o.<span class="w"> </span>o<span class="w"> </span>o<span class="w">    </span><span class="p">|</span>
+<span class="p">|</span>oO.o..<span class="w">  </span>..<span class="w"> </span>+<span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=</span>o...<span class="w">  </span>.<span class="w"> </span>..<span class="w"> </span>o<span class="w"> </span>..<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span>oo..o..<span class="w"> </span>o.<span class="w">   </span>o+o<span class="w"> </span><span class="p">|</span>
++----<span class="o">[</span>SHA256<span class="o">]</span>-----+
+</code></pre></div>
+<p>!image-20250919154247333](/images/image-20250919154247333.png)</p>
+<p>Example:</p>
+<p>!image-20250919162351558](/images/image-20250919162351558.png)</p>
+<p>实现结果：</p>
+<p>!image-20250919162551143](/images/image-20250919162551143.png)</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

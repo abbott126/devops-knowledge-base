@@ -1,0 +1,10 @@
+---
+# tasks file for yum_repo
+
+- name: 配置YUM 源
+  yum_repository:
+    name: BaseOS
+    description: Rehat 8  BaseOS
+    baseurl: http://{{ ip_adds }}/redhat8/BaseOS
+    gpgcheck: no
+  when: ansible_facts['os_family'] == "RedHat"

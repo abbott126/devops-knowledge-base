@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansible 模块 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-ansible-模块"># ansible 模块</a></li><li class="toc-l2"><a href="#-command-模块">## command 模块</a></li><li class="toc-l1"><a href="#使用command-模块创建文件">#使用command 模块创建文件</a></li><li class="toc-l1"><a href="#使用command-模块创建文件夹">#使用command 模块创建文件夹</a></li><li class="toc-l2"><a href="#-shell-模块">## shell  模块</a></li><li class="toc-l2"><a href="#-hostname-模块">## Hostname 模块</a></li><li class="toc-l2"><a href="#-ansible.builtin.file-模块-">## ansible.builtin.file 模块 –</a></li><li class="toc-l2"><a href="#-user-module">## **user** module</a></li><li class="toc-l2"><a href="#-group-模块">## group 模块</a></li><li class="toc-l2"><a href="#-copy-模块">## Copy 模块</a></li><li class="toc-l2"><a href="#-fetch-module">## fetch module</a></li><li class="toc-l2"><a href="#-package-模块">## package 模块</a></li><li class="toc-l2"><a href="#-yum/dnf-模块">## YUM/DNF 模块</a></li><li class="toc-l1"><a href="#指定安装包所在的位置">#指定安装包所在的位置</a></li><li class="toc-l2"><a href="#-yum_repository-模块">## yum_**repo**sitory 模块</a></li><li class="toc-l2"><a href="#-systemd_service-module">## systemd_service module</a></li><li class="toc-l2"><a href="#-script-module">## script module</a></li><li class="toc-l2"><a href="#-setup-模块">## setup 模块</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="ansible">ansible 模块</h1>
+<div class="highlight"><pre><span></span><code>graph  LR
+
+ansible  -.openssh协议.-&gt;  被控节点105 &amp; 被控节点106  &amp; 被控节点107  &amp; 被控节点103
+</code></pre></div>
+<blockquote>
+<p>最重要的模块</p>
+</blockquote>
+<h2 id="command">command 模块</h2>
+<blockquote>
+<p>不支持特殊的字符</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all -m command  -a  &quot;free  -h&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">              </span>total<span class="w">        </span>used<span class="w">        </span>free<span class="w">      </span>shared<span class="w">  </span>buff/cache<span class="w">   </span>available
+Mem:<span class="w">           </span>990M<span class="w">        </span>171M<span class="w">        </span>684M<span class="w">         </span>13M<span class="w">        </span>135M<span class="w">        </span>675M
+Swap:<span class="w">          </span><span class="m">2</span>.0G<span class="w">          </span>0B<span class="w">        </span><span class="m">2</span>.0G
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+
+<span class="c1">#使用command 模块创建文件</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m command  -a &quot;ls .&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+abc
+anaconda-ks.cfg
+<span class="c1">#使用command 模块创建文件夹</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m command  -a &quot;ls /opt/&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+abc
+</code></pre></div>
+<h2 id="shell">shell  模块</h2>
+<p>描述：在目标上执行 shell 命令</p>
+<p>用法：<code>ansible  {指定主机} -m {shell} -a "执行命令"</code></p>
+<p>注意： <code>command 不能执行的命令shell模块都可以执行</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m shell   -a  &quot; ip ad  | grep inet&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">    </span>inet<span class="w"> </span><span class="m">127</span>.0.0.1/8<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>lo
+<span class="w">    </span>inet6<span class="w"> </span>::1/128<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>
+<span class="w">    </span>inet<span class="w"> </span><span class="m">192</span>.168.1.103/24<span class="w"> </span>brd<span class="w"> </span><span class="m">192</span>.168.1.255<span class="w"> </span>scope<span class="w"> </span>global<span class="w"> </span>noprefixroute<span class="w"> </span>dynamic<span class="w"> </span>eth0
+<span class="w">    </span>inet6<span class="w"> </span>fe80::8559:49de:43c0:5a9f/64<span class="w"> </span>scope<span class="w"> </span>link<span class="w"> </span>noprefixroute<span class="w"> </span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">    </span>inet<span class="w"> </span><span class="m">127</span>.0.0.1/8<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>lo
+<span class="w">    </span>inet6<span class="w"> </span>::1/128<span class="w"> </span>scope<span class="w"> </span>host<span class="w"> </span>
+<span class="w">    </span>inet<span class="w"> </span><span class="m">192</span>.168.1.105/24<span class="w"> </span>brd<span class="w"> </span><span class="m">192</span>.168.1.255<span class="w"> </span>scope<span class="w"> </span>global<span class="w"> </span>noprefixroute<span class="w"> </span>dynamic<span class="w"> </span>eth0
+<span class="w">    </span>inet6<span class="w"> </span>fe80::2449:e5d:34d3:ddec/64<span class="w"> </span>scope<span class="w"> </span>link<span class="w"> </span>noprefixroute<span class="w"> </span>
+</code></pre></div>
+<p>Ex2:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m  shell  -a  &quot;sed -i &#39;s/^SELINUX=enforcing/SELINUX=disabled/g&#39; /etc/selinux/config&quot;</span>
+<span class="o">[</span>WARNING<span class="o">]</span>:<span class="w"> </span>Consider<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>replace,<span class="w"> </span>lineinfile<span class="w"> </span>or<span class="w"> </span>template<span class="w"> </span>module<span class="w"> </span>rather<span class="w"> </span>than<span class="w"> </span>running<span class="w"> </span><span class="s1">&#39;sed&#39;</span>.<span class="w">  </span>If<span class="w"> </span>you<span class="w"> </span>need
+to<span class="w"> </span>use<span class="w"> </span><span class="nb">command</span><span class="w"> </span>because<span class="w"> </span>replace,<span class="w"> </span>lineinfile<span class="w"> </span>or<span class="w"> </span>template<span class="w"> </span>is<span class="w"> </span>insufficient<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>add<span class="w"> </span><span class="s1">&#39;warn: false&#39;</span><span class="w"> </span>to<span class="w"> </span>this
+<span class="nb">command</span><span class="w"> </span>task<span class="w"> </span>or<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="s1">&#39;command_warnings=False&#39;</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>ansible.cfg<span class="w"> </span>to<span class="w"> </span>get<span class="w"> </span>rid<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>message.
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m shell  -a  &quot;hostname abc.com&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m shell  -a  &quot;hostname&quot;</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+abc.com
+</code></pre></div>
+<h2 id="hostname">Hostname 模块</h2>
+<p>描述：管理主机命令</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m hostname -a  &quot;name=abbott.com&quot;</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;ansible_domain&quot;</span>:<span class="w"> </span><span class="s2">&quot;awsglobalaccelerator.com&quot;</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;ansible_fqdn&quot;</span>:<span class="w"> </span><span class="s2">&quot;aa5dacf57429c8adc.awsglobalaccelerator.com&quot;</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;ansible_hostname&quot;</span>:<span class="w"> </span><span class="s2">&quot;abbott&quot;</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;ansible_nodename&quot;</span>:<span class="w"> </span><span class="s2">&quot;abbott.com&quot;</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;abbott.com&quot;</span>
+<span class="o">}</span>
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all -m  shell  -a &quot;hostnamectl | grep Static&quot;</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">   </span>Static<span class="w"> </span>hostname:<span class="w"> </span>abbott.com
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">   </span>Static<span class="w"> </span>hostname:<span class="w"> </span>abbott.com
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">   </span>Static<span class="w"> </span>hostname:<span class="w"> </span>abbott.com
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">   </span>Static<span class="w"> </span>hostname:<span class="w"> </span>abbott.com
+</code></pre></div>
+<h2 id="ansiblebuiltinfile">ansible.builtin.file 模块 –</h2>
+<p>描述：管理文件和文件属性</p>
+<p>概要：</p>
+<ul>
+<li>设置文件、目录或符号链接的属性及其目标。</li>
+<li>或者，删除文件、符号链接或目录</li>
+<li>许多其他模块支持与 <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#ansible-collections-ansible-builtin-file-module">ansible.builtin.file</a> 模块相同的选项，包括 <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module">ansible.builtin.copy</a>、<a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#ansible-collections-ansible-builtin-template-module">ansible.builtin.template</a> 和 <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/assemble_module.html#ansible-collections-ansible-builtin-assemble-module">ansible.builtin.assemble</a>。</li>
+<li>对于 Windows 目标，请改用 <a href="https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_file_module.html#ansible-collections-ansible-windows-win-file-module">ansible.windows.win_file</a> 模块</li>
+</ul>
+<p>Ex: <code>创建文件</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all  -m file -a &quot;path=/opt/a state=touch&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;dest&quot;</span>:<span class="w"> </span><span class="s2">&quot;/opt/a&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;gid&quot;</span>:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span>:<span class="w"> </span><span class="s2">&quot;root&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;mode&quot;</span>:<span class="w"> </span><span class="s2">&quot;0644&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;owner&quot;</span>:<span class="w"> </span><span class="s2">&quot;root&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;secontext&quot;</span>:<span class="w"> </span><span class="s2">&quot;unconfined_u:object_r:usr_t:s0&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;file&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;uid&quot;</span>:<span class="w"> </span><span class="m">0</span>
+<span class="o">}</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m file  -a &quot;path=/opt/b state=directory&quot;</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all -m shell -a  &quot;ls -l /opt&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+总用量<span class="w"> </span><span class="m">0</span>
+-rw-r--r--.<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">0</span><span class="w"> </span>9月<span class="w">  </span><span class="m">12</span><span class="w"> </span><span class="m">10</span>:38<span class="w"> </span>a
+drwxr-xr-x.<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">6</span><span class="w"> </span>9月<span class="w">  </span><span class="m">12</span><span class="w"> </span><span class="m">09</span>:36<span class="w"> </span>abc
+</code></pre></div>
+<p>创建用户：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m shell -a  &quot;useradd xiaosi&quot;</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m shell -a  &quot;id xiaosi&quot;</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>xiaosi<span class="o">)</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>xiaosi<span class="o">)</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>xiaosi<span class="o">)</span>
+</code></pre></div>
+<p>Ex2: <code>创建文件/目录的时候指定用户及权限</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m file -a &quot;path=/opt/xiaosi state=directory owner=xiaosi group=root mode=766&quot;</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;gid&quot;</span>:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span>:<span class="w"> </span><span class="s2">&quot;root&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;mode&quot;</span>:<span class="w"> </span><span class="s2">&quot;0766&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;owner&quot;</span>:<span class="w"> </span><span class="s2">&quot;xiaosi&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/opt/xiaosi&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;secontext&quot;</span>:<span class="w"> </span><span class="s2">&quot;unconfined_u:object_r:usr_t:s0&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">6</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;directory&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;uid&quot;</span>:<span class="w"> </span><span class="m">1000</span>
+<span class="o">}</span>
+......
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m shell -a &quot;ls -l  /opt/&quot;</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+drwxrw-rw-.<span class="w">  </span><span class="m">2</span><span class="w"> </span>xiaosi<span class="w"> </span>root<span class="w">       </span><span class="m">6</span><span class="w"> </span>9月<span class="w">  </span><span class="m">12</span><span class="w"> </span><span class="m">10</span>:48<span class="w"> </span>xiaosi
+</code></pre></div>
+<p>Example: <code>创建软链接</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all  -m file  -a &quot;src=/opt/a  dest=/opt/c state=link&quot;</span>
+</code></pre></div>
+<p>Example: <code>删除文件/目录</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m file  -a  &quot;path=/opt/xiaosi state=absent&quot;</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/opt/xiaosi&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;absent&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>State:属性的值：</p>
+<div class="highlight"><pre><span></span><code><span class="s2">&quot;absent&quot;</span>
+<span class="s2">&quot;directory&quot;</span>
+<span class="s2">&quot;file&quot;</span>
+<span class="s2">&quot;hard&quot;</span>
+<span class="s2">&quot;link&quot;</span>
+<span class="s2">&quot;touch&quot;</span>
+</code></pre></div>
+<h2 id="user-module"><strong>user</strong> module</h2>
+<p>描述：管理<strong>用户</strong>帐户 </p>
+<p>Example: <code>创建用户dev</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m user  -a  &quot;name=dev&quot;</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;comment&quot;</span>:<span class="w"> </span><span class="s2">&quot;&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;create_home&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span>:<span class="w"> </span><span class="m">1001</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;home&quot;</span>:<span class="w"> </span><span class="s2">&quot;/home/dev&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;dev&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;shell&quot;</span>:<span class="w"> </span><span class="s2">&quot;/bin/bash&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;present&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;system&quot;</span>:<span class="w"> </span>false,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;uid&quot;</span>:<span class="w"> </span><span class="m">1001</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>Example:  <code>创建用户名为dev02 组：dev01 不允许登陆shell环境；指定附加组为root</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all -m user  -a  &quot; \</span>
+&gt;<span class="w"> </span><span class="nv">name</span><span class="o">=</span>dev02<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span><span class="nv">groups</span><span class="o">=</span>dev01,root<span class="w"> </span><span class="se">\</span>
+&gt;<span class="w"> </span><span class="nv">shell</span><span class="o">=</span>/bin/nologin
+&gt;<span class="w"> </span><span class="s2">&quot;</span>
+<span class="s2">192.168.1.107 | CHANGED =&gt; {</span>
+<span class="s2">    &quot;</span>ansible_facts<span class="s2">&quot;: {</span>
+<span class="s2">        &quot;</span>discovered_interpreter_python<span class="s2">&quot;: &quot;</span>/usr/bin/python<span class="s2">&quot;</span>
+<span class="s2">    }, </span>
+<span class="s2">    &quot;</span>changed<span class="s2">&quot;: true, </span>
+<span class="s2">    &quot;</span>comment<span class="s2">&quot;: &quot;&quot;, </span>
+<span class="s2">    &quot;</span>create_home<span class="s2">&quot;: true, </span>
+<span class="s2">    &quot;</span>group<span class="s2">&quot;: 1004, </span>
+<span class="s2">    &quot;</span>groups<span class="s2">&quot;: &quot;</span>dev01,root<span class="s2">&quot;, </span>
+<span class="s2">    &quot;</span>home<span class="s2">&quot;: &quot;</span>/home/dev02<span class="s2">&quot;, </span>
+<span class="s2">    &quot;</span>name<span class="s2">&quot;: &quot;</span>dev02<span class="s2">&quot;, </span>
+<span class="s2">    &quot;</span>shell<span class="s2">&quot;: &quot;</span>/bin/nologin<span class="s2">&quot;, </span>
+<span class="s2">    &quot;</span>state<span class="s2">&quot;: &quot;</span>present<span class="s2">&quot;, </span>
+<span class="s2">    &quot;</span>system<span class="s2">&quot;: false, </span>
+<span class="s2">    &quot;</span>uid<span class="s2">&quot;: 1002</span>
+<span class="s2">}</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all  -m shell -a &quot;id dev02&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1002</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1003</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1003</span><span class="o">(</span>dev02<span class="o">)</span>,0<span class="o">(</span>root<span class="o">)</span>,1002<span class="o">(</span>dev01<span class="o">)</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1002</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1004</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1004</span><span class="o">(</span>dev02<span class="o">)</span>,0<span class="o">(</span>root<span class="o">)</span>,1003<span class="o">(</span>dev01<span class="o">)</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1002</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1004</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1004</span><span class="o">(</span>dev02<span class="o">)</span>,0<span class="o">(</span>root<span class="o">)</span>,1003<span class="o">(</span>dev01<span class="o">)</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="nv">uid</span><span class="o">=</span><span class="m">1002</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">gid</span><span class="o">=</span><span class="m">1003</span><span class="o">(</span>dev02<span class="o">)</span><span class="w"> </span><span class="nv">组</span><span class="o">=</span><span class="m">1003</span><span class="o">(</span>dev02<span class="o">)</span>,0<span class="o">(</span>root<span class="o">)</span>,1002<span class="o">(</span>dev01<span class="o">)</span>
+</code></pre></div>
+<p>Example: <code>移除账户</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m user -a  &quot;name=dev02 state=absent&quot;</span>
+<span class="m">192</span>.168.1.107<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;force&quot;</span>:<span class="w"> </span>false,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;dev02&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;remove&quot;</span>:<span class="w"> </span>false,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;absent&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<h2 id="group">group 模块</h2>
+<p>描述：  <code>Add or remove groups</code></p>
+<p>Example:  <code>创建组</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m  group  -a &quot;name=dev01 state=present&quot;</span>
+</code></pre></div>
+<p>Example: <code>移除组</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m  group  -a &quot;name=dev01 state=absent&quot;</span>
+</code></pre></div>
+<h2 id="copy">Copy 模块</h2>
+<p>描述： 将文件复制到远程节点</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all -m   copy  -a  &quot;src=/root/install_httpd.sh dest=/root/ mode=o+x&quot; </span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;checksum&quot;</span>:<span class="w"> </span><span class="s2">&quot;7ed807bd854941ef9b9953000769a045e103b212&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;dest&quot;</span>:<span class="w"> </span><span class="s2">&quot;/root/install_httpd.sh&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;gid&quot;</span>:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span>:<span class="w"> </span><span class="s2">&quot;root&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;md5sum&quot;</span>:<span class="w"> </span><span class="s2">&quot;44df119d5429edb1322dba509a446bb1&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;mode&quot;</span>:<span class="w"> </span><span class="s2">&quot;0645&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;owner&quot;</span>:<span class="w"> </span><span class="s2">&quot;root&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;secontext&quot;</span>:<span class="w"> </span><span class="s2">&quot;system_u:object_r:admin_home_t:s0&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">1463</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;src&quot;</span>:<span class="w"> </span><span class="s2">&quot;/root/.ansible/tmp/ansible-tmp-1757647723.37-17505-253106903524469/source&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;file&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;uid&quot;</span>:<span class="w"> </span><span class="m">0</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible all  -m shell -a &quot;ls -l /root/&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+总用量<span class="w"> </span><span class="m">8</span>
+-rw-r--r--.<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">    </span><span class="m">0</span><span class="w"> </span>9月<span class="w">  </span><span class="m">12</span><span class="w"> </span><span class="m">09</span>:36<span class="w"> </span>abc
+-rw-------.<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1436</span><span class="w"> </span>9月<span class="w">   </span><span class="m">5</span><span class="w"> </span><span class="m">08</span>:59<span class="w"> </span>anaconda-ks.cfg
+-rw-r--r-x.<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1463</span><span class="w"> </span>9月<span class="w">  </span><span class="m">12</span><span class="w"> </span><span class="m">11</span>:28<span class="w"> </span>install_httpd.sh
+</code></pre></div>
+<p>Example: <code>在目标主机上创建备份文件</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all -m   copy  -a  &quot;src=/root/install_httpd.sh dest=/root/ mode=o+x backup=yes&quot; </span>
+</code></pre></div>
+<blockquote>
+<p>backup: yes 备份机制</p>
+</blockquote>
+<h2 id="fetch-module">fetch module</h2>
+<p>https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fetch_module.html#ansible-collections-ansible-builtin-fetch-module</p>
+<p>描述:<code>Fetch files from remote nodes</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m  fetch  -a  &quot;src=/root/install_httpd.sh  dest=/root/ flat=yes&quot; -vvvv</span>
+</code></pre></div>
+<h2 id="package">package 模块</h2>
+<p>描述：通用作系统包管理器 ；不指定如何系统包管理命令比如<code>ubunut--&gt;apt</code> <code>redhat--&gt;yum|dnf</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web   -m package -a  &quot;name=httpd state=present&quot; -vv</span>
+</code></pre></div>
+<h2 id="yumdnf">YUM/DNF 模块</h2>
+<p>描述：使用 <em>dnf</em> 包管理器管理包；</p>
+<p>概要：</p>
+<ul>
+<li>
+<p>使用 <em>dnf</em> 包管理器安装、升级、删除和列出包和组。</p>
+</li>
+<li>
+<p>Aliases: yum</p>
+</li>
+</ul>
+<p>Example: <code>安装</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m yum  -a &quot;name=vsftpd   state=latest&quot;</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web -m yum -a &quot;name=httpd state=installed&quot;</span>
+<span class="c1">#指定安装包所在的位置</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web -m yum  -a &quot;name=https://nginx.org/packages/rhel/7Server/x86_64/RPMS/nginx-1.26.1-2.el7.ngx.x86_64.rpm state=latest&quot;</span>
+</code></pre></div>
+<p>验证：<code>适用Shell模块</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web  -m shell -a &quot;rpm -q vsftpd&quot;</span>
+<span class="o">[</span>WARNING<span class="o">]</span>:<span class="w"> </span>Consider<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>yum,<span class="w"> </span>dnf<span class="w"> </span>or<span class="w"> </span>zypper<span class="w"> </span>module<span class="w"> </span>rather<span class="w"> </span>than<span class="w"> </span>running<span class="w"> </span><span class="s1">&#39;rpm&#39;</span>.<span class="w">  </span>If<span class="w"> </span>you<span class="w"> </span>need<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span><span class="nb">command</span>
+because<span class="w"> </span>yum,<span class="w"> </span>dnf<span class="w"> </span>or<span class="w"> </span>zypper<span class="w"> </span>is<span class="w"> </span>insufficient<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>add<span class="w"> </span><span class="s1">&#39;warn: false&#39;</span><span class="w"> </span>to<span class="w"> </span>this<span class="w"> </span><span class="nb">command</span><span class="w"> </span>task<span class="w"> </span>or<span class="w"> </span><span class="nb">set</span>
+<span class="s1">&#39;command_warnings=False&#39;</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>ansible.cfg<span class="w"> </span>to<span class="w"> </span>get<span class="w"> </span>rid<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>message.
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+vsftpd-3.0.2-28.el7.x86_64
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+vsftpd-3.0.2-28.el7.x86_64
+</code></pre></div>
+<p>Example: <code>absent removed</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web -m yum -a &quot;name=vsftpd state=absent&quot;</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web -m yum -a &quot;name=httpd state=removed&quot;</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m  shell -a &quot;rpm -q vsftpd&quot;</span>
+
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>FAILED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>&gt;&gt;
+未安装软件包<span class="w"> </span>vsftpd<span class="w"> </span>non-zero<span class="w"> </span><span class="k">return</span><span class="w"> </span>code
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>FAILED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>&gt;&gt;
+未安装软件包<span class="w"> </span>vsftpd<span class="w"> </span>non-zero<span class="w"> </span><span class="k">return</span><span class="w"> </span>code
+
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m  shell -a &quot;rpm -q httpd&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>FAILED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>&gt;&gt;
+未安装软件包<span class="w"> </span>httpd<span class="w"> </span>non-zero<span class="w"> </span><span class="k">return</span><span class="w"> </span>code
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>FAILED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>&gt;&gt;
+未安装软件包<span class="w"> </span>httpd<span class="w"> </span>non-zero<span class="w"> </span><span class="k">return</span><span class="w"> </span>code
+</code></pre></div>
+<h2 id="yum_repository">yum_<strong>repo</strong>sitory 模块</h2>
+<p>描述：添加或删除 YUM <strong>repo</strong>sitories</p>
+<p>Example:  <code>add  local.repo</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m yum_repository -a &quot;name=local description=redhat7  baseurl=file:///mnt  gpgcheck=no &quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">CHANGED</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>true,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;repo&quot;</span>:<span class="w"> </span><span class="s2">&quot;local&quot;</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;state&quot;</span>:<span class="w"> </span><span class="s2">&quot;present&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible   web   -m shell -a &quot;cat /etc/yum.repos.d/local.repo&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="o">[</span>local<span class="o">]</span>
+<span class="nv">baseurl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>file:///mnt
+<span class="nv">gpgcheck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>redhat7
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="o">[</span>local<span class="o">]</span>
+<span class="nv">baseurl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>file:///mnt
+<span class="nv">gpgcheck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>redhat7
+</code></pre></div>
+<h2 id="systemd_service-module">systemd_service module</h2>
+<p>描述：管理 systemd 单元</p>
+<p>提示：<code>7 +|- systemd  serivce</code></p>
+<p>https://docs.ansible.com/ansible/devel/collections/ansible/builtin/service_module.html#ansible-collections-ansible-builtin-service-module</p>
+<p>Example:  <code>启动服务</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web  -m systemd  -a &quot;name=nginx state=started&quot;</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web  -m service  -a &quot;name=nginx state=started&quot;</span>
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible web  -m systemd  -a &quot;name=nginx state=stopped &quot;</span>
+
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible   web  -m service  -a  &quot;name=nginx  state=started  enabled=yes&quot;</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m shell -a &quot;lsof  -i:80&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+COMMAND<span class="w">   </span>PID<span class="w">  </span>USER<span class="w">   </span>FD<span class="w">   </span>TYPE<span class="w"> </span>DEVICE<span class="w"> </span>SIZE/OFF<span class="w"> </span>NODE<span class="w"> </span>NAME
+nginx<span class="w">   </span><span class="m">17487</span><span class="w">  </span>root<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">159846</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">17488</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">159846</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">17489</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">159846</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+COMMAND<span class="w">   </span>PID<span class="w">  </span>USER<span class="w">   </span>FD<span class="w">   </span>TYPE<span class="w"> </span>DEVICE<span class="w"> </span>SIZE/OFF<span class="w"> </span>NODE<span class="w"> </span>NAME
+nginx<span class="w">   </span><span class="m">15897</span><span class="w">  </span>root<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">124182</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">15898</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">124182</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">15899</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">124182</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">15900</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">124182</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+nginx<span class="w">   </span><span class="m">15901</span><span class="w"> </span>nginx<span class="w">    </span>6u<span class="w">  </span>IPv4<span class="w"> </span><span class="m">124182</span><span class="w">      </span>0t0<span class="w">  </span>TCP<span class="w"> </span>*:http<span class="w"> </span><span class="o">(</span>LISTEN<span class="o">)</span>
+</code></pre></div>
+<h2 id="script-module">script module</h2>
+<p>https://docs.ansible.com/ansible/devel/collections/ansible/builtin/script_module.html#ansible-collections-ansible-builtin-script-module</p>
+<p>描述：传输后在远程节点上运行本地脚本</p>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  web  -m script  -a &quot;ansible_test.sh&quot; </span>
+</code></pre></div>
+<h2 id="setup">setup 模块</h2>
+<p>描述: 收集有关远程主机的信息</p>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible 192.168.1.103  -m setup   </span>
+</code></pre></div>
+<p>Example:  获取节点的IP地址</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible 192.168.1.103  -m setup   -a  &quot;filter=ansible_all_ipv4_addresses&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">SUCCESS</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;ansible_all_ipv4_addresses&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">            </span><span class="s2">&quot;192.168.1.103&quot;</span>
+<span class="w">        </span><span class="o">]</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span><span class="nb">false</span>
+<span class="o">}</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible 192.168.1.103  -m setup   -a  &quot;filter=ansible_distribution_version&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">SUCCESS</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;ansible_distribution_version&quot;</span>:<span class="w"> </span><span class="s2">&quot;7.9&quot;</span>,<span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span><span class="nb">false</span>
+<span class="o">}</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

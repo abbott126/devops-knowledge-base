@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#指定配置文件">#指定配置文件</a></li><li class="toc-l2"><a href="#-客户端工具">## 客户端工具</a></li><li class="toc-l1"><a href="#-redis管理"># Redis管理</a></li><li class="toc-l1"><a href="#修改监听地址">#修改监听地址</a></li><li class="toc-l1"><a href="#bind-127.0.0.1-1">#bind 127.0.0.1 -::1</a></li><li class="toc-l1"><a href="#修改以守护进程的方式运行">#修改以守护进程的方式运行</a></li><li class="toc-l1"><a href="#daemonize-no">#daemonize no</a></li><li class="toc-l1"><a href="#关闭安全模式">#关闭安全模式</a></li><li class="toc-l1"><a href="#监听端口号">#监听端口号</a></li><li class="toc-l2"><a href="#-redis-基本命令">## redis 基本命令</a></li><li class="toc-l1"><a href="#-登录验证"># 登录验证</a></li><li class="toc-l1"><a href="#验证成功">#验证成功</a></li><li class="toc-l1"><a href="#查看是否数据还在">#查看是否数据还在</a></li><li class="toc-l2"><a href="#-redis-数据库类型">## Redis **数据库类型**</a></li><li class="toc-l2"><a href="#-字符串数据类型">## 字符串数据类型</a></li><li class="toc-l1"><a href="#-设置key的值过期时间为30秒-如何值key的值不存在则不设置否则设置"># 设置key的值：过期时间为30秒 如何值key的值不存在则不设置否则设置</a></li><li class="toc-l2"><a href="#-整数类型-浮点数类型-字符串类型">## 整数类型 & 浮点数类型  & 字符串类型</a></li><li class="toc-l3"><a href="#-整数类型">### 整数类型</a></li><li class="toc-l3"><a href="#-浮点数类型">### 浮点数类型</a></li><li class="toc-l2"><a href="#-列表list">## 列表list</a></li><li class="toc-l2"><a href="#-数据持久化">## 数据持久化</a></li><li class="toc-l1"><a href="#快照的管理">#快照的管理</a></li><li class="toc-l32"><a href="#-snapshotting-">################################ SNAPSHOTTING   ################################</a></li><li class="toc-l1"><a href="#根据规则实现自动bgsave">#根据规则实现自动`bgsave`</a></li><li class="toc-l1"><a href="#最近一次后台保存操作失败redis-将停止接受写入请求">#最近一次后台保存操作失败，Redis 将停止接受写入请求。</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><p>部署：Redis</p>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://download.redis.io/redis-stable.tar.gz
+</code></pre></div>
+<p>安装依赖</p>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>gcc-c++<span class="w"> </span>make<span class="w"> </span>
+</code></pre></div>
+<p>解压并安装</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w">  </span>/usr/local/redis
+tar<span class="w"> </span>xf<span class="w">  </span>redis-stable.tar.gz<span class="w"> </span>-C<span class="w"> </span>/usr/local/redis/
+<span class="nb">cd</span><span class="w"> </span>/usr/local/redis/redis-stable/
+make<span class="w">  </span>
+make<span class="w">  </span>install
+</code></pre></div>
+<blockquote>
+<p>安装命令<code>/usr/local/bin</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># ls  /usr/local/bin/</span>
+redis-benchmark<span class="w">  </span>redis-check-aof<span class="w">  </span>redis-check-rdb<span class="w">  </span>redis-cli<span class="w">  </span>redis-sentinel<span class="w">  </span>redis-server
+</code></pre></div>
+</blockquote>
+<p>启动<code>redis</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># redis-server   </span>
+<span class="m">6862</span>:C<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.208<span class="w"> </span><span class="c1"># WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add &#39;vm.overcommit_memory = 1&#39; to /etc/sysctl.conf and then reboot or run the command &#39;sysctl vm.overcommit_memory=1&#39; for this to take effect.</span>
+<span class="m">6862</span>:C<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.210<span class="w"> </span>*<span class="w"> </span>oO0OoO0OoO0Oo<span class="w"> </span>Redis<span class="w"> </span>is<span class="w"> </span>starting<span class="w"> </span>oO0OoO0OoO0Oo
+<span class="m">6862</span>:C<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.210<span class="w"> </span>*<span class="w"> </span>Redis<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="m">8</span>.2.1,<span class="w"> </span><span class="nv">bits</span><span class="o">=</span><span class="m">64</span>,<span class="w"> </span><span class="nv">commit</span><span class="o">=</span><span class="m">00000000</span>,<span class="w"> </span><span class="nv">modified</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">pid</span><span class="o">=</span><span class="m">6862</span>,<span class="w"> </span>just<span class="w"> </span>started
+<span class="m">6862</span>:C<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.210<span class="w"> </span><span class="c1"># Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf</span>
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.211<span class="w"> </span>*<span class="w"> </span>Increased<span class="w"> </span>maximum<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>open<span class="w"> </span>files<span class="w"> </span>to<span class="w"> </span><span class="m">10032</span><span class="w"> </span><span class="o">(</span>it<span class="w"> </span>was<span class="w"> </span>originally<span class="w"> </span><span class="nb">set</span><span class="w"> </span>to<span class="w"> </span><span class="m">1024</span><span class="o">)</span>.
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.211<span class="w"> </span>*<span class="w"> </span>monotonic<span class="w"> </span>clock:<span class="w"> </span>POSIX<span class="w"> </span>clock_gettime
+<span class="w">                </span>_._<span class="w">                                                  </span>
+<span class="w">           </span>_.-<span class="sb">``</span>__<span class="w"> </span><span class="s1">&#39;&#39;</span>-._<span class="w">                                             </span>
+<span class="w">      </span>_.-<span class="sb">``</span><span class="w">    </span><span class="sb">`</span>.<span class="w">  </span><span class="sb">`</span>_.<span class="w">  </span><span class="s1">&#39;&#39;</span>-._<span class="w">           </span>Redis<span class="w"> </span>Open<span class="w"> </span>Source<span class="w">            </span>
+<span class="w">  </span>.-<span class="sb">``</span><span class="w"> </span>.-<span class="sb">```</span>.<span class="w">  </span><span class="sb">```</span><span class="se">\/</span><span class="w">    </span>_.,_<span class="w"> </span><span class="s1">&#39;&#39;</span>-._<span class="w">      </span><span class="m">8</span>.2.1<span class="w"> </span><span class="o">(</span><span class="m">00000000</span>/0<span class="o">)</span><span class="w"> </span><span class="m">64</span><span class="w"> </span>bit
+<span class="w"> </span><span class="o">(</span><span class="w">    </span><span class="s1">&#39;      ,       .-`  | `,    )     Running in standalone mode</span>
+<span class="s1"> |`-._`-...-` __...-.``-._|&#39;</span><span class="sb">`</span><span class="w"> </span>_.-<span class="s1">&#39;|     Port: 6379</span>
+<span class="s1"> |    `-._   `._    /     _.-&#39;</span><span class="w">    </span><span class="p">|</span><span class="w">     </span>PID:<span class="w"> </span><span class="m">6862</span>
+<span class="w">  </span><span class="sb">`</span>-._<span class="w">    </span><span class="sb">`</span>-._<span class="w">  </span><span class="sb">`</span>-./<span class="w">  </span>_.-<span class="s1">&#39;    _.-&#39;</span><span class="w">                                   </span>
+<span class="w"> </span><span class="p">|</span><span class="sb">`</span>-._<span class="sb">`</span>-._<span class="w">    </span><span class="sb">`</span>-.__.-<span class="s1">&#39;    _.-&#39;</span>_.-<span class="s1">&#39;|                                  </span>
+<span class="s1"> |    `-._`-._        _.-&#39;</span>_.-<span class="s1">&#39;    |           https://redis.io       </span>
+<span class="s1">  `-._    `-._`-.__.-&#39;</span>_.-<span class="s1">&#39;    _.-&#39;</span><span class="w">                                   </span>
+<span class="w"> </span><span class="p">|</span><span class="sb">`</span>-._<span class="sb">`</span>-._<span class="w">    </span><span class="sb">`</span>-.__.-<span class="s1">&#39;    _.-&#39;</span>_.-<span class="s1">&#39;|                                  </span>
+<span class="s1"> |    `-._`-._        _.-&#39;</span>_.-<span class="s1">&#39;    |                                  </span>
+<span class="s1">  `-._    `-._`-.__.-&#39;</span>_.-<span class="s1">&#39;    _.-&#39;</span><span class="w">                                   </span>
+<span class="w">      </span><span class="sb">`</span>-._<span class="w">    </span><span class="sb">`</span>-.__.-<span class="s1">&#39;    _.-&#39;</span><span class="w">                                       </span>
+<span class="w">          </span><span class="sb">`</span>-._<span class="w">        </span>_.-<span class="s1">&#39;                                           </span>
+<span class="s1">              `-.__.-&#39;</span><span class="w">                                               </span>
+
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.213<span class="w"> </span><span class="c1"># WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</span>
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.218<span class="w"> </span>*<span class="w"> </span>Server<span class="w"> </span>initialized
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:05.218<span class="w"> </span>*<span class="w"> </span>Ready<span class="w"> </span>to<span class="w"> </span>accept<span class="w"> </span>connections<span class="w"> </span>tcp
+^C6862:signal-handler<span class="w"> </span><span class="o">(</span><span class="m">1756723355</span><span class="o">)</span><span class="w"> </span>Received<span class="w"> </span>SIGINT<span class="w"> </span>scheduling<span class="w"> </span>shutdown...
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:35.150<span class="w"> </span>*<span class="w"> </span>User<span class="w"> </span>requested<span class="w"> </span>shutdown...
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:35.150<span class="w"> </span>*<span class="w"> </span>Saving<span class="w"> </span>the<span class="w"> </span>final<span class="w"> </span>RDB<span class="w"> </span>snapshot<span class="w"> </span>before<span class="w"> </span>exiting.
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:35.151<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>saved<span class="w"> </span>on<span class="w"> </span>disk
+<span class="m">6862</span>:M<span class="w"> </span><span class="m">01</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">18</span>:42:35.151<span class="w"> </span><span class="c1"># Redis is now ready to exit, bye bye...</span>
+
+
+<span class="o">]</span><span class="c1"># redis-server  redis.conf  #使用相对路径运行redis </span>
+</code></pre></div>
+<blockquote>
+<p>默认是在前台运行</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># redis-server   &amp;  后端运行redis</span>
+<span class="c1">#指定配置文件</span>
+<span class="o">[</span>root@redis-server<span class="w"> </span>redis-stable<span class="o">]</span><span class="c1"># redis-server   /usr/local/redis/redis-stable/redis.conf &amp;</span>
+
+<span class="o">[</span>root@redis-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># ss  -luntp  | grep  redis</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">       </span>*:6379<span class="w">                  </span>*:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;redis-server&quot;</span>,pid<span class="o">=</span><span class="m">6869</span>,fd<span class="o">=</span><span class="m">8</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">128</span><span class="w">    </span><span class="o">[</span>::<span class="o">]</span>:6379<span class="w">               </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;redis-server&quot;</span>,pid<span class="o">=</span><span class="m">6869</span>,fd<span class="o">=</span><span class="m">9</span><span class="o">))</span>
+</code></pre></div>
+<h2 id="_1">客户端工具</h2>
+<ol>
+<li>
+<p>自带的工具<code>redis-cli</code></p>
+</li>
+<li>
+<p>官方的GUI的工具</p>
+</li>
+<li>
+<p>第三方的GUI工具 <code>Another Redis Desktop Manager</code> </p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code>https://goanother.com/cn/
+</code></pre></div>
+<p>Redis-cli工具</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># redis-cli  </span>
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>ping
+PONG
+</code></pre></div>
+<h1 id="redis">Redis管理</h1>
+<div class="highlight"><pre><span></span><code><span class="c1">#修改监听地址</span>
+<span class="c1">#bind 127.0.0.1 -::1</span>
+<span class="nb">bind</span><span class="w"> </span>*<span class="w"> </span>-::*
+<span class="c1">#修改以守护进程的方式运行</span>
+<span class="c1">#daemonize no</span>
+daemonize<span class="w"> </span>yes
+<span class="c1">#关闭安全模式</span>
+protected-mode<span class="w"> </span>no
+<span class="c1">#监听端口号</span>
+port<span class="w"> </span><span class="m">6379</span>
+</code></pre></div>
+<h2 id="redis_1">redis 基本命令</h2>
+<ol>
+<li>Redis  命令帮助</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span><span class="nb">help</span><span class="w">  </span><span class="nb">set</span>
+
+<span class="w">  </span>SET<span class="w"> </span>key<span class="w"> </span>value<span class="w"> </span><span class="o">[</span>NX<span class="p">|</span>XX<span class="o">]</span><span class="w"> </span><span class="o">[</span>GET<span class="o">]</span><span class="w"> </span><span class="o">[</span>EX<span class="w"> </span>seconds<span class="p">|</span>PX<span class="w"> </span>milliseconds<span class="p">|</span>EXAT<span class="w"> </span>unix-time-seconds<span class="p">|</span>PXAT<span class="w"> </span>unix-time-milliseconds<span class="p">|</span>KEEPTTL<span class="o">]</span>
+<span class="w">  </span>summary:<span class="w"> </span>Sets<span class="w"> </span>the<span class="w"> </span>string<span class="w"> </span>value<span class="w"> </span>of<span class="w"> </span>a<span class="w"> </span>key,<span class="w"> </span>ignoring<span class="w"> </span>its<span class="w"> </span>type.<span class="w"> </span>The<span class="w"> </span>key<span class="w"> </span>is<span class="w"> </span>created<span class="w"> </span><span class="k">if</span><span class="w"> </span>it<span class="w"> </span>doesn<span class="err">&#39;</span>t<span class="w"> </span>exist.
+<span class="w">  </span>since:<span class="w"> </span><span class="m">1</span>.0.0
+<span class="w">  </span>group:<span class="w"> </span>string
+</code></pre></div>
+<ol>
+<li>Redis 在客户端关闭redis </li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>SHUTDOWN
+</code></pre></div>
+<ol>
+<li>写入一个key-value</li>
+<li>命令：<code>set</code></li>
+<li>语法：<code>set  key  value</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>redis<span class="o">]</span><span class="c1"># </span>
+<span class="o">[</span>root@redis-server<span class="w"> </span>redis<span class="o">]</span><span class="c1"># bin/redis-cli </span>
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>SET<span class="w">  </span>a<span class="w"> </span><span class="m">1</span>
+OK
+</code></pre></div>
+<ol>
+<li>创建多个key和value</li>
+</ol>
+<p>命令：<code>mset</code></p>
+<p>语法：<code>mset  key value  key2 value2 .</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>mset<span class="w">  </span>lasetname<span class="w"> </span>Stuntaman<span class="w">  </span>age<span class="w"> </span><span class="m">18</span>
+OK
+</code></pre></div>
+<ol>
+<li>获取key</li>
+<li>命令：<code>get</code></li>
+<li>语法：<code>get key</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>get<span class="w"> </span>a
+<span class="s2">&quot;1&quot;</span>
+</code></pre></div>
+<ol>
+<li>根据多个key获取多个值</li>
+</ol>
+<p>命令：<code>mget</code></p>
+<p>语法: <code>mget  key  key.....</code></p>
+<p>Example：</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>MGET<span class="w">  </span>name<span class="w">  </span>firestname<span class="w">   </span>lasetname<span class="w">  </span>age<span class="w">  </span>
+lisi
+
+Stuntaman
+<span class="m">18</span>
+</code></pre></div>
+<ol>
+<li>设置登录密码</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>CONFIG<span class="w"> </span>SET<span class="w">  </span>requirepass<span class="w"> </span><span class="m">123456</span>
+OK
+
+<span class="c1"># 登录验证</span>
+<span class="o">[</span>root@redis-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># redis-cli   -h 192.168.137.111 --raw</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>get<span class="w"> </span>a
+NOAUTH<span class="w"> </span>Authentication<span class="w"> </span>required.<span class="w">  </span><span class="c1">#需要验证</span>
+
+<span class="c1">#验证成功</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>auth<span class="w"> </span><span class="m">123456</span>
+OK
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>get<span class="w"> </span>a
+<span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>删除Key</li>
+</ol>
+<p>命令： <code>del</code></p>
+<p>语法： <code>del  key</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>a<span class="w">  </span><span class="m">123456</span>
+OK
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>del<span class="w"> </span>a<span class="w"> </span>
+<span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>get<span class="w"> </span>a<span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>检查Key是否存在</li>
+</ol>
+<p>命令：<code>exists</code></p>
+<p>语法：<code>exists key</code></p>
+<blockquote>
+<p>检查给定 key 是否存在。若 key 存在，返回 1 ，否则返回 0 。</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>exists<span class="w"> </span>a<span class="w">  </span><span class="c1">#在DB0没有找到a数据</span>
+<span class="m">0</span>
+
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="m">1</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>exists<span class="w"> </span>name<span class="w"> </span>
+<span class="m">1</span>
+</code></pre></div>
+<ol>
+<li>检查数据的类型</li>
+</ol>
+<blockquote>
+<p>返回 key 所储存的值的类型。none (key不存在)、string (字符串)、list (列表)、set (集合)、zset (有序集)、hash（哈希表）</p>
+</blockquote>
+<p>命令： <code>type</code></p>
+<p>语法： <code>type  key</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">type</span><span class="w">  </span>name
+string<span class="w">    </span><span class="c1">#字符串</span>
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">type</span><span class="w"> </span>a<span class="w"> </span>
+none<span class="w">      </span><span class="c1">#返回为空；表示没有找到对应的key</span>
+</code></pre></div>
+<ol>
+<li>设置key的生存时间</li>
+</ol>
+<p>命令：<code>expire</code></p>
+<p>语法：<code>expire key seconds</code></p>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>expire<span class="w">  </span>name<span class="w">  </span><span class="m">30</span>
+<span class="m">1</span><span class="w"> </span>
+
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>name<span class="w">  </span>小四
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>name<span class="w"> </span>xiaoli
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>get<span class="w"> </span>name<span class="w"> </span>
+xiaoli
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>id<span class="w">  </span><span class="m">1</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>expire<span class="w">  </span>id<span class="w">  </span><span class="m">60</span><span class="w">  </span>
+<span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>get<span class="w"> </span>id
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>exists<span class="w"> </span>id
+<span class="m">0</span>
+</code></pre></div>
+<ol>
+<li>设置生存时间以毫秒作为单位</li>
+</ol>
+<p>命令：<code>pexpire</code></p>
+<p>语法：<code>pexpire key millisecond</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>pexpire<span class="w">  </span>id<span class="w">  </span><span class="m">60000</span><span class="w"> </span>
+</code></pre></div>
+<ol>
+<li>查询库中的字段</li>
+</ol>
+<p>命令: <code>keys</code></p>
+<p>语法：<code>keys   pattern</code></p>
+<p>模式：</p>
+<div class="highlight"><pre><span></span><code>-<span class="w">  </span>*<span class="w">    </span>Matches<span class="w">  </span>all
+-<span class="w"> </span>h?llo<span class="w"> </span>matches<span class="w"> </span>hello,<span class="w"> </span>hallo<span class="w"> </span>and<span class="w"> </span>hxllo
+-<span class="w"> </span>h*llo<span class="w"> </span>matches<span class="w"> </span>hllo<span class="w"> </span>and<span class="w"> </span>heeeello
+-<span class="w"> </span>h<span class="o">[</span>ae<span class="o">]</span>llo<span class="w"> </span>matches<span class="w"> </span>hello<span class="w"> </span>and<span class="w"> </span>hallo,<span class="w"> </span>but<span class="w"> </span>not<span class="w"> </span>hillo
+-<span class="w"> </span>h<span class="o">[</span>^e<span class="o">]</span>llo<span class="w"> </span>matches<span class="w"> </span>hallo,<span class="w"> </span>hbllo,<span class="w"> </span>...<span class="w"> </span>but<span class="w"> </span>not<span class="w"> </span>hello
+-<span class="w"> </span>h<span class="o">[</span>a-b<span class="o">]</span>llo<span class="w"> </span>matches<span class="w"> </span>hallo<span class="w"> </span>and<span class="w"> </span>hbllo
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>*
+name
+firstname
+lasetname
+age
+小王
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>firstname<span class="w"> </span>jack<span class="w"> </span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>mset<span class="w">  </span>lasetname<span class="w"> </span>Stuntaman<span class="w">  </span>age<span class="w"> </span><span class="m">18</span><span class="w">  </span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>*name
+name
+firstname
+lasetname
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>*name*
+name
+firstname
+lasetname
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>*named
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>n<span class="o">[</span>a-z<span class="o">]</span>d
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>n<span class="o">[</span>a-z<span class="o">]</span>e
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>n<span class="o">[</span>a-z<span class="o">][</span>a-z<span class="o">]</span>e
+name
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w"> </span>f*e
+firstname
+</code></pre></div>
+<ol>
+<li>检查key 时间过期之后，将临时数据转换为永久（持久性）数据</li>
+</ol>
+<blockquote>
+<p>描述： 移除给定 key 的⽣存时间，将这个 key 从易失的转换成持久的。当⽣存时间移除成功时，返回 1 .如果 key 不存在或 key 没有设置⽣存时间，返回 0 。</p>
+</blockquote>
+<p>命令：<code>persist</code> </p>
+<p>语法：<code>persist key</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w"> </span>*
+name
+小王
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>PERSIST<span class="w">  </span>name<span class="w"> </span>
+<span class="m">0</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>EXPIRE<span class="w">  </span>name<span class="w">   </span><span class="m">30</span>
+<span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>PERSIST<span class="w">  </span>name<span class="w"> </span>
+<span class="m">1</span>
+<span class="c1">#查看是否数据还在</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>get<span class="w"> </span>name<span class="w"> </span>
+lisi
+</code></pre></div>
+<ol>
+<li>检查key 的生存时间</li>
+</ol>
+<p>描述： 以秒为单位，返回给定 key 的剩余⽣存时间(TTL, time to live)。当 key 不存在时，返回 -2 。当 key 存在但没有设置剩余⽣存时间时，返回 -1</p>
+<p>命令：<code>ttl</code></p>
+<p>语法： <code>ttl key</code></p>
+<p>Example : </p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w">  </span>id<span class="w">   </span><span class="m">15</span><span class="w">  </span>Ex<span class="w"> </span><span class="m">60</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>ttl<span class="w">  </span>id
+<span class="m">54</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>ttl<span class="w">  </span>id
+<span class="m">51</span>
+</code></pre></div>
+<p>命令： <code>pttl</code></p>
+<p>描述： <code>这个命令类似于 TTL 命令，但它以毫秒为单位返回 key 的剩余⽣存时间，⽽不是像 TTL 命令那样，以秒为单位。当 key 不存在时，返回 -2 。当 key 存在但没有设置剩余⽣存时间时，返回 -1</code></p>
+<p>语法: <code>pttl  key</code></p>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w">  </span>id<span class="w">   </span><span class="m">15</span><span class="w">  </span>Ex<span class="w"> </span><span class="m">60</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>PTTL<span class="w"> </span>id
+<span class="m">55120</span>
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">2</span><span class="o">]</span>&gt;<span class="w"> </span>ttl<span class="w"> </span>id
+<span class="m">39</span>
+</code></pre></div>
+<ol>
+<li>移动数据</li>
+</ol>
+<p>命令：<code>move</code></p>
+<p>语法： <code>MOVE key db</code></p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>SELECT<span class="w"> </span><span class="m">1</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w"> </span>*
+<span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="s2">&quot;name&quot;</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>MOVE<span class="w">  </span>name<span class="w"> </span><span class="m">0</span>
+<span class="o">(</span>integer<span class="o">)</span><span class="w"> </span><span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>SELECT<span class="w">  </span><span class="m">0</span><span class="w"> </span>
+OK
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>KEYS<span class="w"> </span>*
+<span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="s2">&quot;name&quot;</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>SELECT<span class="w"> </span><span class="m">1</span>
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w"> </span>*
+<span class="o">(</span>empty<span class="w"> </span>array<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>重命名key的名称</li>
+</ol>
+<p>命令：<code>rename</code></p>
+<p>语法： <code>RENAME key newkey</code></p>
+<p>Exmaple: </p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>mget<span class="w"> </span>name<span class="w">  </span>age<span class="w"> </span>sex
+zhangshang
+<span class="m">18</span>
+女
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>RENAME<span class="w">  </span>name<span class="w">  </span>姓名
+OK
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>mget<span class="w"> </span>name<span class="w">  </span>age<span class="w"> </span>sex
+
+<span class="m">18</span>
+女
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">1</span><span class="o">]</span>&gt;<span class="w"> </span>mget<span class="w"> </span>姓名<span class="w">  </span>age<span class="w"> </span>sex
+zhangshang
+<span class="m">18</span>
+</code></pre></div>
+<ol>
+<li>随机访问</li>
+</ol>
+<p>命令：RANDOMKEY </p>
+<p>语法：RANDOMKEY </p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">192.168.19.148:6379[1]&gt; RANDOMKEY</span>
+<span class="l l-Scalar l-Scalar-Plain">&quot;name3&quot;</span>
+<span class="l l-Scalar l-Scalar-Plain">192.168.19.148:6379[1]&gt; RANDOMKEY</span>
+<span class="l l-Scalar l-Scalar-Plain">&quot;nbme&quot;</span>
+</code></pre></div>
+<h2 id="redis_2">Redis <strong>数据库类型</strong></h2>
+<p>官方文档地址：https://redis.io/docs/latest/develop/data-types/</p>
+<p>Redis是一个数据结构服务器。Redis的核心是提供本地数据类型的集合，帮助您解决从<a href="https://redis.io/docs/latest/develop/data-types/strings/">缓存</a>到<a href="https://redis.io/docs/latest/develop/data-types/lists/">排队</a>再到<a href="https://redis.io/docs/latest/develop/data-types/streams/">事件处理</a>的各种问题。以下是每种数据类型的简短描述，并带有更广泛的概述和命令引用的链接。每个概述都包含一个包含代码示例的综合教程</p>
+<h2 id="_2">字符串数据类型</h2>
+<p>Redis⽀持五种数据类型：String（字符串），Hash（哈希），List（列表），Set（集合）及Zset(sorted set：有序集合)。</p>
+<p>1.2<strong>、字符串简介</strong></p>
+<p>字符串类型是redis最基础的数据结构，⾸先键是字符串类型，⽽且其他⼏种结构都是在字符串类型基础上构建</p>
+<p>的，所以字符串类型为其他四种数据结构尊定了基础。</p>
+<p>字符串类型实际上可以是简单的字符串、复杂的字符串（xml、json）、数字（整数、浮点数）、⼆进制（图⽚、</p>
+<p>⾳频、视频）。</p>
+<p>1.3<strong>、字符串应⽤场景</strong></p>
+<p><strong>共享</strong>session<strong>：</strong></p>
+<p>⽤户登录后，⽤户刷新⼀次可能会重复登录，这个时候我们就将⽤户session集中管理，在这种模式下每次获取和</p>
+<p>更新⽤户信息都可以从redis中获取。</p>
+<p><strong>限速：</strong></p>
+<p>当我们在登录时，⽤来限制为我⼿机接到验证码的时间，防⽌我们的短信接⼝不被频繁访问，会限制⽤户每分钟获</p>
+<p>取验证码的频率。</p>
+<p><strong>⼆、字符串命令</strong></p>
+<ul>
+<li><code>SET</code>存储一个字符串值。</li>
+<li>MSET  存储多个字符串key和value</li>
+<li><code>SETNX</code>仅在密钥尚未存在的情况下存储字符串值。对实施锁很有用。</li>
+<li><code>GET</code>检索字符串值。</li>
+<li><code>MGET</code>在一次操作中检索多个字符串值</li>
+</ul>
+<p>三、 语法：</p>
+<div class="highlight"><pre><span></span><code><span class="nb">set</span><span class="w"> </span>key<span class="w"> </span>value<span class="w"> </span><span class="o">[</span>EX<span class="w"> </span>seconds<span class="o">]</span><span class="w"> </span><span class="o">[</span>PX<span class="w"> </span>milliseconds<span class="o">]</span><span class="w"> </span><span class="o">[</span>NX<span class="p">|</span>XX<span class="o">]</span>
+将字符串值<span class="w"> </span>value<span class="w"> </span>关联到<span class="w"> </span>key
+</code></pre></div>
+<p><strong>注意：</strong></p>
+<ul>
+<li>EX:设置键的过期时间为 second 秒</li>
+<li>PX:设置键的过期时间为 millisecond 毫秒</li>
+<li>NX:只在键不存在时，才对键进⾏设置操作。</li>
+<li>XX:只在键已经存在时，才对键进⾏设置操作。</li>
+</ul>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="s2">&quot;183001002516&quot;</span><span class="w"> </span><span class="m">123</span><span class="w">  </span>EX<span class="w"> </span><span class="m">30</span>
+OK
+
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span>KEYS<span class="w">  </span>*<span class="w"> </span>
+<span class="m">183001002516</span>
+<span class="c1"># 设置key的值：过期时间为30秒 如何值key的值不存在则不设置否则设置</span>
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="s2">&quot;18301002516&quot;</span><span class="w"> </span><span class="m">456</span><span class="w">  </span>Ex<span class="w">  </span><span class="m">30</span><span class="w">  </span>NX<span class="w">  </span>
+OK
+
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="s2">&quot;18301002516&quot;</span><span class="w"> </span><span class="m">789</span><span class="w">  </span>Ex<span class="w">  </span><span class="m">30</span><span class="w">  </span>NX<span class="w">    </span>返回为空；则表示key的值还存在
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span>get<span class="w"> </span><span class="m">18301002516</span>
+<span class="m">456</span>
+
+
+<span class="m">192</span>.168.137.111:6379<span class="o">[</span><span class="m">4</span><span class="o">]</span>&gt;<span class="w"> </span>setex<span class="w">  </span><span class="s2">&quot;18301002516&quot;</span><span class="w"> </span><span class="m">789</span><span class="w">    </span><span class="m">30</span><span class="w">  </span>NX<span class="w"> </span>
+</code></pre></div>
+<p><strong>注意：</strong></p>
+<p>因为 SET 命令可以通过参数来实现和 SETNX 、 SETEX 和 PSETEX 三个命令的效果:</p>
+<ul>
+<li>SETNX:若给定的 key 已经存在，则 SETNX 不做任何动作</li>
+<li>SETEX:如果 key 已经存在， SETEX 命令将覆写旧值。</li>
+<li>PSETEX:这个命令和 SETEX 命令相似，但它以毫秒为单位设置 key 的⽣存时间，⽽不是像 SETEX 命令那样，以秒为单位。</li>
+</ul>
+<h2 id="_3">整数类型 &amp; 浮点数类型  &amp; 字符串类型</h2>
+<blockquote>
+<p>在redis 中默认类型string 数据类型，那么如何判断是字符类型数字类型呢？</p>
+<p>在redis中根据value 值；判断是什么数据类型</p>
+</blockquote>
+<h3 id="_4">整数类型</h3>
+<ul>
+<li>INCR</li>
+</ul>
+<p>将存储在<code>key</code>上的数字增加一。如果密钥不存在，则在执行操作之前将其设置为<code>0</code>。如果密钥包含错误类型的值或包含无法表示为整数的字符串，则返回错误。此操作仅限于64位有符号整数。</p>
+<p>注意：这是一个字符串操作，因为Redis没有专用的整数类型。存储在键上的字符串被解释为基数-10 64位有符号整数来执行操作。</p>
+<p>Redis在其整数表示中存储整数，因此对于实际包含整数的字符串值，存储整数的字符串表示没有开销。</p>
+<p>语法：<code>INCRBY  key</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>get<span class="w"> </span>id2
+<span class="m">1</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>INCR<span class="w">  </span>id2
+<span class="m">2</span>
+<span class="m">192</span>.168.137.111:6379&gt;<span class="w"> </span>INCR<span class="w">  </span>id2
+<span class="m">3</span>
+</code></pre></div>
+<h3 id="_5">浮点数类型</h3>
+<h2 id="list">列表list</h2>
+<h2 id="_6">数据持久化</h2>
+<p>https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/</p>
+<p>Redis 如何将数据写入磁盘持久性是指将数据写入持久存储，例如固态磁盘 （SSD）。Redis 提供了一系列持久化选项。这些包括：</p>
+<ul>
+<li><strong>RDB</strong> (Redis Database): RDB persistence performs point-in-time snapshots of your dataset at specified intervals.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>**RDB**（Redis<span class="w"> </span>数据库）：RDB<span class="w"> </span>持久化按指定的时间间隔对数据集执行时间点快照。
+</code></pre></div>
+<ul>
+<li><strong>AOF</strong> (Append Only File): AOF persistence logs every write operation received by the server. These operations can then be replayed again at server startup, reconstructing the original dataset. Commands are logged using the same format as the Redis protocol itself.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>**AOF**（仅追加文件）：AOF 持久性记录服务器收到的每个写入作。然后可以在服务器启动时再次重放这些作，从而重建原始数据集。使用与 Redis 协议本身相同的格式记录命令。
+</code></pre></div>
+<ul>
+<li><strong>No persistence</strong>: You can disable persistence completely. This is sometimes used when caching.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>**无持久性** ：您可以完全禁用持久性。有时在缓存时使用这。
+</code></pre></div>
+<ul>
+<li><strong>RDB + AOF</strong>: You can also combine both AOF and RDB in the same instance.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>**RDB<span class="w"> </span>+<span class="w"> </span>AOF**：您还可以在同一实例中组合<span class="w"> </span>AOF<span class="w"> </span>和<span class="w"> </span>RDB。
+</code></pre></div>
+<p>配置RDB自动持久化</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#快照的管理</span>
+<span class="c1">################################ SNAPSHOTTING   ################################</span>
+<span class="c1">#根据规则实现自动`bgsave`</span>
+save<span class="w">  </span><span class="m">3600</span><span class="w"> </span><span class="m">1</span><span class="w">     </span><span class="c1">#当 3600s 内如果有 1次 Redis 键值发生改变，就会触发持久化；</span>
+save<span class="w">  </span><span class="m">300</span><span class="w">  </span><span class="m">100</span><span class="w">   </span><span class="c1">#当 300s 内如果有 100次 Redis 键值发生改变，就会触发持久化；</span>
+save<span class="w">  </span><span class="m">60</span><span class="w">   </span><span class="m">1000</span><span class="w">  </span><span class="c1">#当 60 内如果有 1000次 Redis 键值发生改变，就会触发持久化；</span>
+<span class="c1">#最近一次后台保存操作失败，Redis 将停止接受写入请求。</span>
+stop-writes-on-bgsave-error<span class="w"> </span>yes
+<span class="c1">#是否开启数据的压缩 默认是开启的状态；基于LZF的压缩算法</span>
+rdbcompression<span class="w"> </span>yes
+<span class="c1">#是否在文件中增加校验值</span>
+rdbchecksum<span class="w"> </span>yes
+<span class="c1">#定义备份的文件名称；.rdb</span>
+dbfilename<span class="w"> </span>dump.rdb
+
+<span class="c1">#定义文件存放的目录</span>
+dir<span class="w"> </span>./
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ll /usr/local/redis/redis-stable/dump.rdb </span>
+-rw-r--r--.<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">210</span><span class="w"> </span>9月<span class="w">   </span><span class="m">1</span><span class="w"> </span><span class="m">22</span>:27<span class="w"> </span>/usr/local/redis/redis-stable/dump.rdb
+</code></pre></div>
+<blockquote>
+<p>查看/比较文件的时间戳</p>
+</blockquote>
+<h3 id="_7">在线设置/查询</h3>
+<p>获取配置文件的信息</p>
+<div class="highlight"><pre><span></span><code>config<span class="w"> </span>get<span class="w"> </span>xxx
+</code></pre></div>
+<h3 id="aof">AOF持久化</h3>
+<p>配置文件</p>
+<div class="highlight"><pre><span></span><code><span class="c1">############################## APPEND ONLY MODE ###############################</span>
+
+appendfilename<span class="w"> </span><span class="s2">&quot;appendonly.aof&quot;</span><span class="w">  </span><span class="c1">#定义文件的名称</span>
+appenddirname<span class="w"> </span><span class="s2">&quot;appendonlydir&quot;</span><span class="w">    </span><span class="c1">#定义aof管理目录</span>
+<span class="c1">#缓冲区同步策略</span>
+<span class="c1"># appendfsync always</span>
+appendfsync<span class="w"> </span>everysec
+<span class="c1"># appendfsync no</span>
+<span class="c1">#是否重写，默认不重写</span>
+no-appendfsync-on-rewrite<span class="w"> </span>no<span class="w">   </span>
+
+<span class="c1">#重写规则</span>
+auto-aof-rewrite-percentage<span class="w"> </span><span class="m">100</span><span class="w">  </span><span class="c1">#AOF 自动重写的 “增长率阈值”。</span>
+auto-aof-rewrite-min-size<span class="w"> </span>64mb<span class="w">   </span><span class="c1"># AOF 自动重写的 “最小文件大小阈值”。</span>
+aof-load-truncated<span class="w"> </span>yes<span class="w"> </span><span class="c1">#当 AOF 文件尾部被截断（不完整）时，是否允许 Redis 加载该文件？</span>
+默认值为<span class="w"> </span>yes（允许）。
+
+aof-use-rdb-preamble<span class="w"> </span>yes
+&gt;<span class="w"> </span>Redis<span class="w"> </span>可以用<span class="w"> </span>RDB<span class="w"> </span>或<span class="w"> </span>AOF<span class="w"> </span>格式创建<span class="w"> </span>AOF<span class="w"> </span>的<span class="w"> </span>“基础文件”。使用<span class="w"> </span>RDB<span class="w"> </span>格式始终更快、更高效，禁用此选项仅为兼容旧版本
+
+aof-timestamp-enabled<span class="w"> </span>no
+&gt;<span class="w"> </span>Redis<span class="w"> </span>支持在<span class="w"> </span>AOF<span class="w"> </span>中记录时间戳注解，以实现<span class="w"> </span>“从特定时间点恢复数据”<span class="w"> </span>的功能。但启用此功能会改变<span class="w"> </span>AOF<span class="w"> </span>格式，可能与现有<span class="w"> </span>AOF<span class="w"> </span>解析工具不兼容。<span class="w"> </span>默认值为<span class="w"> </span>no（禁用）
+</code></pre></div>
+<blockquote>
+<p>缓冲区同步策略:</p>
+<blockquote>
+<p>always：客户端的每一个写操作都保存到aof文件当中，这种策略很安全，但是每个写都会有IO操作，所以也很慢。</p>
+<p>everysec:</p>
+</blockquote>
+</blockquote>
+<p>重启redis 服务：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>redis-stable<span class="o">]</span><span class="c1"># pkill  redis</span>
+<span class="o">[</span>root@redis-server<span class="w"> </span>redis-stable<span class="o">]</span><span class="c1"># redis-server   redis.conf </span>
+</code></pre></div>
+<p>检查当前目录下是否<code>appendonlydir</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>redis-stable<span class="o">]</span><span class="c1"># ll</span>
+总用量<span class="w"> </span><span class="nv">436</span>
+<span class="o">=====</span>
+drwxr-xr-x.<span class="w">  </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">    </span><span class="m">103</span><span class="w"> </span>9月<span class="w">   </span><span class="m">1</span><span class="w"> </span><span class="m">23</span>:55<span class="w"> </span>appendonlydir
+</code></pre></div>
+<p>查看<code>appendonlydir</code>目录下文件</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>appendonlydir<span class="o">]</span><span class="c1"># ls</span>
+appendonly.aof.1.base.rdb<span class="w">  </span>appendonly.aof.1.incr.aof<span class="w">  </span>appendonly.aof.manifest
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>类型</th>
+<th>核心作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>appendonly.aof.1.base.rdb</code></td>
+<td>RDB 格式</td>
+<td>AOF 重写时生成的<strong>基础数据快照</strong>，以 RDB 格式存储内存中所有数据的 “最终状态”</td>
+</tr>
+<tr>
+<td><code>appendonly.aof.1.incr.aof</code></td>
+<td>AOF 格式</td>
+<td>AOF 重写期间产生的<strong>增量写命令</strong>，记录重写过程中新增的写操作（避免数据丢失）</td>
+</tr>
+<tr>
+<td><code>appendonly.aof.manifest</code></td>
+<td>文本格式</td>
+<td>AOF 混合文件的 <strong>“清单文件”</strong>，记录基础文件、增量文件的元信息，用于 Redis 加载时识别</td>
+</tr>
+</tbody>
+</table>
+<p>测试：<code>写入数据</code></p>
+<div class="highlight"><pre><span></span><code><span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>KEYS<span class="w"> </span>*<span class="w"> </span>
+<span class="o">(</span>empty<span class="w"> </span>array<span class="o">)</span>
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span><span class="nb">set</span><span class="w">  </span>a<span class="w"> </span><span class="m">1</span><span class="w">  </span>
+OK
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span><span class="nb">set</span><span class="w">  </span>b<span class="w"> </span><span class="m">1</span><span class="w"> </span>
+OK
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>b2<span class="w"> </span><span class="m">2</span><span class="w"> </span>
+OK
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>mset<span class="w">  </span>a8<span class="w"> </span><span class="m">8</span><span class="w"> </span>a9<span class="w"> </span><span class="m">9</span><span class="w"> </span>a10<span class="w"> </span><span class="m">10</span>
+OK
+<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>mset<span class="w">  </span>b1<span class="w"> </span><span class="m">1</span><span class="w"> </span>b2<span class="w"> </span><span class="m">2</span><span class="w"> </span>b3<span class="w"> </span><span class="m">3</span><span class="w"> </span>b4<span class="w"> </span><span class="m">4</span><span class="w"> </span>b5<span class="w"> </span><span class="m">5</span><span class="w"> </span>b6<span class="w"> </span><span class="m">6</span><span class="w"> </span>b7<span class="w"> </span><span class="m">7</span><span class="w"> </span>b8<span class="w"> </span><span class="m">8</span><span class="w"> </span>b9<span class="w"> </span><span class="m">9</span><span class="w"> </span>b10<span class="w"> </span><span class="m">10</span><span class="w"> </span>b11<span class="w"> </span><span class="m">11</span>
+</code></pre></div>
+<p>观察日志文件</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>appendonlydir<span class="o">]</span><span class="c1"># cat appendonly.aof.1.incr.aof </span>
+*2
+<span class="nv">$6</span>
+SELECT
+<span class="nv">$1</span>
+<span class="m">0</span>
+*3
+<span class="nv">$3</span>
+<span class="nb">set</span>
+<span class="nv">$1</span>
+a
+</code></pre></div>
+<p>验证：<code>重启redis 观察日志是否加载RDB和AOF日志文件</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@redis-server<span class="w"> </span>redis-stable<span class="o">]</span><span class="c1"># redis-server  redis.conf</span>
+..........
+.........
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.351<span class="w"> </span><span class="c1"># WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</span>
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.351<span class="w"> </span>*<span class="w"> </span>Server<span class="w"> </span>initialized
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.351<span class="w"> </span>*<span class="w"> </span>Reading<span class="w"> </span>RDB<span class="w"> </span>base<span class="w"> </span>file<span class="w"> </span>on<span class="w"> </span>AOF<span class="w"> </span>loading...
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>Loading<span class="w"> </span>RDB<span class="w"> </span>produced<span class="w"> </span>by<span class="w"> </span>version<span class="w"> </span><span class="m">8</span>.2.1
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>RDB<span class="w"> </span>age<span class="w"> </span><span class="m">664</span><span class="w"> </span>seconds
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>RDB<span class="w"> </span>memory<span class="w"> </span>usage<span class="w"> </span>when<span class="w"> </span>created<span class="w"> </span><span class="m">0</span>.60<span class="w"> </span>Mb
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>RDB<span class="w"> </span>is<span class="w"> </span>base<span class="w"> </span>AOF
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>Done<span class="w"> </span>loading<span class="w"> </span>RDB,<span class="w"> </span>keys<span class="w"> </span>loaded:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>keys<span class="w"> </span>expired:<span class="w"> </span><span class="m">0</span>.
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>loaded<span class="w"> </span>from<span class="w"> </span>base<span class="w"> </span>file<span class="w"> </span>appendonly.aof.1.base.rdb:<span class="w"> </span><span class="m">0</span>.001<span class="w"> </span>seconds
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>loaded<span class="w"> </span>from<span class="w"> </span>incr<span class="w"> </span>file<span class="w"> </span>appendonly.aof.1.incr.aof:<span class="w"> </span><span class="m">0</span>.000<span class="w"> </span>seconds
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>loaded<span class="w"> </span>from<span class="w"> </span>append<span class="w"> </span>only<span class="w"> </span>file:<span class="w"> </span><span class="m">0</span>.001<span class="w"> </span>seconds
+<span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.353<span class="w"> </span>*<span class="w"> </span>Opening<span class="w"> </span>AOF<span class="w"> </span>incr<span class="w"> </span>file<span class="w"> </span>appendonly.aof.1.incr.aof<span class="w"> </span>on<span class="w"> </span>server<span class="w"> </span>start
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

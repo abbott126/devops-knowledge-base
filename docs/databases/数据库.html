@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库概述 - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-数据库"># 数据库</a></li><li class="toc-l2"><a href="#-mysql-概述及历史">## Mysql  概述及历史</a></li><li class="toc-l2"><a href="#-mysql-架构">## mysql  架构</a></li><li class="toc-l2"><a href="#-部署mysql数据库">## 部署mysql数据库</a></li><li class="toc-l3"><a href="#-基于管理yum源">### 基于管理YUM源</a></li><li class="toc-l1"><a href="#-列出一起用mysql的版本"># 列出一起用mysql的版本</a></li><li class="toc-l1"><a href="#-查看所有的支持版本"># 查看所有的支持版本</a></li><li class="toc-l1"><a href="#关闭8.4-版本">#关闭8.4 版本</a></li><li class="toc-l1"><a href="#开启8.0版本">#开启8.0版本</a></li><li class="toc-l1"><a href="#查看是否8.0的社区版本是否开启">#查看是否8.0的社区版本是否开启</a></li><li class="toc-l1"><a href="#更新密码">#更新密码</a></li><li class="toc-l3"><a href="#-结束">### 结束</a></li><li class="toc-l2"><a href="#-关于mysql主配置文件">## 关于mysql主配置文件</a></li><li class="toc-l1"><a href="#定义数据存储目录">#定义数据存储目录</a></li><li class="toc-l1"><a href="#网络套接字文件">#网络套接字文件</a></li><li class="toc-l2"><a href="#-mysql-客户端工具">## mysql 客户端工具</a></li><li class="toc-l2"><a href="#-sql-语言">## SQL  语言</a></li><li class="toc-l3"><a href="#-一sql-的核心定位与特点">### 一、SQL 的核心定位与特点</a></li><li class="toc-l3"><a href="#-二sql-的四大核心分类">### 二、SQL 的四大核心分类</a></li><li class="toc-l3"><a href="#-三sql-基础语法">### 三、SQL 基础语法</a></li><li class="toc-l4"><a href="#-库的操作">#### 库的操作</a></li><li class="toc-l1"><a href="#创建库命令的详细信息">#创建库命令的详细信息</a></li><li class="toc-l4"><a href="#-表的操作">#### 表的操作</a></li><li class="toc-l1"><a href="#修改表中的数据类型">#修改表中的数据类型</a></li><li class="toc-l1"><a href="#验证">#验证</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">数据库</h1>
+<p>关系型数据库</p>
+<blockquote>
+<p>Mariadb  mysql 、PostgreSQL </p>
+<p>达梦、OceanBase、金仓数据库、TIDB  </p>
+</blockquote>
+<p>非关系型数据库</p>
+<blockquote>
+<p>Redis  Es     mangodb </p>
+</blockquote>
+<h2 id="mysql">Mysql  概述及历史</h2>
+<h2 id="mysql_1">mysql  架构</h2>
+<p>!image-20250821105132701](/images/image-20250821105132701.png)</p>
+<h2 id="mysql_2">部署mysql数据库</h2>
+<ul>
+<li>基于管理YUM源</li>
+<li>基于预编译二进制</li>
+<li>基于源码</li>
+</ul>
+<h3 id="yum">基于管理YUM源</h3>
+<blockquote>
+<p>7系列版本；默认支持的是mariadb </p>
+<p>8+版本： 默认也支持mysql </p>
+</blockquote>
+<p>学习环境： 7 </p>
+<ol>
+<li>安装官方YUM源</li>
+</ol>
+<blockquote>
+<p>https://dev.mysql.com/doc/refman/8.4/en/linux-installation-yum-repo.html</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w">  </span>mysql84-community-release-el7-2.noarch.rpm
+
+yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w">  </span>https://dev.mysql.com/get/mysql84-community-release-el7-2.noarch.rpm
+</code></pre></div>
+<ol>
+<li>开启8.0版本</li>
+</ol>
+<blockquote>
+<p>默认是8.4版本</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># 列出一起用mysql的版本</span>
+yum<span class="w"> </span>repolist<span class="w"> </span>enabled<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mysql.*-community
+<span class="c1"># 查看所有的支持版本</span>
+yum<span class="w"> </span>repolist<span class="w"> </span>all<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mysql
+
+<span class="c1">#关闭8.4 版本</span>
+yum-config-manager<span class="w"> </span>--disable<span class="w"> </span>mysql-8.4-lts-community
+<span class="c1">#开启8.0版本</span>
+yum-config-manager<span class="w"> </span>--enable<span class="w">  </span>mysql80-community
+
+<span class="c1">#查看是否8.0的社区版本是否开启</span>
+yum<span class="w"> </span>repolist<span class="w"> </span>enabled<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mysql.*-community
+</code></pre></div>
+<ol>
+<li>安装mysql </li>
+</ol>
+<blockquote>
+<p>如果使用操作系统8以上的版本需要关闭默认系统自带mysql模块<code>yum module disable mysql</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>mysql-community-server<span class="w"> </span>-y
+</code></pre></div>
+<ol>
+<li>启动数据库</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl  enable  --now  mysqld</span>
+</code></pre></div>
+<ol>
+<li>获取到临时密码 <code>/var/log/mysqld.log</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># grep  &#39;password&#39; /var/log/mysqld.log </span>
+<span class="m">2025</span>-08-16T20:35:22.251585Z<span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="o">[</span>Note<span class="o">]</span><span class="w"> </span><span class="o">[</span>MY-010454<span class="o">]</span><span class="w"> </span><span class="o">[</span>Server<span class="o">]</span><span class="w"> </span>A<span class="w"> </span>temporary<span class="w"> </span>password<span class="w"> </span>is<span class="w"> </span>generated<span class="w"> </span><span class="k">for</span><span class="w"> </span>root@localhost:<span class="w"> </span>t,6fL9Wm<span class="o">)</span>_V<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>登陆数据库更新密码</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql  -uroot  -p</span>
+Enter<span class="w"> </span>password:
+
+<span class="c1">#更新密码</span>
+mysql&gt;<span class="w">  </span>alter<span class="w"> </span>user<span class="w">  </span><span class="s1">&#39;root&#39;</span>@<span class="s1">&#39;localhost&#39;</span><span class="w"> </span>identified<span class="w"> </span>by<span class="w"> </span><span class="s1">&#39;Admin@123.&#39;</span>
+</code></pre></div>
+<ol>
+<li>再次登陆</li>
+</ol>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w">  </span>databases<span class="p">;</span>
++--------------------+
+<span class="p">|</span><span class="w"> </span>Database<span class="w">           </span><span class="p">|</span>
++--------------------+
+<span class="p">|</span><span class="w"> </span>information_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql<span class="w">              </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>performance_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>sys<span class="w">                </span><span class="p">|</span>
++--------------------+
+<span class="m">4</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<h3 id="_2">结束</h3>
+<h2 id="mysql_3">关于mysql主配置文件</h2>
+<blockquote>
+<p>/etc/my.cnf</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1">#定义数据存储目录</span>
+<span class="nv">datadir</span><span class="o">=</span>/var/lib/mysql
+<span class="c1">#网络套接字文件</span>
+<span class="nv">socket</span><span class="o">=</span>/var/lib/mysql/mysql.sock
+
+log-error<span class="o">=</span>/var/log/mysqld.log
+pid-file<span class="o">=</span>/var/run/mysqld/mysqld.pid
+</code></pre></div>
+<h2 id="mysql_4">mysql 客户端工具</h2>
+<p>命令行：mysql </p>
+<p>图形： </p>
+<ul>
+<li>web </li>
+<li>应用程序；桌面</li>
+</ul>
+<h2 id="sql">SQL  语言</h2>
+<p>SQL（Structured Query Language，结构化查询语言）是用于管理关系型数据库（如 MySQL、Oracle、PostgreSQL）的标准编程语言，核心功能包括<strong>数据查询、插入、更新、删除</strong>，以及数据库结构的创建、修改和权限控制。它是关系型数据库的 “通用接口”，无论是开发、运维还是数据分析，都需掌握其基础语法与逻辑。</p>
+<h3 id="sql_1">一、SQL 的核心定位与特点</h3>
+<ol>
+<li><strong>非过程化语言</strong><br />
+   只需描述 “要做什么”（如 “查询用户表中年龄大于 30 的数据”），无需指定 “怎么做”（如数据遍历顺序、底层存储读取逻辑），底层执行计划由数据库管理系统（DBMS）自动优化。</li>
+<li><strong>通用性强</strong><br />
+   几乎所有关系型数据库（MySQL、Oracle、SQL Server、PostgreSQL 等）都支持 SQL，语法规则高度统一（核心语法无差异），仅在高级功能（如存储过程、函数）上存在少量 “方言”（如 MySQL 的<code>LIMIT</code>、Oracle 的<code>ROWNUM</code>）。</li>
+<li><strong>功能全面</strong><br />
+   覆盖数据库全生命周期操作：从数据读写（DQL/DML）、结构定义（DDL），到事务控制（TCL）、权限管理（DCL），一站式满足关系型数据库的管理需求。</li>
+<li><strong>面向集合操作</strong><br />
+   SQL 的操作对象和结果都是 “数据集合”（如一张表、一个查询结果集），而非单条数据，例如<code>UPDATE users SET age=age+1 WHERE city='Beijing'</code>可一次性更新符合条件的所有记录。</li>
+</ol>
+<h3 id="sql_2">二、SQL 的四大核心分类</h3>
+<p>根据功能不同，SQL 可分为四大类，每类对应特定的数据库操作场景：</p>
+<table>
+<thead>
+<tr>
+<th>分类简称</th>
+<th>全称</th>
+<th>核心作用</th>
+<th>常用命令示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DQL</strong></td>
+<td>Data Query Language</td>
+<td>数据查询（从数据库中获取数据）</td>
+<td><code>SELECT</code></td>
+</tr>
+<tr>
+<td><strong>DML</strong></td>
+<td>Data Manipulation Language</td>
+<td>数据操纵（插入、更新、删除数据）</td>
+<td><code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>DDL</strong></td>
+<td>Data Definition Language</td>
+<td>数据定义（创建 / 修改 / 删除数据库对象）</td>
+<td><code>CREATE</code>、<code>ALTER</code>、<code>DROP</code></td>
+</tr>
+<tr>
+<td><strong>DCL</strong></td>
+<td>Data Control Language</td>
+<td>数据控制（权限管理、事务控制）</td>
+<td><code>GRANT</code>、<code>REVOKE</code>、<code>COMMIT</code></td>
+</tr>
+</tbody>
+</table>
+<p>此外，还有<strong>TCL（Transaction Control Language，事务控制语言）</strong> ，常被归为 DCL 的子集，核心命令为<code>COMMIT</code>（提交事务）、<code>ROLLBACK</code>（回滚事务）、<code>SAVEPOINT</code>（设置事务保存点）。</p>
+<h3 id="sql_3">三、SQL 基础语法</h3>
+<blockquote>
+<p>增、删、改、查</p>
+</blockquote>
+<p>关键字大写不是强制性；</p>
+<p>获取command帮助</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>?<span class="w"> </span>create<span class="p">;</span>
+</code></pre></div>
+<h4 id="_3">库的操作</h4>
+<ol>
+<li>创库</li>
+</ol>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>CREATE<span class="w"> </span>DATABASE<span class="w"> </span>test<span class="p">;</span>
+</code></pre></div>
+<ol>
+<li>查询库</li>
+</ol>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w"> </span>databases<span class="p">;</span>
++--------------------+
+<span class="p">|</span><span class="w"> </span>Database<span class="w">           </span><span class="p">|</span>
++--------------------+
+<span class="p">|</span><span class="w"> </span>information_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql<span class="w">              </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>performance_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>sys<span class="w">                </span><span class="p">|</span>
++--------------------+
+<span class="m">4</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+<span class="c1">#创建库命令的详细信息</span>
+mysql&gt;<span class="w"> </span>show<span class="w">  </span>create<span class="w">  </span>database<span class="w"> </span>test<span class="p">;</span>
++----------+--------------------------------------------------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>Database<span class="w"> </span><span class="p">|</span><span class="w"> </span>Create<span class="w"> </span>Database<span class="w">                                                                                                                </span><span class="p">|</span>
++----------+--------------------------------------------------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span><span class="nb">test</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>CREATE<span class="w"> </span>DATABASE<span class="w"> </span><span class="sb">`</span><span class="nb">test</span><span class="sb">`</span><span class="w"> </span>/*!40100<span class="w"> </span>DEFAULT<span class="w"> </span>CHARACTER<span class="w"> </span>SET<span class="w"> </span>utf8mb4<span class="w"> </span>COLLATE<span class="w"> </span>utf8mb4_0900_ai_ci<span class="w"> </span>*/<span class="w"> </span>/*!80016<span class="w"> </span>DEFAULT<span class="w"> </span><span class="nv">ENCRYPTION</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="w"> </span>*/<span class="w"> </span><span class="p">|</span>
++----------+--------------------------------------------------------------------------------------------------------------------------------+
+<span class="m">1</span><span class="w"> </span>row<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>删库</li>
+</ol>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>drop<span class="w">  </span>database<span class="w"> </span>test<span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>使用库</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">use</span><span class="w">  </span><span class="n">test</span><span class="p">;</span>
+<span class="k">Database</span><span class="w"> </span><span class="k">changed</span>
+</code></pre></div>
+<ol>
+<li></li>
+</ol>
+<h4 id="_4">表的操作</h4>
+<ol>
+<li>查看表</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">use</span><span class="w">  </span><span class="n">test</span><span class="p">;</span>
+<span class="k">Database</span><span class="w"> </span><span class="k">changed</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w">  </span><span class="k">tables</span><span class="p">;</span>
+<span class="k">Empty</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>创建表</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="n">id</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>查看创建表<code>command</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">table</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="o">+-------+---------------------------------------------------------------------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="k">Table</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Create</span><span class="w"> </span><span class="k">Table</span><span class="w">                                                                                                  </span><span class="o">|</span>
+<span class="o">+-------+---------------------------------------------------------------------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">a</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n n-Quoted">`a`</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n n-Quoted">`id`</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span>
+<span class="p">)</span><span class="w"> </span><span class="k">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span><span class="w"> </span><span class="k">COLLATE</span><span class="o">=</span><span class="n">utf8mb4_0900_ai_ci</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-------+---------------------------------------------------------------------------------------------------------------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.06</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>描述表结构</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">desc</span><span class="w">  </span><span class="n">a</span><span class="p">;</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Field</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="no">Null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Key</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Default</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">DESCRIBE</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Field</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="no">Null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Key</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Default</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+-------+------+------+-----+---------+-------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>检索表中的数据</li>
+</ol>
+<p>语法： <code>select  [字段 * ] from  tb;</code></p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>*<span class="w">  </span>from<span class="w"> </span>a<span class="p">;</span>
+Empty<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>*<span class="w">  </span>from<span class="w"> </span>mysql.user<span class="w"> </span><span class="se">\G</span><span class="p">;</span>
+***************************<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>row<span class="w"> </span>***************************
+<span class="w">                    </span>Host:<span class="w"> </span>localhost
+<span class="w">                    </span>User:<span class="w"> </span>mysql.infoschema
+
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>Host<span class="w">  </span>from<span class="w">  </span>mysql.user<span class="p">;</span>
++-----------+
+<span class="p">|</span><span class="w"> </span>Host<span class="w">      </span><span class="p">|</span>
++-----------+
+<span class="p">|</span><span class="w"> </span>localhost<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>localhost<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>localhost<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>localhost<span class="w"> </span><span class="p">|</span>
++-----------+
+<span class="m">4</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+
+
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>*<span class="w">  </span>from<span class="w">  </span>mysql.user<span class="w"> </span>where<span class="w"> </span><span class="nv">User</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="w"> </span><span class="se">\G</span><span class="p">;</span>
+***************************<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>row<span class="w"> </span>***************************
+<span class="w">                    </span>Host:<span class="w"> </span>localhost
+</code></pre></div>
+<ol>
+<li>插入数据</li>
+</ol>
+<p>命令：<code>insert</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w">  </span><span class="n">test</span><span class="p">.</span><span class="n">a</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">test</span><span class="p">.</span><span class="n">a</span><span class="p">;</span>
+<span class="o">+------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">   </span><span class="o">|</span>
+<span class="o">+------+</span>
+<span class="o">|</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>删表</li>
+</ol>
+<p>命令： <code>drop table tb_name;</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">drop</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">test</span><span class="p">.</span><span class="n">a</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>修改表结构</li>
+</ol>
+<blockquote>
+<p>命令：<code>ALTER TABLE</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">table</span><span class="w">   </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="w"> </span><span class="k">add</span><span class="w"> </span><span class="n">学号</span><span class="w"> </span><span class="kt">int</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+
+<span class="c1">#修改表中的数据类型</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w">  </span><span class="k">table</span><span class="w">  </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="w"> </span><span class="k">modify</span><span class="w">  </span><span class="k">name</span><span class="w"> </span><span class="kt">char</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.02</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="n">Records</span><span class="o">:</span><span class="w"> </span><span class="mi">7</span><span class="w">  </span><span class="n">Duplicates</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="w">  </span><span class="k">Warnings</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="c1">#验证</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">desc</span><span class="w"> </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="p">;</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Field</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">Null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Key</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Default</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="k">name</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="kt">char</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">age</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">sex</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">char</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">学号</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="mi">5</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li>更新表中数据</li>
+</ol>
+<p>命令：<code>update tb_name set</code></p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>update<span class="w">  </span>test.student<span class="w"> </span><span class="nb">set</span><span class="w">  </span><span class="nv">age</span><span class="o">=</span><span class="m">19</span><span class="w"> </span>where<span class="w"> </span><span class="nv">id</span><span class="o">=</span><span class="m">6</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">1</span><span class="w"> </span>row<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+<span class="c1">#多条件</span>
+mysql&gt;<span class="w"> </span>update<span class="w">  </span>test.student<span class="w">  </span><span class="nb">set</span><span class="w"> </span><span class="nv">学号</span><span class="o">=</span><span class="m">120</span><span class="w"> </span>where<span class="w">  </span><span class="nv">age</span><span class="o">=</span><span class="m">18</span><span class="w"> </span>and<span class="w"> </span><span class="nv">id</span><span class="o">=</span><span class="m">3</span><span class="p">;</span>
+</code></pre></div>
+<ol>
+<li>
+<p>删除表中的数据</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>delete<span class="w">  </span>from<span class="w">  </span>test.student<span class="w">  </span>where<span class="w"> </span><span class="nv">id</span><span class="o">=</span><span class="m">2</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">8</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>*<span class="w"> </span>from<span class="w">  </span>test.student<span class="p">;</span>
++------+--------+------+------+--------+
+<span class="p">|</span><span class="w"> </span>id<span class="w">   </span><span class="p">|</span><span class="w"> </span>name<span class="w">   </span><span class="p">|</span><span class="w"> </span>age<span class="w">  </span><span class="p">|</span><span class="w"> </span>sex<span class="w">  </span><span class="p">|</span><span class="w"> </span>学号<span class="w">   </span><span class="p">|</span>
++------+--------+------+------+--------+
+<span class="p">|</span><span class="w">    </span><span class="m">3</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>张三<span class="w">   </span><span class="p">|</span><span class="w">   </span><span class="m">18</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>男<span class="w">   </span><span class="p">|</span><span class="w">    </span><span class="m">120</span><span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">    </span><span class="m">4</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>张三<span class="w">   </span><span class="p">|</span><span class="w">   </span><span class="m">18</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>男<span class="w">   </span><span class="p">|</span><span class="w">   </span>NULL<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">    </span><span class="m">5</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>张三<span class="w">   </span><span class="p">|</span><span class="w">   </span><span class="m">18</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>男<span class="w">   </span><span class="p">|</span><span class="w">   </span>NULL<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">    </span><span class="m">6</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>张三<span class="w">   </span><span class="p">|</span><span class="w">   </span><span class="m">19</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>男<span class="w">   </span><span class="p">|</span><span class="w">    </span><span class="m">110</span><span class="w"> </span><span class="p">|</span>
++------+--------+------+------+--------+
+<span class="m">4</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+</li>
+</ol>
+<p>Example: <code>创建一张学生表</code></p>
+<table>
+<thead>
+<tr>
+<th>id   int</th>
+<th>Name  char(50)</th>
+<th>Age int</th>
+<th>Sex  char(2)</th>
+<th>学号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w">  </span><span class="k">into</span><span class="w">  </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="k">name</span><span class="p">,</span><span class="n">age</span><span class="p">,</span><span class="n">sex</span><span class="p">)</span><span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;张三&#39;</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="s1">&#39;男&#39;</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="p">;</span>
+<span class="o">+------+--------+------+------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">name</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">age</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">sex</span><span class="w">  </span><span class="o">|</span>
+<span class="o">+------+--------+------+------+</span>
+<span class="o">|</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">张三</span><span class="w">   </span><span class="o">|</span><span class="w">   </span><span class="mi">18</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">男</span><span class="w">   </span><span class="o">|</span>
+<span class="o">+------+--------+------+------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">table</span><span class="w">   </span><span class="n">test</span><span class="p">.</span><span class="n">student</span><span class="w"> </span><span class="k">add</span><span class="w"> </span><span class="n">学号</span><span class="w"> </span><span class="kt">int</span><span class="p">;</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">desc</span><span class="w"> </span><span class="n">test</span><span class="p">.</span><span class="n">student</span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">;</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Field</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">Null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Key</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Default</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="k">name</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="kt">char</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">age</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">sex</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">char</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">学号</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">YES</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+--------+----------+------+-----+---------+-------+</span>
+<span class="mi">5</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="_5">数据类型</h2>
+<ul>
+<li>数字类型（numberic）</li>
+<li>字符串类型(string)</li>
+<li>文本数据类型</li>
+<li>Json 数据类型</li>
+<li>时间日期</li>
+</ul>
+<h3 id="_6">数字类型</h3>
+<p><a href="https://dev.mysql.com/doc/refman/8.4/en/numeric-type-syntax.html">数字类型</a></p>
+<ul>
+<li>整数类型（int）</li>
+</ul>
+<blockquote>
+<p>每种类型可以存放数据长度（宽度）</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Type 类型</th>
+<th style="text-align: left;">Storage (Bytes) 存储（字节）</th>
+<th style="text-align: left;">Minimum Value Signed 最小符号值</th>
+<th style="text-align: left;">Minimum Value Unsigned 最小值无符号</th>
+<th style="text-align: left;">Maximum Value Signed 最大符号值</th>
+<th style="text-align: left;">Maximum Value Unsigned 最大值无符号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>TINYINT</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>-128</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;"><code>127</code></td>
+<td style="text-align: left;"><code>255</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SMALLINT</code></td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;"><code>-32768</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;"><code>32767</code></td>
+<td style="text-align: left;"><code>65535</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MEDIUMINT</code></td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;"><code>-8388608</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;"><code>8388607</code></td>
+<td style="text-align: left;"><code>16777215</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>INT</code></td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;"><code>-2147483648</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;"><code>2147483647</code></td>
+<td style="text-align: left;"><code>4294967295</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>BIGINT</code></td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;"><code>-2**63</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;"><code>2**63-1</code></td>
+<td style="text-align: left;"><code>2**64-1</code></td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>create<span class="w"> </span>database<span class="w">  </span>db<span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">1</span><span class="w"> </span>row<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span>create<span class="w"> </span>table<span class="w">  </span>db.tb<span class="o">(</span>id<span class="w"> </span>int<span class="o">)</span>
+<span class="w">    </span>-&gt;<span class="w"> </span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected,<span class="w"> </span><span class="m">1</span><span class="w"> </span>warning<span class="w"> </span><span class="o">(</span><span class="m">0</span>.02<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span>desc<span class="w">  </span>db.tb<span class="p">;</span>
++-------+------+------+-----+---------+-------+
+<span class="p">|</span><span class="w"> </span>Field<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w"> </span><span class="p">|</span><span class="w"> </span>Null<span class="w"> </span><span class="p">|</span><span class="w"> </span>Key<span class="w"> </span><span class="p">|</span><span class="w"> </span>Default<span class="w"> </span><span class="p">|</span><span class="w"> </span>Extra<span class="w"> </span><span class="p">|</span>
++-------+------+------+-----+---------+-------+
+<span class="p">|</span><span class="w"> </span>id<span class="w">    </span><span class="p">|</span><span class="w"> </span>int<span class="w">  </span><span class="p">|</span><span class="w"> </span>YES<span class="w">  </span><span class="p">|</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>NULL<span class="w">    </span><span class="p">|</span><span class="w">       </span><span class="p">|</span>
++-------+------+------+-----+---------+-------+
+<span class="m">1</span><span class="w"> </span>row<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ul>
+<li>浮点数据库类型（<a href="https://dev.mysql.com/doc/refman/8.4/en/floating-point-types.html"><code>FLOAT</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/floating-point-types.html"><code>DOUBLE</code></a>,）</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>大小</th>
+<th>范围（有符号）</th>
+<th>范围（无符号）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>float</td>
+<td>4 bytes</td>
+<td>(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
+<td>0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
+<td>单精度 浮点数值</td>
+</tr>
+<tr>
+<td>double</td>
+<td>8 bytes</td>
+<td>(-1.797 693 134 862 315 7 E+308，-2.225073858507 2014E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+<td>0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+<td>双精度 浮点数值</td>
+</tr>
+<tr>
+<td>decimal</td>
+<td>对decimal(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
+<td>依赖于M和D的值</td>
+<td>依赖于M和D的值</td>
+<td>小数值</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>坐标点</p>
+<p>银行</p>
+</blockquote>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">tb2</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">float_col</span><span class="w"> </span><span class="kt">FLOAT</span><span class="p">,</span><span class="w">                </span><span class="c1">-- 单精度</span>
+<span class="w">    </span><span class="n">double_col</span><span class="w"> </span><span class="kt">DOUBLE</span><span class="p">,</span><span class="w">              </span><span class="c1">-- 双精度</span>
+<span class="w">    </span><span class="n">float_defined</span><span class="w"> </span><span class="kt">FLOAT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w">     </span><span class="c1">-- 自定义精度的单精度（总位数10，小数位4）</span>
+<span class="w">    </span><span class="n">double_defined</span><span class="w"> </span><span class="kt">DOUBLE</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="w">    </span><span class="c1">-- 自定义精度的双精度（总位数15，小数位6）</span>
+<span class="p">);</span>
+
+
+<span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">float_double_demo</span><span class="w"> </span><span class="p">(</span><span class="n">float_col</span><span class="p">,</span><span class="w"> </span><span class="n">double_col</span><span class="p">,</span><span class="w"> </span><span class="n">float_defined</span><span class="p">,</span><span class="w"> </span><span class="n">double_defined</span><span class="p">)</span>
+<span class="k">VALUES</span><span class="w"> </span>
+<span class="w">    </span><span class="p">(</span><span class="mf">12345.6789</span><span class="p">,</span><span class="w"> </span><span class="mf">12345.6789</span><span class="p">,</span><span class="w"> </span><span class="mf">12345.6789</span><span class="p">,</span><span class="w"> </span><span class="mf">12345.6789</span><span class="p">),</span>
+<span class="w">    </span><span class="p">(</span><span class="mf">123456.789</span><span class="p">,</span><span class="w"> </span><span class="mf">123456.789</span><span class="p">,</span><span class="w"> </span><span class="mf">123456.789</span><span class="p">,</span><span class="w"> </span><span class="mf">123456.789</span><span class="p">),</span>
+<span class="w">    </span><span class="p">(</span><span class="mf">0.000123456789</span><span class="p">,</span><span class="w"> </span><span class="mf">0.000123456789</span><span class="p">,</span><span class="w"> </span><span class="mf">0.000123456789</span><span class="p">,</span><span class="w"> </span><span class="mf">0.000123456789</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="_7">关键差异说明</h3>
+<ol>
+<li><strong>精度限制</strong>：</li>
+<li><code>FLOAT</code> 在存储超过 7 位有效数字时会四舍五入（如第 3 行的 <code>0.000123456789</code> 被近似为 <code>0.000123457</code>）</li>
+<li><code>DOUBLE</code> 能更精确地保留更多位数（如同样的值保留到 <code>0.000123456789</code>）</li>
+<li><strong>自定义精度</strong>：</li>
+<li>格式 <code>FLOAT(M, D)</code> 或 <code>DOUBLE(M, D)</code> 中，<code>M</code> 是总位数，<code>D</code> 是小数位数</li>
+<li>例如 <code>FLOAT(10, 4)</code> 表示最多 10 位数字，其中 4 位是小数（如 <code>12345.6789</code>）</li>
+</ol>
+<h3 id="_8">适用场景</h3>
+<ul>
+<li><strong>使用 FLOAT</strong>：对精度要求不高的场景（如温度、湿度等物理量），节省存储空间</li>
+<li><strong>使用 DOUBLE</strong>：需要高精度的场景（如金融计算、科学实验数据）</li>
+</ul>
+<h2 id="decimal"><code>DECIMAL</code></h2>
+<p>在 MySQL 中，<code>DECIMAL</code> 是一种精确的十进制数值类型，专门用于存储需要高精度的数据（如货币、财务金额等），避免浮点数（<code>FLOAT</code>/<code>DOUBLE</code>）可能出现的精度丢失问题。</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w">  </span><span class="k">into</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb2</span><span class="p">(</span><span class="n">de_test</span><span class="p">,</span><span class="n">de_test1</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="mf">12345.67891234567890</span><span class="p">,</span><span class="mf">12345.67896</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">warnings</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb2</span><span class="p">;</span>
+<span class="o">+-------------+---------+---------+------------+---------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">age</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">dou</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">flot</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">d</span><span class="w">          </span><span class="o">|</span><span class="w"> </span><span class="n">de_test</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">de_test1</span><span class="w">   </span><span class="o">|</span>
+<span class="o">+-------------+---------+---------+------------+---------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mf">123.4570007</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mf">123.4560013</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">123.457</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">123.456</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">123.456</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mf">123.4564590</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">12345.7</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">12345.6789</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">   </span><span class="mi">12346</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">   </span><span class="mi">12346</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">12345.6789</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">        </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">    </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">       </span><span class="no">NULL</span><span class="w"> </span><span class="o">|</span><span class="w">   </span><span class="mi">12346</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">12345.6790</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-------------+---------+---------+------------+---------+------------+</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>精度特性</th>
+<th>适用场景</th>
+<th>示例（存储 0.1）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FLOAT</code></td>
+<td>近似值，可能有精度丢失</td>
+<td>科学计算、非精确计量</td>
+<td>实际存储为接近 0.1 的二进制值</td>
+</tr>
+<tr>
+<td><code>DOUBLE</code></td>
+<td>精度高于 FLOAT，但仍近似</td>
+<td>高精度科学计算</td>
+<td>仍可能存在微小误差</td>
+</tr>
+<tr>
+<td><code>DECIMAL</code></td>
+<td>精确存储，无精度丢失</td>
+<td>货币、财务、需要精确计算的场景</td>
+<td>完全存储 0.1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">字符串类型</h3>
+<p>The string data types are <a href="https://dev.mysql.com/doc/refman/8.4/en/char.html"><code>CHAR</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/char.html"><code>VARCHAR</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/binary-varbinary.html"><code>BINARY</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/binary-varbinary.html"><code>VARBINARY</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/blob.html"><code>BLOB</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/blob.html"><code>TEXT</code></a>, <a href="https://dev.mysql.com/doc/refman/8.4/en/enum.html"><code>ENUM</code></a>, and <a href="https://dev.mysql.com/doc/refman/8.4/en/set.html"><code>SET</code></a>.</p>
+<p>!image-20250822104354839](/images/image-20250822104354839.png)</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">vc</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;ab&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;ab&#39;</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="nf">CONCAT</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;)&#39;</span><span class="p">),</span><span class="w"> </span><span class="nf">CONCAT</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;)&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">vc</span><span class="p">;</span>
+<span class="o">+---------------------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="nf">CONCAT</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;)&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nf">CONCAT</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;)&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+---------------------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">ab</span><span class="w">  </span><span class="p">)</span><span class="w">              </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">ab</span><span class="p">)</span><span class="w">                </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">ab</span><span class="p">)</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">ab</span><span class="p">)</span><span class="w">                </span><span class="o">|</span>
+<span class="o">+---------------------+---------------------+</span>
+<span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="nf">LENGTH</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="k">from</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">vc</span><span class="p">;</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="nf">LENGTH</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span><span class="w">         </span><span class="mi">4</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">         </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="nf">LENGTH</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">vc</span><span class="p">;</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="nf">LENGTH</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span><span class="w">         </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w">         </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>枚举类型</p>
+<blockquote>
+<p><code>ENUM</code> 是一个字符串对象，其值为 从枚举的允许值列表中选择 在表创建时在列规范中显式。</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">table</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="kt">enum</span><span class="p">(</span><span class="n">sex</span><span class="w"> </span><span class="kt">ENUM</span><span class="p">(</span><span class="s1">&#39;男&#39;</span><span class="p">,</span><span class="s1">&#39;女&#39;</span><span class="p">));</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="kt">enum</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;男&#39;</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>时间数据类型</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Data Type 数据类型</th>
+<th style="text-align: left;">“Zero” Value “ 零 ” 价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="https://dev.mysql.com/doc/refman/8.4/en/datetime.html"><code>DATE</code></a></td>
+<td style="text-align: left;"><code>'0000-00-00'</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://dev.mysql.com/doc/refman/8.4/en/time.html"><code>TIME</code></a></td>
+<td style="text-align: left;"><code>'00:00:00'</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://dev.mysql.com/doc/refman/8.4/en/datetime.html"><code>DATETIME</code></a></td>
+<td style="text-align: left;"><code>'0000-00-00 00:00:00'</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://dev.mysql.com/doc/refman/8.4/en/datetime.html"><code>TIMESTAMP</code></a></td>
+<td style="text-align: left;"><code>'0000-00-00 00:00:00'</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://dev.mysql.com/doc/refman/8.4/en/year.html"><code>YEAR</code></a></td>
+<td style="text-align: left;"><code>0000</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">table</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="kt">date</span><span class="p">(</span><span class="n">te</span><span class="w"> </span><span class="kt">time</span><span class="p">,</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="kt">date</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="w"> </span><span class="kt">DATETIME</span><span class="p">,</span><span class="w"> </span><span class="n">ts</span><span class="w"> </span><span class="kt">TIMESTAMP</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.02</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w">  </span><span class="k">into</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="kt">date</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="nf">now</span><span class="p">(),</span><span class="nf">now</span><span class="p">(),</span><span class="nf">now</span><span class="p">(),</span><span class="nf">now</span><span class="p">());</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">warning</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="kt">date</span><span class="p">;</span>
+<span class="o">+----------+------------+---------------------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">te</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">de</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">dt</span><span class="w">                  </span><span class="o">|</span><span class="w"> </span><span class="n">ts</span><span class="w">                  </span><span class="o">|</span>
+<span class="o">+----------+------------+---------------------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">18</span><span class="o">:</span><span class="mi">00</span><span class="o">:</span><span class="mi">00</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">                </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">13</span><span class="o">:</span><span class="mi">55</span><span class="o">:</span><span class="mi">29</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">2025</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">17</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">2025</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">17</span><span class="w"> </span><span class="mi">13</span><span class="o">:</span><span class="mi">55</span><span class="o">:</span><span class="mi">29</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">2025</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">17</span><span class="w"> </span><span class="mi">13</span><span class="o">:</span><span class="mi">55</span><span class="o">:</span><span class="mi">29</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+----------+------------+---------------------+---------------------+</span>
+<span class="mi">2</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>Example: </p>
+<table>
+<thead>
+<tr>
+<th>ID int</th>
+<th>名称   varchar</th>
+<th>性别  [<code>ENUM</code>]</th>
+<th>年龄 int</th>
+<th>身份证号 varchar</th>
+<th>户籍 varchar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>表的约束</p>
+<blockquote>
+<p>对表中的字段有一些行为；约束条件</p>
+</blockquote>
+<ul>
+<li>not null  # 不能为空 key=values</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w">  </span><span class="k">table</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb3</span><span class="w"> </span><span class="k">modify</span><span class="w">  </span><span class="k">name</span><span class="w">  </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="w">  </span><span class="k">not</span><span class="w"> </span><span class="no">null</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.03</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="n">Records</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="w">  </span><span class="n">Duplicates</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="w">  </span><span class="k">Warnings</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span>
+</code></pre></div>
+<ul>
+<li><code>auto_increment</code>  #自增列</li>
+<li>键 key</li>
+<li>主键（PRIMARY KEY）</li>
+<li>外键（）</li>
+<li>惟一键（Unique Key）</li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>alter<span class="w">  </span>table<span class="w">  </span>db.tb3<span class="w"> </span>modify<span class="w"> </span>id<span class="w">  </span>int<span class="w"> </span>not<span class="w"> </span>null<span class="w"> </span>auto_increment<span class="w"> </span>Unique<span class="w"> </span>Key<span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">2</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.04<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ul>
+<li>不允许出现重复值</li>
+</ul>
+<p><code>UNIQUE</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb4</span><span class="p">(</span><span class="n">sfid</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w">  </span><span class="k">not</span><span class="w"> </span><span class="no">null</span><span class="w"> </span><span class="k">UNIQUE</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">desc</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb4</span><span class="p">;</span>
+<span class="o">+-------+-------------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Field</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="no">Null</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Key</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Default</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Extra</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+-------+-------------+------+-----+---------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">sfid</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">NO</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">PRI</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="no">NULL</span><span class="w">    </span><span class="o">|</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+-------+-------------+------+-----+---------+-------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>
+<p>CHECK </p>
+</li>
+<li>
+<p>Check(表达)</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>create<span class="w"> </span>table<span class="w">  </span>db.tb5<span class="o">(</span>age<span class="w">  </span>int<span class="w">   </span>not<span class="w"> </span>null<span class="w">  </span>check<span class="o">(</span><span class="w"> </span>age<span class="w"> </span>&gt;<span class="o">=</span><span class="m">18</span><span class="o">))</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.02<span class="w"> </span>sec<span class="o">)</span>
+
+
+
+CREATE<span class="w"> </span>TABLE<span class="w"> </span>users<span class="w"> </span><span class="o">(</span>
+<span class="w">    </span>id<span class="w"> </span>INT<span class="w"> </span>AUTO_INCREMENT<span class="w"> </span>PRIMARY<span class="w"> </span>KEY,
+<span class="w">    </span>email<span class="w"> </span>VARCHAR<span class="o">(</span><span class="m">255</span><span class="o">)</span><span class="w"> </span>NOT<span class="w"> </span>NULL,
+<span class="w">    </span>username<span class="w"> </span>VARCHAR<span class="o">(</span><span class="m">50</span><span class="o">)</span>,
+<span class="w">    </span>--<span class="w"> </span>唯一性约束
+<span class="w">    </span>UNIQUE<span class="w"> </span>KEY<span class="w"> </span>uk_email<span class="w"> </span><span class="o">(</span>email<span class="o">)</span>,
+<span class="w">    </span>--<span class="w"> </span>格式约束：正则验证邮箱结构
+<span class="w">    </span>CHECK<span class="w"> </span><span class="o">(</span>
+<span class="w">        </span>email<span class="w"> </span>REGEXP<span class="w"> </span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span>
+<span class="w">    </span><span class="o">)</span>
+<span class="o">)</span><span class="p">;</span>
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-<span class="w"> </span>id<span class="w">  </span>
+-<span class="w"> </span>名称<span class="w"> </span>*<span class="w"> </span>不能为空
+-<span class="w"> </span>年龄<span class="w"> </span>*<span class="w"> </span>小于18
+-<span class="w"> </span>性别<span class="w"> </span>*<span class="w"> </span>男女
+-<span class="w"> </span>户籍<span class="w"> </span>*<span class="w"> </span>
+-<span class="w"> </span>手机号<span class="w"> </span>*不能重复
+-<span class="w"> </span>email<span class="w"> </span>*不能重复
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>create<span class="w"> </span>table<span class="w">  </span>db.tb6<span class="o">(</span>id<span class="w"> </span>int<span class="w"> </span>not<span class="w"> </span>null<span class="w"> </span>AUTO_INCREMENT<span class="w"> </span>PRIMARY<span class="w"> </span>KEY,<span class="w"> </span>name<span class="w"> </span>varchar<span class="o">(</span><span class="m">30</span><span class="o">)</span><span class="w"> </span>not<span class="w"> </span>null,<span class="w"> </span>age<span class="w"> </span>int<span class="w"> </span>not<span class="w"> </span>null<span class="w"> </span>check<span class="o">(</span>age<span class="w"> </span>&gt;<span class="o">=</span><span class="m">18</span><span class="o">)</span>,<span class="w">  </span>sex<span class="w"> </span>ENUM<span class="o">(</span><span class="s1">&#39;男&#39;</span>,<span class="s1">&#39;女&#39;</span><span class="o">)</span><span class="w"> </span>not<span class="w"> </span>null,<span class="w">  </span>huj<span class="w"> </span>varchar<span class="o">(</span><span class="m">100</span><span class="o">)</span><span class="w"> </span>not<span class="w"> </span>null,<span class="w"> </span>tlephone<span class="w"> </span>varchar<span class="o">(</span><span class="m">13</span><span class="o">)</span><span class="w"> </span>not<span class="w"> </span>null<span class="w"> </span>UNIQUE,<span class="w"> </span>email<span class="w"> </span>varchar<span class="o">(</span><span class="m">50</span><span class="o">)</span><span class="w"> </span>check<span class="o">(</span>email<span class="w"> </span>REGEXP<span class="w"> </span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="o">)</span><span class="w"> </span>not<span class="w"> </span>null<span class="w"> </span>UNIQUE<span class="o">)</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.02<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">insert</span><span class="w">  </span><span class="k">into</span><span class="w">  </span><span class="n">db</span><span class="p">.</span><span class="n">tb6</span><span class="p">(</span><span class="k">name</span><span class="p">,</span><span class="n">age</span><span class="p">,</span><span class="n">sex</span><span class="p">,</span><span class="n">huj</span><span class="p">,</span><span class="n">tlephone</span><span class="p">,</span><span class="n">email</span><span class="p">)</span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;王海涛&#39;</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="s1">&#39;女&#39;</span><span class="p">,</span><span class="s1">&#39;河北唐山&#39;</span><span class="p">,</span><span class="s1">&#39;18301002516&#39;</span><span class="p">,</span><span class="s1">&#39;abbott68@126.com&#39;</span><span class="p">);</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">tb6</span><span class="p">;</span>
+<span class="o">+----+-----------+-----+-----+--------------+-------------+------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">name</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">sex</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">huj</span><span class="w">          </span><span class="o">|</span><span class="w"> </span><span class="n">tlephone</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">email</span><span class="w">            </span><span class="o">|</span>
+<span class="o">+----+-----------+-----+-----+--------------+-------------+------------------+</span>
+<span class="o">|</span><span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">王海涛</span><span class="w">    </span><span class="o">|</span><span class="w">  </span><span class="mi">18</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">女</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">河北唐山</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="mi">18301002516</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">abbott68</span><span class="nv">@126.com</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+----+-----------+-----+-----+--------------+-------------+------------------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">255.255.255.0</span><span class="w"> </span><span class="o">/</span><span class="mi">24</span>
+</code></pre></div>
+<h4 id="_10">权限管理</h4>
+<p>用户管理</p>
+<ul>
+<li>创建用户</li>
+</ul>
+<p>命令：<code>create user</code></p>
+<p>语法： <code>CREATE USER '用户名'@'客户端的IP地址' IDENTIFIED BY '*password*';</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1">#限制网段</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">user</span><span class="w"> </span><span class="s1">&#39;test&#39;</span><span class="nv">@&#39;192.168.19.%&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w">  </span><span class="k">by</span><span class="w">  </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="c1">#不限制</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">user</span><span class="w">  </span><span class="s1">&#39;test01&#39;</span><span class="nv">@&#39;%&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w">  </span><span class="k">by</span><span class="w"> </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="c1">#指定客户端地址</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w">  </span><span class="k">user</span><span class="w"> </span><span class="s1">&#39;test02&#39;</span><span class="nv">@&#39;192.168.1.100&#39;</span><span class="w"> </span><span class="k">identified</span><span class="w">  </span><span class="k">by</span><span class="w"> </span><span class="s1">&#39;Test@123.&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>查询用户的信息<code>mysql.user</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w"> </span>*<span class="w"> </span>from<span class="w">  </span>mysql.user<span class="w">  </span>where<span class="w"> </span><span class="nv">User</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="se">\G</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li>删除用户</li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>drop<span class="w">  </span>user<span class="w">  </span><span class="s1">&#39;test&#39;</span>@<span class="s1">&#39;192.168.19.%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ul>
+<li></li>
+</ul>
+<p>权限管理：</p>
+<ul>
+<li>赋予权限</li>
+</ul>
+<p>命令：<code>grant [all|insert|delete|...] on [库名.*｜所有*.*] to 'user_name'@'客户端地址'</code></p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>grant<span class="w"> </span>all<span class="w"> </span>on<span class="w"> </span>*.*<span class="w"> </span>to<span class="w">  </span>test@<span class="s1">&#39;192.168.19.%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span>grant<span class="w">  </span><span class="k">select</span><span class="w">  </span>on<span class="w"> </span>db.*<span class="w"> </span>to<span class="w"> </span><span class="s1">&#39;test01&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<ul>
+<li>回收权限</li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>REVOKE<span class="w"> </span>insert<span class="w"> </span>on<span class="w"> </span>*.*<span class="w">  </span>from<span class="w"> </span><span class="s1">&#39;test01&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w"> </span>*<span class="w"> </span>from<span class="w">  </span>mysql.user<span class="w">  </span>where<span class="w"> </span><span class="nv">User</span><span class="o">=</span><span class="s1">&#39;test01&#39;</span><span class="se">\G</span><span class="p">;</span>
+***************************<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>row<span class="w"> </span>***************************
+<span class="w">                    </span>Host:<span class="w"> </span>%
+<span class="w">                    </span>User:<span class="w"> </span>test01
+<span class="w">             </span>Select_priv:<span class="w"> </span>Y
+<span class="w">             </span>Insert_priv:<span class="w"> </span>N
+mysql&gt;<span class="w"> </span>REVOKE<span class="w"> </span>drop,delete<span class="w">  </span>on<span class="w"> </span>*.*<span class="w">  </span>from<span class="w"> </span><span class="s1">&#39;test01&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+</code></pre></div>
+<p>远程管理</p>
+<ul>
+<li>本地登陆</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@nginx-proxy<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql   -h 192.168.19.181 -utest -pTest@123.</span>
+mysql:<span class="w"> </span><span class="o">[</span>Warning<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>a<span class="w"> </span>password<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>interface<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>insecure.
+Welcome<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>MySQL<span class="w"> </span>monitor.<span class="w">  </span>Commands<span class="w"> </span>end<span class="w"> </span>with<span class="w"> </span><span class="p">;</span><span class="w"> </span>or<span class="w"> </span><span class="se">\g</span>.
+Your<span class="w"> </span>MySQL<span class="w"> </span>connection<span class="w"> </span>id<span class="w"> </span>is<span class="w"> </span><span class="m">12</span>
+Server<span class="w"> </span>version:<span class="w"> </span><span class="m">8</span>.0.43<span class="w"> </span>MySQL<span class="w"> </span>Community<span class="w"> </span>Server<span class="w"> </span>-<span class="w"> </span>GPL
+
+Copyright<span class="w"> </span><span class="o">(</span>c<span class="o">)</span><span class="w"> </span><span class="m">2000</span>,<span class="w"> </span><span class="m">2025</span>,<span class="w"> </span>Oracle<span class="w"> </span>and/or<span class="w"> </span>its<span class="w"> </span>affiliates.
+
+Oracle<span class="w"> </span>is<span class="w"> </span>a<span class="w"> </span>registered<span class="w"> </span>trademark<span class="w"> </span>of<span class="w"> </span>Oracle<span class="w"> </span>Corporation<span class="w"> </span>and/or<span class="w"> </span>its
+affiliates.<span class="w"> </span>Other<span class="w"> </span>names<span class="w"> </span>may<span class="w"> </span>be<span class="w"> </span>trademarks<span class="w"> </span>of<span class="w"> </span>their<span class="w"> </span>respective
+owners.
+
+Type<span class="w"> </span><span class="s1">&#39;help;&#39;</span><span class="w"> </span>or<span class="w"> </span><span class="s1">&#39;\h&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>help.<span class="w"> </span>Type<span class="w"> </span><span class="s1">&#39;\c&#39;</span><span class="w"> </span>to<span class="w"> </span>clear<span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>input<span class="w"> </span>statement.
+
+mysql&gt;<span class="w"> </span>
+</code></pre></div>
+<blockquote>
+<p>-h #指定数据库的IP地址</p>
+<p>-u #指定用户</p>
+<p>-p #登陆用户的密码</p>
+</blockquote>
+<p>刷新表</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">flush</span><span class="w"> </span><span class="k">tables</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>客户端：</p>
+<ul>
+<li><a href="https://dev.mysql.com/downloads/workbench/">mysql  workbench</a></li>
+</ul>
+<p>Web:</p>
+<ul>
+<li>phpmyadmin</li>
+</ul>
+<p>​   </p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

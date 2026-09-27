@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云计算 - 概述 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-云计算"># 云计算</a></li><li class="toc-l2"><a href="#-一云计算的基本概念">## 一、云计算的基本概念</a></li><li class="toc-l2"><a href="#-二-云计算的构建/存储方案">## 二、 云计算的构建/存储方案</a></li><li class="toc-l2"><a href="#-三-云计算的部署模式openstack">## 三、 云计算的部署模式(openstack)</a></li><li class="toc-l2"><a href="#-四云计算的服务模式">## 四、云计算的服务模式</a></li><li class="toc-l2"><a href="#-五云计算服务的提供商">## 五、云计算服务的提供商</a></li><li class="toc-l2"><a href="#-六-虚拟化">## 六、 虚拟化</a></li><li class="toc-l2"><a href="#-虚拟化kvm">## 虚拟化KVM</a></li><li class="toc-l2"><a href="#-概述">## 概述</a></li><li class="toc-l2"><a href="#-安装kvm">## 安装KVM</a></li><li class="toc-l3"><a href="#-kvm-虚拟化常用命令">### KVM  虚拟化常用命令</a></li><li class="toc-l1"><a href="#创建快照">#创建快照</a></li><li class="toc-l1"><a href="#-在线编辑快照文件"># 在线编辑快照文件</a></li><li class="toc-l1"><a href="#-删除快照"># 删除快照</a></li><li class="toc-l3"><a href="#-kvm-网络">### KVM 网络</a></li><li class="toc-l1"><a href="#-批量部署服务器"># 批量部署服务器</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">云计算</h1>
+<h2 id="_2">一、云计算的基本概念</h2>
+<p>云计算是一种基于互联网的计算模式，它通过将大量的计算资源（包括服务器、存储、网络、软件等）进行整合并集中部署在数据中心，然后以服务的形式提供给用户使用。用户无需关心这些资源的具体物理位置、底层架构以及运维管理等细节，只需通过网络按需获取所需的计算能力、存储空间、软件应用等资源，并按照使用量或时长来支付相应费用，就如同使用水电等公共服务一样便捷。</p>
+<p><img alt="云计算详解：定义、部署模式与服务类型-CSDN博客" src="https://i-blog.csdnimg.cn/blog_migrate/dc15979c77530b1f726edc707d4a3be5.png" /></p>
+<h2 id="_3">二、 云计算的构建/存储方案</h2>
+<ol>
+<li>openstack</li>
+<li>kuberntes</li>
+<li>ceph </li>
+</ol>
+<h2 id="openstack">三、 云计算的部署模式(openstack)</h2>
+<ol>
+<li>公有云</li>
+<li>私有云</li>
+<li>混合云</li>
+<li>政府云</li>
+</ol>
+<h2 id="_4">四、云计算的服务模式</h2>
+<ol>
+<li>IaaS</li>
+<li>PaaS</li>
+<li>Saas</li>
+<li>STaaS</li>
+</ol>
+<h2 id="_5">五、云计算服务的提供商</h2>
+<p>国内： 阿里、 华为、百度、腾讯...  </p>
+<p>国外：Google  AWS </p>
+<h2 id="_6">六、 虚拟化</h2>
+<ol>
+<li>服务器的虚拟化     </li>
+<li>PC 虚拟化  </li>
+<li>网络虚拟化</li>
+<li>存储虚拟化</li>
+</ol>
+<h2 id="kvm">虚拟化KVM</h2>
+<blockquote>
+<p>虚拟化是云计算中的基石</p>
+</blockquote>
+<h2 id="_7">概述</h2>
+<h2 id="kvm_1">安装KVM</h2>
+<p>安装操作系统</p>
+<ul>
+<li>基于图形管理（webui、virt-manager）</li>
+<li>基于命令行(自动化安装可以结合脚本)</li>
+</ul>
+<div class="highlight"><pre><span></span><code>virt-install<span class="w"> </span><span class="se">\</span>
+--memory<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+--vcpus<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+--os-variant<span class="w"> </span>rhel7<span class="w"> </span><span class="se">\</span>
+--disk<span class="w"> </span><span class="nv">path</span><span class="o">=</span><span class="s2">&quot;/opt/vm&quot;</span>,size<span class="o">=</span><span class="s2">&quot;10&quot;</span>,format<span class="o">=</span>qcow2<span class="w"> </span><span class="se">\</span>
+--cdrom<span class="w">  </span>/opt/ISO/rhel-server-7.9-x86_64-dvd.iso
+</code></pre></div>
+<h3 id="kvm_2">KVM  虚拟化常用命令</h3>
+<p>命令: <code>virsh</code></p>
+<p>描述： <code>management user interface</code> </p>
+<p>语法：<code>virsh [options]... [&lt;command_string&gt;]</code></p>
+<p>列出运行的主机</p>
+<div class="highlight"><pre><span></span><code>root@fedora:~#<span class="w"> </span>virsh<span class="w">    </span>list<span class="w">  </span>
+<span class="w"> </span>Id<span class="w">   </span>名称<span class="w">        </span>状态
+------------------------
+<span class="w"> </span><span class="m">2</span><span class="w">    </span>win10<span class="w">       </span>运行
+<span class="w"> </span><span class="m">8</span><span class="w">    </span>rhel8.8<span class="w">     </span>运行
+<span class="w"> </span><span class="m">9</span><span class="w">    </span>ceph03<span class="w">      </span>运行
+<span class="w"> </span><span class="m">10</span><span class="w">   </span>rhel8.8-2<span class="w">   </span>运行
+<span class="w"> </span><span class="m">19</span><span class="w">   </span>archlinux<span class="w">   </span>运行
+</code></pre></div>
+<p>快照管理</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#创建快照</span>
+root@fedora:~#<span class="w"> </span><span class="c1">#virsh   snapshot-create-as   #指定快照的名称</span>
+root@fedora:~#<span class="w"> </span>virsh<span class="w">  </span>snapshot-create<span class="w">  </span><span class="c1">#不能指定快照的名称</span>
+
+root@fedora:~#<span class="w"> </span>virsh<span class="w">   </span>snapshot-list<span class="w">  </span>--domain<span class="w"> </span>rhel7.9-7<span class="w"> </span>
+<span class="w"> </span>名称<span class="w">         </span>生成时间<span class="w">                    </span>状态
+---------------------------------------------------
+<span class="w"> </span><span class="m">1760405628</span><span class="w">   </span><span class="m">2025</span>-10-14<span class="w"> </span><span class="m">09</span>:33:48<span class="w"> </span>+0800<span class="w">   </span>shutoff
+<span class="w"> </span>snapshot1<span class="w">    </span><span class="m">2025</span>-10-14<span class="w"> </span><span class="m">09</span>:33:40<span class="w"> </span>+0800<span class="w">   </span>shutoff
+<span class="w"> </span><span class="nb">test</span><span class="w">         </span><span class="m">2025</span>-10-14<span class="w"> </span><span class="m">09</span>:34:43<span class="w"> </span>+0800<span class="w">   </span>shutoff
+
+<span class="w"> </span><span class="c1"># 在线编辑快照文件</span>
+<span class="w"> </span>root@fedora:~#<span class="w"> </span>virsh<span class="w">   </span>snapshot-edit<span class="w">   </span>--domain<span class="w">  </span>rhel7.9-7<span class="w">   </span>--snapshotname<span class="w"> </span><span class="nb">test</span>
+<span class="w"> </span><span class="c1"># 删除快照</span>
+<span class="w"> </span>root@fedora:~#<span class="w"> </span>virsh<span class="w">   </span>snapshot-delete<span class="w"> </span>--domain<span class="w"> </span>rhel7.9-7<span class="w">  </span>--snapshotname<span class="w">   </span><span class="nb">test</span>
+已删除域快照<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<h3 id="kvm_3">KVM 网络</h3>
+<p>默认： </p>
+<blockquote>
+<p>只有一中网络<code>default</code> NAT  </p>
+</blockquote>
+<p>桥接: <code>在宿主机上通过方式创建网络</code></p>
+<p>仅主机： <code>自定义文件 后缀名.xml</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat host-only.xml </span>
+&lt;network&gt;
+<span class="w">  </span>&lt;name&gt;host-only&lt;/name&gt;
+&lt;/network&gt;
+</code></pre></div>
+<p>定义网络</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh  net-define  host-only.xml </span>
+<span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh  net-start   host-only</span>
+<span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh   net-autostart  --network host-only </span>
+</code></pre></div>
+<p>创建自定以<code>nat</code>网络</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat 18-nat.xml </span>
+&lt;network&gt;
+<span class="w">  </span>&lt;name&gt;18nat&lt;/name&gt;
+<span class="w">  </span>&lt;forward<span class="w"> </span><span class="nv">mode</span><span class="o">=</span><span class="s1">&#39;nat&#39;</span>&gt;
+<span class="w">    </span>&lt;nat&gt;
+<span class="w">      </span>&lt;port<span class="w"> </span><span class="nv">start</span><span class="o">=</span><span class="s1">&#39;1024&#39;</span><span class="w"> </span><span class="nv">end</span><span class="o">=</span><span class="s1">&#39;65535&#39;</span>/&gt;
+<span class="w">    </span>&lt;/nat&gt;
+<span class="w">  </span>&lt;/forward&gt;
+<span class="w">  </span>&lt;bridge<span class="w"> </span><span class="nv">name</span><span class="o">=</span><span class="s1">&#39;virbr2&#39;</span><span class="w"> </span><span class="nv">stp</span><span class="o">=</span><span class="s1">&#39;on&#39;</span><span class="w"> </span><span class="nv">delay</span><span class="o">=</span><span class="s1">&#39;0&#39;</span>/&gt;
+<span class="w">  </span>&lt;ip<span class="w"> </span><span class="nv">address</span><span class="o">=</span><span class="s1">&#39;192.168.18.1&#39;</span><span class="w"> </span><span class="nv">netmask</span><span class="o">=</span><span class="s1">&#39;255.255.255.0&#39;</span>&gt;
+<span class="w">    </span>&lt;dhcp&gt;
+<span class="w">      </span>&lt;range<span class="w"> </span><span class="nv">start</span><span class="o">=</span><span class="s1">&#39;192.168.18.2&#39;</span><span class="w"> </span><span class="nv">end</span><span class="o">=</span><span class="s1">&#39;192.168.18.253&#39;</span>/&gt;
+<span class="w">    </span>&lt;/dhcp&gt;
+<span class="w">  </span>&lt;/ip&gt;
+&lt;/network&gt;
+</code></pre></div>
+<p>创建网络</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh  net-define  18-nat.xml </span>
+<span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh  net-start   18-nat.xml</span>
+<span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh   net-autostart  18-nat.xml</span>
+</code></pre></div>
+<p>查看网络</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@kvm-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># virsh   net-list  </span>
+<span class="w"> </span>名称<span class="w">        </span>状态<span class="w">   </span>自动开始<span class="w">   </span>持久
+-------------------------------------
+<span class="w"> </span>18nat<span class="w">       </span>活动<span class="w">   </span>是<span class="w">         </span>是
+<span class="w"> </span>default<span class="w">     </span>活动<span class="w">   </span>是<span class="w">         </span>是
+<span class="w"> </span>host-only<span class="w">   </span>活动<span class="w">   </span>是<span class="w">         </span>是
+</code></pre></div>
+<h1 id="_8">批量部署服务器</h1>
+<ul>
+<li>DHCP 服务</li>
+<li>应答文件 <code>ks</code>  系统所在位置；分区密码用户</li>
+<li>web server </li>
+</ul></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

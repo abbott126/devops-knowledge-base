@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes 概述 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-kubernetes"># kubernetes</a></li><li class="toc-l3"><a href="#-单体架构">### 单体架构：</a></li><li class="toc-l3"><a href="#-高可用架构">### 高可用架构</a></li><li class="toc-l2"><a href="#-部署模式">## 部署模式：</a></li><li class="toc-l2"><a href="#-部署k8s">## 部署k8s</a></li><li class="toc-l1"><a href="#-dnf-y-install-vim-chrony-gcc-gcc-c-wget-net-tools"># dnf  -y install  vim chrony gcc gcc-c++  wget  net-tools</a></li><li class="toc-l1"><a href="#-设置所需的-sysctl-参数参数在重新启动后保持不变"># 设置所需的 sysctl 参数，参数在重新启动后保持不变</a></li><li class="toc-l1"><a href="#-应-sysctl-参数不重新启动"># 应⽤ sysctl 参数⽽不重新启动</a></li><li class="toc-l2"><a href="#-安装容器运行时docker">## 安装容器运行时(docker)</a></li><li class="toc-l1"><a href="#-dnf-config-manager-add-repo-https//mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo"># dnf  config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</a></li><li class="toc-l1"><a href="#-dnf-install-docker-ce-docker-ce-cli-containerd.io-docker-buildx-plugin-docker-compose-plugin-y"># dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y</a></li><li class="toc-l1"><a href="#-systemctl-enable-now-docker"># systemctl  enable  --now  docker</a></li><li class="toc-l1"><a href="#-dnf-localinstall-cri-dockerd-0.3.14-3.el8.x86_64.rpm"># dnf  localinstall  cri-dockerd-0.3.14-3.el8.x86_64.rpm</a></li><li class="toc-l1"><a href="#-systemctl-enable-now-cri-docker"># systemctl  enable --now cri-docker</a></li><li class="toc-l2"><a href="#-安装-kubeadmkubelet-和-kubectl">## 安装 kubeadm、kubelet 和 kubectl</a></li><li class="toc-l1"><a href="#-dnf-install-y-kubelet-kubectl-kubeadm-disableexcludeskubernetes"># dnf  install   -y  kubelet kubectl     kubeadm --disableexcludes=kubernetes</a></li><li class="toc-l2"><a href="#-初始化集群">## 初始化集群</a></li><li class="toc-l1"><a href="#-错误信息"># 错误信息：</a></li><li class="toc-l3"><a href="#-拉取镜像的问题">### 拉取镜像的问题</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="kubernetes">kubernetes</h1>
+<p>一、 什么是<code>kubernetes</code></p>
+<blockquote>
+<p>kubernetes 是一个工具，管理容器的工具，<code>一套开源容器编排系统</code>  Google   </p>
+<p>kubernetes  名称:官方<code>k8s</code>   8 安装8遍以上  二进制包  每个组件之间的通信：<code>https</code></p>
+</blockquote>
+<p>二、 编排系统是如何诞生</p>
+<blockquote>
+<p>在1000个容器，编排系统</p>
+</blockquote>
+<p>2015年<code>docker 容器时代 dcoker swarem</code>   </p>
+<p><code>kubernetes</code>   基于的  <code>Borg</code> 系统二次开发<code>golang</code>；</p>
+<p><code>openshift</code> 是红帽一套容器编排系统；基于k8s基础之上开发</p>
+<p>Kubernetes  云原生CNCF 基金会： 围绕k8s周边环境</p>
+<p>https://contribute.cncf.io/resources/services/</p>
+<p>三、 k8s不关注什么？</p>
+<blockquote>
+<ol>
+<li>不关注底层硬件</li>
+<li>不关心应用的开发语言 <code>java</code> <code>pythog</code> <code>golang</code> <code>c c++ c#</code>  <code>vue html css</code></li>
+<li>不负责的中间件：<code>mysql mariadb oralce</code> <code>nginx  httpd weblogic tomcat</code> <code>devops gitops  aiops</code></li>
+</ol>
+</blockquote>
+<p>四、 只关心什么</p>
+<blockquote>
+<ol>
+<li>容器是否运行正常（7*24）</li>
+</ol>
+<blockquote>
+<p>running   状态是否正常</p>
+</blockquote>
+</blockquote>
+<p>五、 k8s的架构</p>
+<blockquote>
+<p>borg  系统架构</p>
+</blockquote>
+<p><img alt="Kubernetes基础篇：主要特性、基本概念与总体架构-云计算-火龙果软件" src="https://ts1.tc.mm.bing.net/th/id/R-C.8325cfa067353cfad9596ca8397ab2de?rik=FUshlJNuOK82mQ&amp;riu=http%3a%2f%2fwww.uml.org.cn%2fyunjisuan%2fimages%2f2017091331.png&amp;ehk=4awjlbOKAQ62J71ECpecuxgu%2fzuv3ZUpufvDC3Rxz04%3d&amp;risl=&amp;pid=ImgRaw&amp;r=0" /></p>
+<p>k8s 设计架构</p>
+<p><img alt="02-Kubernetes 架构_2kubernetes架构-CSDN博客" src="https://img-blog.csdnimg.cn/5228f70e23b64d6a8875865d1b09baaf.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5YWw5pav,size_20,color_FFFFFF,t_70,g_se,x_16" /></p>
+<p><img alt="Kubernetes设计架构_kubernetes架构-CSDN博客" src="https://img-blog.csdnimg.cn/direct/5a1ba296e2ec41b7a2da25b531219463.png" /></p>
+<p>!image-20251021110044504](/images/image-20251021110044504.png)</p>
+<p>!image-20251021110133509](/images/image-20251021110133509.png)</p>
+<p>!image-20251021110154635](/images/image-20251021110154635.png)</p>
+<p>!image-20251021110217948](/images/image-20251021110217948.png)</p>
+<h3 id="_1">单体架构：</h3>
+<p>!image-20251021110438553](/images/image-20251021110438553.png)</p>
+<blockquote>
+<p>使用于学习使用</p>
+</blockquote>
+<h3 id="_2">高可用架构</h3>
+<p>基于etcd高可用方案</p>
+<p>!image-20251021111440605](/images/image-20251021111440605.png)</p>
+<p>!image-20251021111512073](/images/image-20251021111512073.png)</p>
+<h2 id="_3">部署模式：</h2>
+<p>学习方案：</p>
+<h2 id="-k8s">- 通过工具： 可以在宿主机部署一套k8s环境 （适合开发）</h2>
+<p>生产环境：</p>
+<ul>
+<li>单节点方案 </li>
+<li>高可用节点方案</li>
+<li>工具： </li>
+<li>官方提供： <code>kubeadm</code>  <code>1 年</code></li>
+<li>第三方： <code>ansible+shell脚本</code> <code>rancher</code></li>
+<li>不建议使用二进制方式  <code>证书：https 100年</code></li>
+</ul>
+<p>讲课用到的环境</p>
+<p>!image-20251021113623645](/images/image-20251021113623645.png)</p>
+<p>所有需要的组件：<code>kubeadm方式</code> </p>
+<p>控制节点： <code>container-runtime   api-server  etcd  contorller-manager  kube-scheduler</code></p>
+<p>工作节点： <code>container-runtime  kubelet kube-proxy</code></p>
+<p><font color=red >⚠️： k8s 在1.24版本之前；k8s 官方维护一套对接docker 容器的<code>cri</code>,官方不在维护docker cri</font></p>
+<h2 id="k8s">部署k8s</h2>
+<blockquote>
+<p>部署方案： <code>kubeadm</code></p>
+</blockquote>
+<p>一、节点规划：</p>
+<table>
+<thead>
+<tr>
+<th>ip地址</th>
+<th>系统/内核版本</th>
+<th>角色</th>
+<th>组件的版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>192.168.1.63</td>
+<td>4.18.0-553.el8_10.x86_64</td>
+<td>master</td>
+<td>1.32.*</td>
+</tr>
+<tr>
+<td>192.168.1.64</td>
+<td>4.18.0-553.el8_10.x86_64</td>
+<td>work01</td>
+<td>1.32.*</td>
+</tr>
+<tr>
+<td>192.168.1.66</td>
+<td>4.18.0-553.el8_10.x86_64</td>
+<td>work02</td>
+<td>1.32.*</td>
+</tr>
+<tr>
+<td>192.168.1.71</td>
+<td>4.18.0-553.el8_10.x86_64</td>
+<td>work03</td>
+<td>1.32.*</td>
+</tr>
+</tbody>
+</table>
+<p>二、所有节点基础环境</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>准备linux主机
+<span class="m">2</span>.<span class="w"> </span>MEM<span class="w">  </span>&gt;<span class="o">=</span>4G<span class="p">;</span><span class="w"> </span>CPU<span class="w"> </span>&gt;2<span class="p">;</span><span class="w"> </span>disk<span class="w">  </span>&gt;<span class="w"> </span>20G
+<span class="m">3</span>.<span class="w"> </span>修改主机名
+<span class="m">3</span>.<span class="w"> </span>域名解析（本地dns）
+<span class="m">3</span>.<span class="w"> </span>关闭防火墙<span class="w"> </span>swap<span class="w"> </span>Selinux<span class="w"> </span>
+<span class="m">4</span>.<span class="w"> </span>设置免密
+<span class="m">5</span>.<span class="w"> </span>时间同步
+<span class="m">6</span>.<span class="w"> </span>修改内核
+</code></pre></div>
+<p>2.1  修改主机名/关闭防火墙/swap/Selinux </p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl   set-hostname master</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl   set-hostname work01</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl   set-hostname work02</span>
+<span class="o">[</span>root@localhost<span class="w"> </span>~<span class="o">]</span><span class="c1"># hostnamectl   set-hostname work03</span>
+</code></pre></div>
+<p>关闭防火墙/swap/Selinux </p>
+<div class="highlight"><pre><span></span><code>systemctl<span class="w">   </span>disable<span class="w"> </span>firewalld<span class="w"> </span>--now
+
+setenforce<span class="w">  </span><span class="m">0</span><span class="w"> </span>临时关闭SElinux<span class="w"> </span>
+sed<span class="w">  </span>-i<span class="w">  </span><span class="s1">&#39;s/SELINUX=enforcing/SELINUX=disabled/g&#39;</span><span class="w"> </span>/etc/selinux/config
+
+swapoff<span class="w"> </span>-a<span class="w">  </span><span class="c1">#临时关闭</span>
+cp<span class="w">  </span>/etc/fstab<span class="w">  </span>/etc/fstab_bak<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w">  </span>grep<span class="w">  </span>-v<span class="w">  </span><span class="s2">&quot;swap&quot;</span><span class="w"> </span>/etc/fstab_bak<span class="w">  </span>&gt;<span class="w">  </span>/etc/fstab
+</code></pre></div>
+<p>2.2 免密/hosts(域名)</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w">  </span>&gt;<span class="w"> </span>/etc/hosts<span class="w">  </span><span class="s">&lt;&lt;EOF </span>
+<span class="s">127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4</span>
+<span class="s">::1         localhost localhost.localdomain localhost6 localhost6.localdomain6</span>
+<span class="s">192.168.1.63  master</span>
+<span class="s">192.168.1.64  work01</span>
+<span class="s">192.168.1.66  work02</span>
+<span class="s">192.168.1.71  work03</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-keygen </span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id  work01</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id  work02</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id  work03</span>
+</code></pre></div>
+<p>2.3 时间同步：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># dnf  -y install  vim chrony gcc gcc-c++  wget  net-tools </span>
+</code></pre></div>
+<p>修改配置文件</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w">   </span>-i<span class="w">  </span><span class="s1">&#39;s/pool 2.rocky.pool.ntp.org iburst/pool 192.168.1.90 iburst/g&#39;</span><span class="w">   </span>/etc/chrony.conf
+
+systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--now<span class="w"> </span>chronyd
+
+chronyc<span class="w"> </span>sources<span class="w"> </span>
+</code></pre></div>
+<p>2.4 修改内核</p>
+<blockquote>
+<p>开启路由转发 </p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF | sudo tee /etc/modules-load.d/k8s.conf</span>
+<span class="s">overlay</span>
+<span class="s">br_netfilter</span>
+<span class="s">EOF</span>
+sudo<span class="w"> </span>modprobe<span class="w"> </span>overlay
+sudo<span class="w"> </span>modprobe<span class="w"> </span>br_netfilter
+<span class="c1"># 设置所需的 sysctl 参数，参数在重新启动后保持不变</span>
+cat<span class="w"> </span><span class="s">&lt;&lt;EOF | sudo tee /etc/sysctl.d/k8s.conf</span>
+<span class="s">net.bridge.bridge-nf-call-iptables = 1</span>
+<span class="s">net.bridge.bridge-nf-call-ip6tables = 1</span>
+<span class="s">net.ipv4.ip_forward = 1</span>
+<span class="s">EOF</span>
+<span class="c1"># 应⽤ sysctl 参数⽽不重新启动</span>
+sudo<span class="w"> </span>sysctl<span class="w"> </span>--system
+</code></pre></div>
+<p>数据转发： </p>
+<ul>
+<li>默认采用iptables方案</li>
+<li>ipvs </li>
+</ul>
+<p>重启验证：</p>
+<div class="highlight"><pre><span></span><code>systemctl status  firewalld
+free -h
+getenforce
+chronyc sources 
+</code></pre></div>
+<h2 id="docker">安装容器运行时(docker)</h2>
+<p>k8s支持的容器运行时：</p>
+<p><img alt="image-20251021151950007" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251021151950007.png" /></p>
+<p>所有节点上安装Docker Engine</p>
+<p>说明：</p>
+<blockquote>
+<p>以下操作假设你使用 <a href="https://mirantis.github.io/cri-dockerd/"><code>cri-dockerd</code></a> 适配器来将 Docker Engine 与 Kubernetes 集成。</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># dnf  config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span>
+添加仓库自：https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+<span class="c1"># dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y</span>
+
+
+启动docker
+<span class="c1"># systemctl  enable  --now  docker </span>
+</code></pre></div>
+<p>安装插件： <code>cri-docker</code></p>
+<div class="highlight"><pre><span></span><code>wget<span class="w">  </span>https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd-0.3.14-3.el8.x86_64.rpm
+
+<span class="c1"># dnf  localinstall  cri-dockerd-0.3.14-3.el8.x86_64.rpm </span>
+
+运行cri-dockerd
+
+<span class="c1"># systemctl  enable --now cri-docker</span>
+</code></pre></div>
+<p>配置docker proxy</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w">  </span>&gt;<span class="w">  </span>/etc/docker/daemon.json<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">{</span>
+<span class="s">  &quot;registry-mirrors&quot;: [</span>
+<span class="s">     &quot;https://docker.m.daocloud.io&quot;,</span>
+<span class="s">    &quot;https://docker.imgdb.de&quot;,</span>
+<span class="s">   &quot;https://docker-0.unsee.tech&quot;,</span>
+<span class="s">    &quot;https://docker.hlmirror.com&quot;,</span>
+<span class="s">     &quot;https://docker.1ms.run&quot;,</span>
+<span class="s">     &quot;https://func.ink&quot;,</span>
+<span class="s">     &quot;https://lispy.org&quot;,</span>
+<span class="s">    &quot;https://docker.xiaogenban1993.com&quot;</span>
+<span class="s">   ]</span>
+<span class="s">}</span>
+<span class="s">EOF</span>
+
+systemctl<span class="w">  </span>daemon-reload
+systemctl<span class="w">  </span>restart<span class="w"> </span>docker
+</code></pre></div>
+<h2 id="kubeadmkubelet-kubectl">安装 kubeadm、kubelet 和 kubectl</h2>
+<p>你需要在每台机器上安装以下的软件包：</p>
+<ul>
+<li><code>kubeadm</code>：用来初始化集群的指令。</li>
+<li><code>kubelet</code>：在集群中的每个节点上用来启动 Pod 和容器等。</li>
+<li><code>kubectl</code>：用来与集群通信的命令行工具。</li>
+</ul>
+<p>配置源：</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF | sudo tee /etc/yum.repos.d/kubernetes.repo</span>
+<span class="s">[kubernetes]</span>
+<span class="s">name=Kubernetes</span>
+<span class="s">baseurl=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/</span>
+<span class="s">enabled=1</span>
+<span class="s">gpgcheck=1</span>
+<span class="s">gpgkey=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/repodata/repomd.xml.key</span>
+<span class="s">exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<p>列出可用版本：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># dnf list     kubeadm --disableexcludes=kubernetes</span>
+上次元数据过期检查：0:01:03<span class="w"> </span>前，执行于<span class="w"> </span>2025年10月21日<span class="w"> </span>星期二<span class="w"> </span>16时44分58秒。
+可安装的软件包
+</code></pre></div>
+<p>安装</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># dnf  install   -y  kubelet kubectl     kubeadm --disableexcludes=kubernetes</span>
+</code></pre></div>
+<p>运行·kubelet·</p>
+<div class="highlight"><pre><span></span><code>systemctl<span class="w">  </span><span class="nb">enable</span><span class="w">  </span>--now<span class="w">  </span>kubelet<span class="w"> </span>
+</code></pre></div>
+<h2 id="_4">初始化集群</h2>
+<blockquote>
+<p>控制平面节点是运行控制平面组件的机器， 包括 <a href="https://v1-31.docs.kubernetes.io/zh-cn/docs/tasks/administer-cluster/configure-upgrade-etcd/">etcd</a>（集群数据库） 和 <a href="https://v1-31.docs.kubernetes.io/zh-cn/docs/concepts/architecture/#kube-apiserver">API 服务器</a> （命令行工具 <a href="https://v1-31.docs.kubernetes.io/zh-cn/docs/reference/kubectl/">kubectl</a> 与之通信</p>
+<p>--control-plane-endpoint 高可用的选项API端点</p>
+<p>--pod-network-cidr   #容器的网络 Pod 管理容器</p>
+<p>--cri-socket  #指定 container runtime  </p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubeadm init  --cri-socket unix:///var/run/cri-dockerd.sock </span>
+
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubeadm init --pod-network-cidr{不能于内部网络有冲突} --cri-socket unix:///var/run/cri-dockerd.sock </span>
+</code></pre></div>
+<p>初始化成功：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>bootstrap-token<span class="o">]</span><span class="w"> </span>Creating<span class="w"> </span>the<span class="w"> </span><span class="s2">&quot;cluster-info&quot;</span><span class="w"> </span>ConfigMap<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span><span class="s2">&quot;kube-public&quot;</span><span class="w"> </span>namespace
+<span class="o">[</span>kubelet-finalize<span class="o">]</span><span class="w"> </span>Updating<span class="w"> </span><span class="s2">&quot;/etc/kubernetes/kubelet.conf&quot;</span><span class="w"> </span>to<span class="w"> </span>point<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>rotatable<span class="w"> </span>kubelet<span class="w"> </span>client<span class="w"> </span>certificate<span class="w"> </span>and<span class="w"> </span>key
+<span class="o">[</span>addons<span class="o">]</span><span class="w"> </span>Applied<span class="w"> </span>essential<span class="w"> </span>addon:<span class="w"> </span>CoreDNS
+<span class="o">[</span>addons<span class="o">]</span><span class="w"> </span>Applied<span class="w"> </span>essential<span class="w"> </span>addon:<span class="w"> </span>kube-proxy
+
+Your<span class="w"> </span>Kubernetes<span class="w"> </span>control-plane<span class="w"> </span>has<span class="w"> </span>initialized<span class="w"> </span>successfully!
+
+To<span class="w"> </span>start<span class="w"> </span>using<span class="w"> </span>your<span class="w"> </span>cluster,<span class="w"> </span>you<span class="w"> </span>need<span class="w"> </span>to<span class="w"> </span>run<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>as<span class="w"> </span>a<span class="w"> </span>regular<span class="w"> </span>user:
+
+<span class="w">  </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="nv">$HOME</span>/.kube
+<span class="w">  </span>sudo<span class="w"> </span>cp<span class="w"> </span>-i<span class="w"> </span>/etc/kubernetes/admin.conf<span class="w"> </span><span class="nv">$HOME</span>/.kube/config
+<span class="w">  </span>sudo<span class="w"> </span>chown<span class="w"> </span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span>:<span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="w"> </span><span class="nv">$HOME</span>/.kube/config
+
+Alternatively,<span class="w"> </span><span class="k">if</span><span class="w"> </span>you<span class="w"> </span>are<span class="w"> </span>the<span class="w"> </span>root<span class="w"> </span>user,<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>run:
+
+<span class="w">  </span><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/etc/kubernetes/admin.conf
+
+You<span class="w"> </span>should<span class="w"> </span>now<span class="w"> </span>deploy<span class="w"> </span>a<span class="w"> </span>pod<span class="w"> </span>network<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>cluster.
+Run<span class="w"> </span><span class="s2">&quot;kubectl apply -f [podnetwork].yaml&quot;</span><span class="w"> </span>with<span class="w"> </span>one<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>options<span class="w"> </span>listed<span class="w"> </span>at:
+<span class="w">  </span>https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>join<span class="w"> </span>any<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>worker<span class="w"> </span>nodes<span class="w"> </span>by<span class="w"> </span>running<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>on<span class="w"> </span>each<span class="w"> </span>as<span class="w"> </span>root:
+
+kubeadm<span class="w"> </span>join<span class="w"> </span><span class="m">192</span>.168.1.63:6443<span class="w"> </span>--token<span class="w"> </span>z5lmax.xvwecb461xi70eym<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--discovery-token-ca-cert-hash<span class="w"> </span>sha256:70d13e6f2808a2a77151e1c74e6723fc262b9929935c5189b98a4a3c685e5d3b<span class="w"> </span>
+</code></pre></div>
+<p>在master节点上指定：</p>
+<div class="highlight"><pre><span></span><code><span class="w">  </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="nv">$HOME</span>/.kube
+<span class="w">  </span>sudo<span class="w"> </span>cp<span class="w"> </span>-i<span class="w"> </span>/etc/kubernetes/admin.conf<span class="w"> </span><span class="nv">$HOME</span>/.kube/config
+<span class="w">  </span>sudo<span class="w"> </span>chown<span class="w"> </span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span>:<span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="w"> </span><span class="nv">$HOME</span>/.kube/config
+</code></pre></div>
+<p>检查master节点的状态</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl get node </span>
+NAME<span class="w">     </span>STATUS<span class="w">     </span>ROLES<span class="w">           </span>AGE<span class="w">     </span>VERSION
+master<span class="w">   </span>NotReady<span class="w">   </span>control-plane<span class="w">   </span>2m52s<span class="w">   </span>v1.31.13
+</code></pre></div>
+<p>将计算节点加入到master集群中</p>
+<div class="highlight"><pre><span></span><code>kubeadm<span class="w"> </span>join<span class="w"> </span><span class="m">192</span>.168.1.63:6443<span class="w"> </span>--token<span class="w"> </span>z5lmax.xvwecb461xi70eym<span class="w"> </span>--discovery-token-ca-cert-hash<span class="w"> </span>sha256:70d13e6f2808a2a77151e1c74e6723fc262b9929935c5189b98a4a3c685e5d3b<span class="w">  </span>--cri-socket<span class="w"> </span>unix:///var/run/cri-dockerd.sock<span class="w"> </span>
+</code></pre></div>
+<p>输出信息：</p>
+<p><img alt="image-20251022105251781" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022105251781.png" /></p>
+<p>在控制节点上查看集群的信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl get  node  </span>
+NAME<span class="w">     </span>STATUS<span class="w">     </span>ROLES<span class="w">           </span>AGE<span class="w">     </span>VERSION
+master<span class="w">   </span>NotReady<span class="w">   </span>control-plane<span class="w">   </span>36m<span class="w">     </span>v1.31.13
+work01<span class="w">   </span>NotReady<span class="w">   </span>&lt;none&gt;<span class="w">          </span>3m16s<span class="w">   </span>v1.31.13
+work02<span class="w">   </span>NotReady<span class="w">   </span>&lt;none&gt;<span class="w">          </span>2m36s<span class="w">   </span>v1.31.13
+work03<span class="w">   </span>NotReady<span class="w">   </span>&lt;none&gt;<span class="w">          </span>2m29s<span class="w">   </span>v1.31.13
+</code></pre></div>
+<p>查看Pod(容器)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get pods -A </span>
+NAMESPACE<span class="w">     </span>NAME<span class="w">                             </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+kube-system<span class="w">   </span>coredns-7c65d6cfc9-2tsdz<span class="w">         </span><span class="m">0</span>/1<span class="w">     </span>Pending<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>coredns-7c65d6cfc9-lv9b8<span class="w">         </span><span class="m">0</span>/1<span class="w">     </span>Pending<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>etcd-master<span class="w">                      </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>kube-apiserver-master<span class="w">            </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>kube-controller-manager-master<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>kube-proxy-8cbbz<span class="w">                 </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>13m
+kube-system<span class="w">   </span>kube-proxy-n8k2t<span class="w">                 </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+kube-system<span class="w">   </span>kube-proxy-q8f5w<span class="w">                 </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>14m
+kube-system<span class="w">   </span>kube-proxy-wzd5n<span class="w">                 </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>13m
+kube-system<span class="w">   </span>kube-scheduler-master<span class="w">            </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>47m
+</code></pre></div>
+<p>安装网络插件：<code>支持很多中网络插件</code></p>
+<blockquote>
+<p>你必须部署一个基于 Pod 网络插件的<a href="https://v1-31.docs.kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/">容器网络接口</a>（CNI）， 以便你的 Pod 可以相互通信。在安装网络之前，集群 DNS (CoreDNS) 将不会启动。</p>
+</blockquote>
+<p>常用的网络插件</p>
+<div class="highlight"><pre><span></span><code>Flannel<span class="w"> </span>是一个可以用于<span class="w"> </span>Kubernetes<span class="w"> </span>的<span class="w"> </span>overlay<span class="w"> </span>网络提供者
+
+Calico<span class="w"> </span>是一个网络和网络策略供应商。<span class="w"> </span>Calico<span class="w"> </span>支持一套灵活的网络选项，因此你可以根据自己的情况选择最有效的选项，包括非覆盖和覆盖网络，带或不带<span class="w"> </span>BGP。<span class="w"> </span>Calico<span class="w"> </span>使用相同的引擎为主机、Pod<span class="w"> </span>和（如果使用<span class="w"> </span>Istio<span class="w"> </span>和<span class="w"> </span>Envoy）应用程序在服务网格层执行网络策略。
+
+Cilium<span class="w"> </span>是一种网络、可观察性和安全解决方案，具有基于<span class="w"> </span>eBPF<span class="w"> </span>的数据平面。<span class="w"> </span>Cilium<span class="w"> </span>提供了简单的<span class="w"> </span><span class="m">3</span><span class="w"> </span>层扁平网络，<span class="w"> </span>能够以原生路由（routing）和覆盖/封装（overlay/encapsulation）模式跨越多个集群，<span class="w"> </span>并且可以使用与网络寻址分离的基于身份的安全模型在<span class="w"> </span>L3<span class="w"> </span>至<span class="w"> </span>L7<span class="w"> </span>上实施网络策略。<span class="w"> </span>Cilium<span class="w"> </span>可以作为<span class="w"> </span>kube-proxy<span class="w"> </span>的替代品；它还提供额外的、可选的可观察性和安全功能。<span class="w"> </span>Cilium<span class="w"> </span>是一个毕业级别的<span class="w"> </span>CNCF<span class="w"> </span>项目。
+</code></pre></div>
+<p>部署 calico的网络插件</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   apply  -f calico.yaml </span>
+</code></pre></div>
+<p>最后：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get nodes</span>
+NAME<span class="w">     </span>STATUS<span class="w">   </span>ROLES<span class="w">           </span>AGE<span class="w">     </span>VERSION
+master<span class="w">   </span>Ready<span class="w">    </span>control-plane<span class="w">   </span>3h36m<span class="w">   </span>v1.31.13
+work01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h3m<span class="w">    </span>v1.31.13
+work02<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h2m<span class="w">    </span>v1.31.13
+work03<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h2m<span class="w">    </span>v1.31.13
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<h1 id="_5">错误信息：</h1>
+<p>安装容器：</p>
+<p><img alt="image-20251021161001591" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251021161001591.png" /></p>
+<p>解决方法：</p>
+<div class="highlight"><pre><span></span><code>通过网站https://download.docker.com/linux/centos/8/x86_64/stable/Packages/<span class="w"> </span>获取到所需要的软件包
+<span class="o">[</span>root@work01<span class="w"> </span>~<span class="o">]</span><span class="c1"># dnf  -y install  https://download.docker.com/linux/centos/8/x86_64/stable/Packages/containerd.io-1.6.32-3.1.el8.x86_64.rpm</span>
+</code></pre></div>
+<h3 id="_6">拉取镜像的问题</h3>
+<p><img alt="image-20251022092642377" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022092642377.png" /></p>
+<p>解决方法：<code>想办法</code></p>
+<ol>
+<li>获取所依赖组件的版本</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubeadm config images list  </span>
+W1022<span class="w"> </span><span class="m">09</span>:33:19.314898<span class="w">   </span><span class="m">11319</span><span class="w"> </span>version.go:109<span class="o">]</span><span class="w"> </span>could<span class="w"> </span>not<span class="w"> </span>fetch<span class="w"> </span>a<span class="w"> </span>Kubernetes<span class="w"> </span>version<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>internet:<span class="w"> </span>unable<span class="w"> </span>to<span class="w"> </span>get<span class="w"> </span>URL<span class="w"> </span><span class="s2">&quot;https://dl.k8s.io/release/stable-1.txt&quot;</span>:<span class="w"> </span>Get<span class="w"> </span><span class="s2">&quot;https://cdn.dl.k8s.io/release/stable-1.txt&quot;</span>:<span class="w"> </span>context<span class="w"> </span>deadline<span class="w"> </span>exceeded<span class="w"> </span><span class="o">(</span>Client.Timeout<span class="w"> </span>exceeded<span class="w"> </span><span class="k">while</span><span class="w"> </span>awaiting<span class="w"> </span>headers<span class="o">)</span>
+W1022<span class="w"> </span><span class="m">09</span>:33:19.314950<span class="w">   </span><span class="m">11319</span><span class="w"> </span>version.go:110<span class="o">]</span><span class="w"> </span>falling<span class="w"> </span>back<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span><span class="nb">local</span><span class="w"> </span>client<span class="w"> </span>version:<span class="w"> </span>v1.31.13
+registry.k8s.io/kube-apiserver:v1.31.13
+registry.k8s.io/kube-controller-manager:v1.31.13
+registry.k8s.io/kube-scheduler:v1.31.13
+registry.k8s.io/kube-proxy:v1.31.13
+registry.k8s.io/coredns/coredns:v1.11.3
+registry.k8s.io/pause:3.10
+registry.k8s.io/etcd:3.5.15-0
+</code></pre></div>
+<ol>
+<li>在自己主机上将镜像拉取到本地</li>
+</ol>
+<div class="highlight"><pre><span></span><code>doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/kube-apiserver:v1.31.13
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/kube-controller-manager:v1.31.13
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/kube-scheduler:v1.31.13
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/kube-proxy:v1.31.13
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/coredns/coredns:v1.11.3
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/pause:3.10
+doker<span class="w"> </span>pull<span class="w"> </span>registry.k8s.io/etcd:3.5.15-0
+</code></pre></div>
+<ol>
+<li>将镜像保存</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w">  </span>-o<span class="w">  </span>k8s-13113/apiserver.tar<span class="w">   </span>registry.k8s.io/kube-apiserver:v1.31.13
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w">  </span>-o<span class="w"> </span>k8s-13113/scheduler.tar<span class="w">  </span>registry.k8s.io/kube-scheduler:v1.31.13<span class="w">  </span>
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w">  </span>-o<span class="w"> </span>k8s-13113/controller-manager.tar<span class="w"> </span>registry.k8s.io/kube-controller-manager:registry.k8s.io/kube-controller-manager
+Error<span class="w"> </span>response<span class="w"> </span>from<span class="w"> </span>daemon:<span class="w"> </span>invalid<span class="w"> </span>reference<span class="w"> </span>format
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w">  </span>-o<span class="w"> </span>k8s-13113/controller-manager.tar<span class="w"> </span>registry.k8s.io/kube-controller-manager:v1.31.13
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w"> </span>save<span class="w">  </span>-o<span class="w"> </span>k8s-13113/proxy.tar<span class="w"> </span>registry.k8s.io/kube-proxy:v1.31.13<span class="w">                                  </span>
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w"> </span>save<span class="w">  </span>-o<span class="w">  </span>k8s-13113/coredns.tar<span class="w">  </span>registry.k8s.io/coredns/coredns:v1.11.3<span class="w">                      </span>
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w"> </span>save<span class="w">  </span>-o<span class="w"> </span>k8s-13113/puse3-10.tar<span class="w"> </span>registry.k8s.io/pause:3.10<span class="w">              </span>
+<span class="w"> </span>~/<span class="w"> </span>docker<span class="w">  </span>save<span class="w"> </span>-o<span class="w">  </span>k8s-13113/etcd.tar<span class="w">  </span>registry.k8s.io/etcd:3.5.15-0
+</code></pre></div>
+<ol>
+<li>在内网服务上加载</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="m">181</span><span class="w">  </span>docker<span class="w"> </span>load<span class="w">  </span>-i<span class="w">  </span>apiserver.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">182</span><span class="w">  </span>docker<span class="w">  </span>load<span class="w">  </span>-i<span class="w"> </span>controller-manager.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">183</span><span class="w">  </span>docker<span class="w"> </span>load<span class="w"> </span>-i<span class="w"> </span>coredns.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">184</span><span class="w">  </span>docker<span class="w"> </span>load<span class="w"> </span>-i<span class="w"> </span>etcd.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">185</span><span class="w">  </span>docker<span class="w"> </span>load<span class="w">  </span>proxy.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">186</span><span class="w">  </span>docker<span class="w"> </span>load<span class="w">  </span>-i<span class="w"> </span>proxy.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">187</span><span class="w">  </span>docker<span class="w">  </span>load<span class="w"> </span>-i<span class="w"> </span>puse3-10.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">188</span><span class="w">  </span>docker<span class="w">  </span>laod<span class="w">  </span>-i<span class="w"> </span>scheduler.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">189</span><span class="w">  </span>docker<span class="w">  </span>load<span class="w">   </span>-i<span class="w"> </span>scheduler.tar<span class="w"> </span>
+<span class="w">  </span><span class="m">190</span><span class="w">  </span>docker<span class="w"> </span>images
+<span class="w">  </span><span class="m">191</span><span class="w">  </span><span class="nb">history</span><span class="w"> </span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

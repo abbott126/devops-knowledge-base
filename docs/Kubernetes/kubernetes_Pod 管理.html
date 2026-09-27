@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pod 管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-pod-管理"># Pod 管理</a></li><li class="toc-l2"><a href="#-pod的生命周期">## Pod的生命周期</a></li><li class="toc-l3"><a href="#-pod-生命期">### Pod 生命期</a></li><li class="toc-l2"><a href="#-pod-阶段">## Pod 阶段</a></li><li class="toc-l3"><a href="#-容器运行状态">### 容器运行状态</a></li><li class="toc-l3"><a href="#-terminated已终止">### `Terminated`（已终止）</a></li><li class="toc-l2"><a href="#-容器的重启策略">## 容器的重启策略</a></li><li class="toc-l3"><a href="#-容器的拉取策略">### 容器的拉取策略</a></li><li class="toc-l2"><a href="#-容器探针container-probes">## 容器探针Container probes</a></li><li class="toc-l3"><a href="#-探针的类型">### 探针的类型</a></li><li class="toc-l4"><a href="#-1.-存活探针liveness-probe">#### 1. **存活探针（Liveness Probe）**</a></li><li class="toc-l4"><a href="#-2.-就绪探针readiness-probe">#### 2. **就绪探针（Readiness Probe）**</a></li><li class="toc-l4"><a href="#-3.-启动探针startup-probek8s-1.16-新增">#### 3. **启动探针（Startup Probe，K8s 1.16+ 新增）**</a></li><li class="toc-l3"><a href="#-探针的检测方式">### 探针的检测方式</a></li><li class="toc-l4"><a href="#-1.-http-检测http-get">#### 1. **HTTP 检测（HTTP GET）**</a></li><li class="toc-l4"><a href="#-2.-命令检测exec">#### 2. **命令检测（Exec）**</a></li><li class="toc-l4"><a href="#-3.-tcp-检测tcp-socket">#### 3. **TCP 检测（TCP Socket）**</a></li><li class="toc-l3"><a href="#-探针的配置参数">### 探针的配置参数</a></li><li class="toc-l2"><a href="#-名称空间-namespaces">## 名称空间 namespaces</a></li><li class="toc-l3"><a href="#-一namespace-的核心作用">### 一、Namespace 的核心作用</a></li><li class="toc-l3"><a href="#-二kubernetes-内置的默认命名空间">### 二、Kubernetes 内置的默认命名空间</a></li><li class="toc-l3"><a href="#-三namespace-的关键特性">### 三、Namespace 的关键特性</a></li><li class="toc-l3"><a href="#-四-基本命令">### 四、 基本命令：</a></li><li class="toc-l4"><a href="#-使用场景示例">#### 使用场景示例</a></li><li class="toc-l4"><a href="#-总结">#### 总结</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="pod">Pod 管理</h1>
+<blockquote>
+<p>Pod 是kubernetes 中最小单元，Pod  容器</p>
+<p>Pod 就是🫛，每一颗小豆豆称作为：<code>container</code></p>
+<p>Pod 是管理一个或者多个容器的单元；</p>
+</blockquote>
+<p>Pod的语法：</p>
+<div class="highlight"><pre><span></span><code>apiVersion: v1   #api版本
+kind: Pod        #k8s的对象资源类型 Pod
+metadata:        #Pod的元数据
+  name: nginx      #Pod 的名称 nginx
+spec:            #定义规格
+  containers:      #容器
+  - name: nginx    #容器name 
+    image: nginx:1.14.2    #镜像
+    ports:         #端口号
+    - containerPort: 80
+</code></pre></div>
+<p>Example:  <code>yaml</code></p>
+<ol>
+<li>创建一个nginx的yaml文件</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">[</span><span class="nv">root@master Pod</span><span class="p p-Indicator">]</span><span class="c1"># cat  pod-example.yaml </span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+</code></pre></div>
+<ol>
+<li>创建nginx的Pod</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>Pod<span class="o">]</span><span class="c1"># kubectl  create  -f  pod-example.yaml </span>
+<span class="o">[</span>root@master<span class="w"> </span>Pod<span class="o">]</span><span class="c1"># kubectl  apply   -f  pod-example.yaml </span>
+</code></pre></div>
+<ol>
+<li>查看pod </li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>Pod<span class="o">]</span><span class="c1"># kubectl  get po  </span>
+NAME<span class="w">    </span>READY<span class="w">   </span>STATUS<span class="w">              </span>RESTARTS<span class="w">   </span>AGE
+nginx<span class="w">   </span><span class="m">0</span>/1<span class="w">     </span>ContainerCreating<span class="w">   </span><span class="m">0</span><span class="w">          </span>7m14s
+</code></pre></div>
+<ol>
+<li>看Pod的详细信息</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>Pod<span class="o">]</span><span class="c1"># kubectl  describe pod nginx </span>
+</code></pre></div>
+<p>!image-20251023114123258](/images/image-20251023114123258.png)</p>
+<p>创建pod流程图：</p>
+<div class="highlight"><pre><span></span><code>graph TD
+    A[&quot;用户提交Pod创建请求&lt;br/&gt;(kubectl/API)&quot;] --&gt; B[API Server]
+    B --&gt;|&quot;验证请求&quot;| C{通过?}
+    C --&gt;|&quot;否&quot;| D[&quot;返回错误&quot;]
+    C --&gt;|&quot;是&quot;| E[&quot;存入etcd并通知调度器&quot;]
+    E --&gt; F[Scheduler]
+    F --&gt;|&quot;筛选+打分&quot;| G[&quot;确定目标节点&quot;]
+    G --&gt; H[&quot;上报调度结果给API Server&quot;]
+    H --&gt; I[&quot;目标节点kubelet&quot;]
+    I --&gt;|&quot;拉镜像+配网络+挂存储&quot;| J[&quot;启动Pod内容器&quot;]
+    J --&gt; K[&quot;kubelet上报Pod状态(Running)&quot;]
+    K --&gt; L[&quot;API Server更新etcd状态&quot;]
+    L --&gt; M[&quot;用户查询Pod状态&quot;]
+</code></pre></div>
+<h2 id="pod_1">Pod的生命周期</h2>
+<h3 id="pod_2">Pod 生命期</h3>
+<p>在 Pod 运行期间，<code>kubelet</code> 能够重启容器以处理一些失效场景。 在 Pod 内部，Kubernetes 跟踪不同容器的<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#container-states">状态</a>并确定使 Pod 重新变得健康所需要采取的动作。</p>
+<p>Pod 在其生命周期中只会被<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/">调度</a>一次。 将 Pod 分配到特定节点的过程称为<strong>绑定</strong>，而选择使用哪个节点的过程称为<strong>调度</strong>。 一旦 Pod 被调度并绑定到某个节点，Kubernetes 会尝试在该节点上运行 Pod。 Pod 会在该节点上运行，直到 Pod 停止或者被<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination">终止</a>； 如果 Kubernetes 无法在选定的节点上启动 Pod（例如，如果节点在 Pod 启动前崩溃）， 那么特定的 Pod 将永远不会启动。</p>
+<p>验证：<code>可以通过删除原来的Pod</code></p>
+<ol>
+<li>查看即将删除的<code>Pod</code>所在节点</li>
+</ol>
+<div class="highlight"><pre><span></span><code>语法：<span class="w"> </span>kubectl<span class="w">  </span>describe<span class="w">  </span>pod<span class="w">  </span><span class="o">{</span>pod_name<span class="o">}</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  describe po  nginx </span>
+</code></pre></div>
+<p><img src="/Users/xiaobo/Library/Application Support/typora-user-images/image-20251023150229586.png" alt="image-20251023150229586" style="zoom:50%;" /></p>
+<p>删除<code>pod</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  delete  pods  nginx-init</span>
+pod<span class="w"> </span><span class="s2">&quot;nginx-init&quot;</span><span class="w"> </span>deleted
+</code></pre></div>
+<ol>
+<li>重新创建Pod </li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  apply  -f  /opt/114-k8s-export/Pod/pod-init.yaml </span>
+pod/nginx-init<span class="w"> </span>created
+</code></pre></div>
+<p>关联的生命周期</p>
+<p>如果某物声称其生命期与某 Pod 相同，例如存储<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/storage/volumes/">卷</a>， 这就意味着该对象在此 Pod （UID 亦相同）存在期间也一直存在。 如果 Pod 因为任何原因被删除，甚至某完全相同的替代 Pod 被创建时， 这个相关的对象（例如这里的卷）也会被删除并重建。</p>
+<p><img src="/Users/xiaobo/Library/Application Support/typora-user-images/image-20251023150649597.png" alt="image-20251023150649597" style="zoom:50%;" /></p>
+<h2 id="pod_3">Pod 阶段</h2>
+<p>Pod 的 <code>status</code> 字段是一个 <a href="https://v1-32.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#podstatus-v1-core">PodStatus</a> 对象，其中包含一个 <code>phase</code> 字段。</p>
+<p>Pod 的阶段（Phase）是 Pod 在其生命周期中所处位置的简单宏观概述。 该阶段并不是对容器或 Pod 状态的综合汇总，也不是为了成为完整的状态机。</p>
+<p>Pod 阶段的数量和含义是严格定义的。 除了本文档中列举的内容外，不应该再假定 Pod 有其他的 <code>phase</code> 值。</p>
+<p>!image-20251023145541377](/images/image-20251023145541377.png)</p>
+<h3 id="_1">容器运行状态</h3>
+<p>Kubernetes 会跟踪 Pod 中每个容器的状态，就像它跟踪 Pod 总体上的<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase">阶段</a>一样。 你可以使用<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/containers/container-lifecycle-hooks/">容器生命周期回调</a> 来在容器生命周期中的特定时间点触发事件。</p>
+<p>一旦<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-scheduler/">调度器</a>将 Pod 分派给某个节点，<code>kubelet</code> 就通过<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes">容器运行时</a>开始为 Pod 创建容器。容器的状态有三种：<code>Waiting</code>（等待）、<code>Running</code>（运行中）和 <code>Terminated</code>（已终止）。</p>
+<p>要检查 Pod 中容器的状态，你可以使用 <code>kubectl describe pod &lt;pod 名称&gt;</code>。 其输出中包含 Pod 中每个容器的状态。</p>
+<p>每种状态都有特定的含义：</p>
+<p><code>Waiting</code>（等待）</p>
+<blockquote>
+<p>如果容器并不处在 <code>Running</code> 或 <code>Terminated</code> 状态之一，它就处在 <code>Waiting</code> 状态。 处于 <code>Waiting</code> 状态的容器仍在运行它完成启动所需要的操作：例如， 从某个容器镜像仓库拉取容器镜像，或者向容器应用 <a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/configuration/secret/">Secret</a> 数据等等。 当你使用 <code>kubectl</code> 来查询包含 <code>Waiting</code> 状态的容器的 Pod 时，你也会看到一个 Reason 字段，其中给出了容器处于等待状态的原因。</p>
+</blockquote>
+<p>!image-20251023153525241](/images/image-20251023153525241.png)</p>
+<p><code>Running</code>（运行中）</p>
+<blockquote>
+<p><code>Running</code> 状态表明容器正在执行状态并且没有问题发生。 如果配置了 <code>postStart</code> 回调，那么该回调已经执行且已完成。 如果你使用 <code>kubectl</code> 来查询包含 <code>Running</code> 状态的容器的 Pod 时， 你也会看到关于容器进入 <code>Running</code> 状态的信息。</p>
+</blockquote>
+<h3 id="terminated"><code>Terminated</code>（已终止）</h3>
+<blockquote>
+<p>处于 <code>Terminated</code> 状态的容器开始执行后，或者运行至正常结束或者因为某些原因失败。 如果你使用 <code>kubectl</code> 来查询包含 <code>Terminated</code> 状态的容器的 Pod 时， 你会看到容器进入此状态的原因、退出代码以及容器执行期间的起止时间。</p>
+<ul>
+<li><code>Terminated</code>（已终止）：表示资源已完全销毁，是最终状态；</li>
+<li><code>Terminating</code>（终止中）：是过渡状态，介于 “运行中” 和 “已终止” 之间。</li>
+</ul>
+</blockquote>
+<p>如果容器配置了 <code>preStop</code> 回调，则该回调会在容器进入 <code>Terminated</code> 状态之前执行。</p>
+<p>!image-20251023154135518](/images/image-20251023154135518.png)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>Pod<span class="o">]</span><span class="c1"># kubectl  delete  pod tomcat  --force</span>
+</code></pre></div>
+<h2 id="_2">容器的重启策略</h2>
+<p>Pod 的 <code>spec</code> 中包含一个 <code>restartPolicy</code> 字段，其可能取值包括 Always、OnFailure 和 Never。默认值是 Always。</p>
+<p><code>restartPolicy</code> 应用于 Pod 中的<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/reference/glossary/?all=true#term-app-container">应用容器</a>和常规的 <a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/workloads/pods/init-containers/">Init 容器</a>。 <a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/workloads/pods/sidecar-containers/">Sidecar 容器</a>忽略 Pod 级别的 <code>restartPolicy</code> 字段：在 Kubernetes 中，Sidecar 被定义为 <code>initContainers</code> 内的一个条目，其容器级别的 <code>restartPolicy</code> 被设置为 <code>Always</code>。 对于因错误而退出的 Init 容器，如果 Pod 级别 <code>restartPolicy</code> 为 <code>OnFailure</code> 或 <code>Always</code>， 则 kubelet 会重新启动 Init 容器。</p>
+<ul>
+<li><code>Always</code>：只要容器终止就自动重启容器。</li>
+<li><code>OnFailure</code>：只有在容器错误退出（退出状态非零）时才重新启动容器。</li>
+<li><code>Never</code>：不会自动重启已终止的容器</li>
+</ul>
+<p>使用<code>kubectl edit pod [pod_name]</code></p>
+<p>!image-20251023160744722](/images/image-20251023160744722.png)</p>
+<h3 id="_3">容器的拉取策略</h3>
+<p>容器的 <code>imagePullPolicy</code> 和镜像的标签会影响 <a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet/">kubelet</a> 尝试拉取（下载）指定的镜像。</p>
+<p>以下列表包含了 <code>imagePullPolicy</code> 可以设置的值，以及这些值的效果：</p>
+<ul>
+<li><code>IfNotPresent</code></li>
+</ul>
+<p>只有当镜像在本地不存在时才会拉取。</p>
+<ul>
+<li><code>Always</code></li>
+</ul>
+<p>每当 kubelet 启动一个容器时，kubelet 会查询容器的镜像仓库， 将名称解析为一个镜像<a href="https://docs.docker.com/engine/reference/commandline/pull/#pull-an-image-by-digest-immutable-identifier">摘要</a>。 如果 kubelet 有一个容器镜像，并且对应的摘要已在本地缓存，kubelet 就会使用其缓存的镜像； 否则，kubelet 就会使用解析后的摘要拉取镜像，并使用该镜像来启动容器。</p>
+<ul>
+<li><code>Never</code></li>
+</ul>
+<p>kubelet 不会尝试获取镜像。如果镜像已经以某种方式存在本地， kubelet 会尝试启动容器；否则，会启动失败。 更多细节见<a href="https://v1-32.docs.kubernetes.io/zh-cn/docs/concepts/containers/images/#pre-pulled-images">提前拉取镜像</a>。</p>
+<p>Never：</p>
+<p>!image-20251023161600552](/images/image-20251023161600552.png)</p>
+<p>Always：</p>
+<p>!image-20251023161836987](/images/image-20251023161836987.png)</p>
+<h2 id="container-probes">容器探针Container probes</h2>
+<p>在 Kubernetes 中，<strong>容器探针（Container Probes）</strong> 是用于监控容器健康状态的机制，Kubernetes 通过探针定期检查容器的运行状态，根据检查结果决定是否重启容器或调整流量路由，以保证应用的可用性。</p>
+<h3 id="_4">探针的类型</h3>
+<p>Kubernetes 提供三种类型的探针，分别用于不同场景：</p>
+<h4 id="1-liveness-probe">1. <strong>存活探针（Liveness Probe）</strong></h4>
+<ul>
+<li><strong>作用</strong>：判断容器是否 “存活”（运行正常）。如果探测失败，kubelet 会杀死该容器，并根据容器的 <code>restartPolicy</code>（重启策略）决定是否决定是否重启。</li>
+<li><strong>典型用场景</strong>：检测应用死锁（如进程进程存在但无法响应请求），通过重启容器恢复服务。</li>
+</ul>
+<h4 id="2-readiness-probe">2. <strong>就绪探针（Readiness Probe）</strong></h4>
+<ul>
+<li><strong>作用</strong>：判断容器是否 “就绪”（可以接收请求）。如果探测失败，Pod 会被从 Service 的 endpoints 中移除，不再接收流量。</li>
+<li><strong>典型场景</strong>：应用启动时需要加载配置或数据（启动慢），就绪探针确保仅当应用完全准备好后才接收请求。</li>
+</ul>
+<h4 id="3-startup-probek8s-116">3. <strong>启动探针（Startup Probe，K8s 1.16+ 新增）</strong></h4>
+<ul>
+<li><strong>作用</strong>：判断容器内的应用是否 “启动完成”。仅在启动探针成功后，存活探针和就绪探针才会开始工作。</li>
+<li><strong>典型场景</strong>：针对启动缓慢的应用（如大型 JVM 服务），避免存活探针在启动过程中误判为故障而重启容器。</li>
+</ul>
+<h3 id="_5">探针的检测方式</h3>
+<p>每种探针都支持三种检测方法，可根据应用特性选择：</p>
+<h4 id="1-http-http-get">1. <strong>HTTP 检测（HTTP GET）</strong></h4>
+<ul>
+<li>向容器的指定端口和路径发送 HTTP GET 请求，返回状态码 <code>200-399</code> 视为成功。</li>
+<li>示例：检查 Web 服务的 <code>/health</code> 接口是否可用。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/www/html/index.html</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1">## 启动后5秒开始首次探测</span>
+<span class="w">      </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># 每5秒探测一次  </span>
+</code></pre></div>
+<h4 id="2-exec">2. <strong>命令检测（Exec）</strong></h4>
+<ul>
+<li>在容器内执行指定命令，若命令退出码为 <code>0</code> 视为成功。</li>
+<li>示例：执行 <code>cat /tmp/healthy</code> 检查文件是否存在，存在则认为健康。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">web-server</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">    </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-c</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">mkdir -p  /var/www/html/;</span>
+<span class="w">      </span><span class="no">echo  &quot;hello world&quot; &gt;  /var/www/html/index.html;</span>
+<span class="w">      </span><span class="no">sleep  60;</span>
+<span class="w">      </span><span class="no">rm -rf  /var/www/html/index.html;</span>
+<span class="w">      </span><span class="no">nginx -g &#39;daemon off;&#39;</span>
+<span class="w">     </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">exec</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">command</span><span class="p">:</span>
+<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ls</span>
+<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/www/html/index.html</span>
+<span class="w">       </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1">## 启动后5秒开始首次探测</span>
+<span class="w">       </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># 每5秒探测一次</span>
+</code></pre></div>
+<blockquote>
+<ul>
+<li><strong><code>args</code> 作用</strong>：Nginx 镜像默认启动命令是 <code>nginx -g 'daemon off;'</code>，这里通过 <code>args</code> 覆盖为自定义脚本，目的是在启动时创建 <code>/var/www/html/index.html</code> 文件（内容为 <code>hello world</code>），后续 Nginx 会默认加载该目录下的页面。</li>
+</ul>
+</blockquote>
+<h4 id="3-tcp-tcp-socket">3. <strong>TCP 检测（TCP Socket）</strong></h4>
+<ul>
+<li>尝试与容器的指定端口建立 TCP 连接，连接成功视为成功。</li>
+<li>示例：检查数据库服务的 8080 端口是否可连接。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">tcpSocket</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
+<span class="w">      </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1">## 启动后5秒开始首次探测</span>
+<span class="w">      </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># 每5秒探测一次  </span>
+</code></pre></div>
+<h3 id="_6">探针的配置参数</h3>
+<p>探针的行为可通过以下参数精细化控制：</p>
+<ul>
+<li><code>initialDelaySeconds</code>：容器启动后，首次探测的延迟时间（秒，默认 0）。</li>
+<li><code>periodSeconds</code>：探测的间隔时间（秒，默认 10）。</li>
+<li><code>timeoutSeconds</code>：单次探测的超时时间（秒，默认 1）。</li>
+<li><code>successThreshold</code>：探测失败后，连续多少次成功才算 “成功”（默认 1）。</li>
+<li><code>failureThreshold</code>：探测成功后，连续多少次失败才算 “失败”（默认 3）。</li>
+</ul>
+<h2 id="namespaces">名称空间 namespaces</h2>
+<p>在 Kubernetes（K8s）中，<strong>Namespace（命名空间）</strong> 是用于对集群内资源进行逻辑隔离和分组管理的核心概念。它本质上是一个 “资源隔离容器”，可以将集群中的 Pod、Service、Deployment 等资源划分到不同的命名空间中，实现多团队、多环境的资源隔离与权限控制。</p>
+<h3 id="namespace">一、Namespace 的核心作用</h3>
+<ol>
+<li><strong>资源隔离</strong>：不同命名空间中的资源名称可以重复（如两个命名空间都可创建名为 <code>nginx</code> 的 Pod），避免全局资源命名冲突。</li>
+<li><strong>环境隔离</strong>：可按环境划分命名空间（如 <code>dev</code> 开发环境、<code>test</code> 测试环境、<code>prod</code> 生产环境），确保不同环境的资源独立，避免测试操作影响生产。</li>
+<li><strong>权限与配额控制</strong>：结合 RBAC（基于角色的访问控制）可限制用户仅能操作特定命名空间的资源；同时可通过 <code>ResourceQuota</code> 为每个命名空间设置资源上限（如最大 CPU / 内存使用量），防止单个团队过度占用集群资源。</li>
+<li><strong>简化资源管理</strong>：通过命名空间过滤资源，避免集群资源过多时的管理混乱（如仅查看生产环境资源，无需关注开发环境）。</li>
+</ol>
+<h3 id="kubernetes">二、Kubernetes 内置的默认命名空间</h3>
+<p>K8s 集群初始化时会自动创建 4 个核心命名空间，用于承载不同类型的资源：</p>
+<ol>
+<li><strong>default</strong>：默认命名空间，未指定命名空间的资源会自动归属此处（适合临时测试或简单场景）。</li>
+<li><strong>kube-system</strong>：用于存放 Kubernetes 核心组件（如 kube-apiserver、kube-scheduler、kube-proxy 等）和系统级插件（如网络插件、监控插件）的资源，禁止用户随意修改。</li>
+<li><strong>kube-public</strong>：公共命名空间，所有用户（包括未授权用户）均可访问，通常用于存放集群级的公共配置（如集群信息 ConfigMap）。</li>
+<li><strong>kube-node-lease</strong>：用于存放节点的租约信息，K8s 通过此处的资源判断节点是否存活（1.13+ 版本引入，优化节点心跳机制）。</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl  get namespaces</span>
+NAME<span class="w">              </span>STATUS<span class="w">   </span>AGE
+default<span class="w">           </span>Active<span class="w">   </span>2d4h
+kube-node-lease<span class="w">   </span>Active<span class="w">   </span>2d4h
+kube-public<span class="w">       </span>Active<span class="w">   </span>2d4h
+kube-system<span class="w">       </span>Active<span class="w">   </span>2d4h
+</code></pre></div>
+<h3 id="namespace_1">三、Namespace 的关键特性</h3>
+<ol>
+<li>命名空间的边界</li>
+<li>隔离的资源：Pod、Service、Deployment、ConfigMap、Secret 等大部分核心资源。</li>
+<li>不隔离的资源：Node（节点）、PersistentVolume（持久卷）等集群级资源（因为节点是物理 / 虚拟资源，PV 是全局共享的存储资源）。</li>
+<li><strong>跨命名空间访问</strong>：不同命名空间的资源可通过 “命名空间 + 资源名称” 的方式访问。例如，<code>dev</code> 命名空间的 Pod 要访问 <code>prod</code> 命名空间的 <code>mysql</code> Service，可通过 <code>mysql.prod.svc.cluster.local</code>（Service 的 DNS 格式：<code>&lt;service-name&gt;.&lt;namespace&gt;.svc.&lt;cluster-domain&gt;</code>）。</li>
+<li><strong>生命周期独立</strong>：删除命名空间时，会自动删除该命名空间下的所有资源（Pod、Service 等），但不会影响其他命名空间。</li>
+</ol>
+<div class="highlight"><pre><span></span><code>graph 
+
+namespace(dev-ns)-.资源对象.-&gt;Pod &amp;  service 
+</code></pre></div>
+<h3 id="_7">四、 基本命令：</h3>
+<ol>
+<li>
+<p>创建<code>namespaces</code></p>
+</li>
+<li>
+<p>使用命令创建</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl  create  namespace  dev</span>
+namespace/dev<span class="w"> </span>created
+</code></pre></div>
+</li>
+<li>
+<p>使用yaml文件 <code>create-namespace.yaml</code></p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Namespace</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+</code></pre></div>
+<p>创建<code>namespace</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>namespaces<span class="o">]</span><span class="c1"># kubectl   apply  -f  create-namespace.yaml </span>
+namespace/test<span class="w"> </span>created
+<span class="o">[</span>root@master<span class="w"> </span>namespaces<span class="o">]</span><span class="c1"># kubectl  get namespace</span>
+NAME<span class="w">              </span>STATUS<span class="w">   </span>AGE
+default<span class="w">           </span>Active<span class="w">   </span>2d4h
+kube-node-lease<span class="w">   </span>Active<span class="w">   </span>2d4h
+kube-public<span class="w">       </span>Active<span class="w">   </span>2d4h
+kube-system<span class="w">       </span>Active<span class="w">   </span>2d4h
+<span class="nb">test</span><span class="w">              </span>Active<span class="w">   </span>9s
+</code></pre></div>
+</li>
+<li>
+<p>查看<code>namespaces</code></p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl  get namespaces </span>
+NAME<span class="w">              </span>STATUS<span class="w">   </span>AGE
+default<span class="w">           </span>Active<span class="w">   </span>2d4h
+dev<span class="w">               </span>Active<span class="w">   </span>47s
+kube-node-lease<span class="w">   </span>Active<span class="w">   </span>2d4h
+kube-public<span class="w">       </span>Active<span class="w">   </span>2d4h
+kube-system<span class="w">       </span>Active<span class="w">   </span>2d4h
+
+<span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl  get namespaces dev</span>
+NAME<span class="w">   </span>STATUS<span class="w">   </span>AGE
+dev<span class="w">    </span>Active<span class="w">   </span>2m39s
+</code></pre></div>
+<ol>
+<li>删除<code>namespaces</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl   delete  ns  dev</span>
+namespace<span class="w"> </span><span class="s2">&quot;dev&quot;</span><span class="w"> </span>deleted
+</code></pre></div>
+<ol>
+<li>描述资源</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>探针<span class="o">]</span><span class="c1"># kubectl  describe  namespaces  dev</span>
+Name:<span class="w">         </span>dev
+Labels:<span class="w">       </span>kubernetes.io/metadata.name<span class="o">=</span>dev
+Annotations:<span class="w">  </span>&lt;none&gt;
+Status:<span class="w">       </span>Active
+
+No<span class="w"> </span>resource<span class="w"> </span>quota.
+
+No<span class="w"> </span>LimitRange<span class="w"> </span>resource.
+</code></pre></div>
+<p>案例：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>namespaces<span class="o">]</span><span class="c1"># cat test-namepase-nginx.yaml </span>
+apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Pod
+metadata:
+<span class="w">   </span>name:<span class="w"> </span>nginx-pod
+spec:
+<span class="w">  </span>containers:
+<span class="w">    </span>-<span class="w"> </span>name:<span class="w"> </span>nginx
+<span class="w">      </span>image:<span class="w"> </span>nginx:latest
+<span class="w">      </span>ports:
+<span class="w">        </span>-<span class="w"> </span>containerPort:<span class="w"> </span><span class="m">80</span>
+</code></pre></div>
+<p>创建pod的时候指定名称</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>namespaces<span class="o">]</span><span class="c1"># kubectl  apply -f  test-namepase-nginx.yaml   --namespace=test</span>
+pod/nginx-pod<span class="w"> </span>created
+
+<span class="o">[</span>root@master<span class="w"> </span>namespaces<span class="o">]</span><span class="c1"># kubectl  get  po -n test</span>
+NAME<span class="w">        </span>READY<span class="w">   </span>STATUS<span class="w">              </span>RESTARTS<span class="w">   </span>AGE
+nginx-pod<span class="w">   </span><span class="m">0</span>/1<span class="w">     </span>ContainerCreating<span class="w">   </span><span class="m">0</span><span class="w">          </span>12s
+</code></pre></div>
+<h4 id="_8">使用场景示例</h4>
+<ol>
+<li><strong>多团队协作</strong>：团队 A 使用 <code>team-a</code> 命名空间，团队 B 使用 <code>team-b</code> 命名空间，通过 RBAC 配置仅允许各自团队操作自己的命名空间，避免误操作。</li>
+<li><strong>多环境部署</strong>：开发环境（<code>dev</code>）用于日常开发测试，测试环境（<code>test</code>）用于功能验证，生产环境（<code>prod</code>）用于线上服务，通过命名空间隔离确保环境稳定性。</li>
+<li><strong>资源配额控制</strong>：为 <code>dev</code> 命名空间设置 CPU 上限 4 核、内存上限 8GB，防止开发环境资源占用过多影响生产环境。</li>
+</ol>
+<h4 id="_9">总结</h4>
+<p>Namespace 是 Kubernetes 中实现资源隔离与精细化管理的基础，通过合理划分命名空间，可有效提升集群的安全性、可维护性，适配多团队、多环境的复杂部署场景。实际使用中，建议避免使用 <code>default</code> 命名空间部署正式服务，而是根据业务需求规划专属命名空间。</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

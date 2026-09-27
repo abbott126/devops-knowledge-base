@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansible 自动化工具 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-自动化工具-ansible"># 自动化工具 Ansible</a></li><li class="toc-l2"><a href="#-部署ansible">## 部署Ansible</a></li><li class="toc-l3"><a href="#-ansible-配置文件">### ansible 配置文件</a></li><li class="toc-l1"><a href="#定义ansible-默认内容">#定义ansible 默认内容</a></li><li class="toc-l1"><a href="#inventory-/etc/ansible/hosts-主机清单文件">#inventory      = /etc/ansible/hosts   #主机清单文件</a></li><li class="toc-l1"><a href="#library-/usr/share/my_modules/-关于模块的库">#library        = /usr/share/my_modules/  #关于模块的库</a></li><li class="toc-l1"><a href="#module_utils-/usr/share/my_module_utils/">#module_utils   = /usr/share/my_module_utils/</a></li><li class="toc-l1"><a href="#remote_tmp-/.ansible/tmp">#remote_tmp     = ~/.ansible/tmp</a></li><li class="toc-l1"><a href="#local_tmp-/.ansible/tmp">#local_tmp      = ~/.ansible/tmp</a></li><li class="toc-l1"><a href="#plugin_filters_cfg-/etc/ansible/plugin_filters.yml">#plugin_filters_cfg = /etc/ansible/plugin_filters.yml</a></li><li class="toc-l1"><a href="#forks-5">#forks          = 5</a></li><li class="toc-l1"><a href="#poll_interval-15">#poll_interval  = 15</a></li><li class="toc-l1"><a href="#sudo_user-root">#sudo_user      = root</a></li><li class="toc-l1"><a href="#ask_sudo_pass-true">#ask_sudo_pass = True</a></li><li class="toc-l1"><a href="#ask_pass-true">#ask_pass      = True</a></li><li class="toc-l1"><a href="#transport-smart">#transport      = smart</a></li><li class="toc-l1"><a href="#remote_port-22">#remote_port    = 22</a></li><li class="toc-l1"><a href="#module_lang-c">#module_lang    = C</a></li><li class="toc-l1"><a href="#module_set_locale-false">#module_set_locale = False</a></li><li class="toc-l1"><a href="#主机清单配置文件的位置">#主机清单配置文件的位置</a></li><li class="toc-l1"><a href="#定义关于ssh连接的位置">#定义关于SSH连接的位置</a></li><li class="toc-l1"><a href="#-关于selinux"># 关于seLinux</a></li><li class="toc-l1"><a href="#定义颜色">#定义颜色</a></li><li class="toc-l1"><a href="#对比文件">#对比文件</a></li><li class="toc-l1"><a href="#-ex-1-ungrouped-hosts-specify-before-any-group-headers."># Ex 1: Ungrouped hosts, specify before any group headers.</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="ansible">自动化工具 Ansible</h1>
+<p>!image-20250911165502048](/images/image-20250911165502048.png)</p>
+<h2 id="ansible_1">部署Ansible</h2>
+<blockquote>
+<p>官方：推荐使用pip的方式安装</p>
+</blockquote>
+<ul>
+<li>7 系列</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># wget -O /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># yum -y install  ansible</span>
+</code></pre></div>
+<ul>
+<li>fedora</li>
+</ul>
+<div class="highlight"><pre><span></span><code>dnf<span class="w">  </span>install<span class="w">  </span>ansible
+</code></pre></div>
+<p>验证:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  --version</span>
+ansible<span class="w"> </span><span class="m">2</span>.9.27
+<span class="w">  </span>config<span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/etc/ansible/ansible.cfg
+<span class="w">  </span>configured<span class="w"> </span>module<span class="w"> </span>search<span class="w"> </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span>u<span class="s1">&#39;/root/.ansible/plugins/modules&#39;</span>,<span class="w"> </span>u<span class="s1">&#39;/usr/share/ansible/plugins/modules&#39;</span><span class="o">]</span>
+<span class="w">  </span>ansible<span class="w"> </span>python<span class="w"> </span>module<span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/usr/lib/python2.7/site-packages/ansible
+<span class="w">  </span>executable<span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/usr/bin/ansible
+<span class="w">  </span>python<span class="w"> </span><span class="nv">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>.7.5<span class="w"> </span><span class="o">(</span>default,<span class="w"> </span>Mar<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="m">2020</span>,<span class="w"> </span><span class="m">17</span>:08:22<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">4</span>.8.5<span class="w"> </span><span class="m">20150623</span><span class="w"> </span><span class="o">(</span>Red<span class="w"> </span>Hat<span class="w"> </span><span class="m">4</span>.8.5-39<span class="o">)]</span>
+</code></pre></div>
+<h3 id="ansible_2">ansible 配置文件</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tree   -L 2  /etc/ansible/</span>
+/etc/ansible/
+├──<span class="w"> </span>ansible.cfg<span class="w">   </span><span class="c1">#ansible的住配置文件</span>
+├──<span class="w"> </span>hosts<span class="w">    </span><span class="c1">#主机清单文件</span>
+└──<span class="w"> </span>roles<span class="w">    </span><span class="c1">#角色文件</span>
+
+<span class="m">1</span><span class="w"> </span>directory,<span class="w"> </span><span class="m">2</span><span class="w"> </span>files
+</code></pre></div>
+<blockquote>
+<p>ansible.cfg</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>defaults<span class="o">]</span><span class="w">   </span>
+<span class="c1">#定义ansible 默认内容</span>
+
+<span class="c1">#inventory      = /etc/ansible/hosts   #主机清单文件</span>
+<span class="c1">#library        = /usr/share/my_modules/  #关于模块的库</span>
+<span class="c1">#module_utils   = /usr/share/my_module_utils/ </span>
+远程控制的节点上建立临时工作目录
+<span class="c1">#remote_tmp     = ~/.ansible/tmp</span>
+ansible节点上建立临时工作目录
+<span class="c1">#local_tmp      = ~/.ansible/tmp</span>
+
+<span class="c1">#plugin_filters_cfg = /etc/ansible/plugin_filters.yml</span>
+
+并发
+<span class="c1">#forks          = 5</span>
+<span class="c1">#poll_interval  = 15</span>
+
+
+<span class="c1">#sudo_user      = root</span>
+<span class="c1">#ask_sudo_pass = True</span>
+<span class="c1">#ask_pass      = True</span>
+<span class="c1">#transport      = smart</span>
+<span class="c1">#remote_port    = 22</span>
+<span class="c1">#module_lang    = C</span>
+<span class="c1">#module_set_locale = False</span>
+<span class="o">[</span>inventory<span class="o">]</span>
+<span class="c1">#主机清单配置文件的位置</span>
+<span class="o">[</span>privilege_escalation<span class="o">]</span>
+<span class="o">[</span>paramiko_connection<span class="o">]</span>
+<span class="o">[</span>ssh_connection<span class="o">]</span>
+<span class="c1">#定义关于SSH连接的位置</span>
+<span class="o">[</span>persistent_connection<span class="o">]</span>
+<span class="o">[</span>accelerate<span class="o">]</span>
+<span class="o">[</span>selinux<span class="o">]</span>
+<span class="c1"># 关于seLinux</span>
+<span class="o">[</span>colors<span class="o">]</span>
+<span class="c1">#定义颜色</span>
+<span class="o">[</span>diff<span class="o">]</span>
+<span class="c1">#对比文件</span>
+</code></pre></div>
+<p>主机清单文件<code>hosts</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ex 1: Ungrouped hosts, specify before any group headers.</span>
+<span class="c1">## green.example.com</span>
+<span class="c1">## blue.example.com</span>
+<span class="c1">## 192.168.100.1</span>
+<span class="c1">## 192.168.100.10</span>
+
+
+<span class="c1"># Ex 2: A collection of hosts belonging to the &#39;webservers&#39; group</span>
+
+<span class="o">[</span>webservers<span class="o">]</span>
+<span class="m">192</span>.168.1.122<span class="w"> </span><span class="o">||</span><span class="w"> </span>域名
+<span class="m">192</span>.168.1.133
+www<span class="o">[</span><span class="m">001</span>:006<span class="o">]</span>.example.com
+</code></pre></div>
+<h2 id="use-ansible">use ansible</h2>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  {主机|all|组}  -m </span>
+</code></pre></div>
+<p>小试一把：</p>
+<blockquote>
+<p>在主机中添加一台主机</p>
+</blockquote>
+<p>hosts ：主机清单文件中</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cat  /etc/ansible/hosts </span>
+<span class="m">192</span>.168.1.113
+</code></pre></div>
+<p>配置SSH免密：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-keygen </span>
+Generating<span class="w"> </span>public/private<span class="w"> </span>rsa<span class="w"> </span>key<span class="w"> </span>pair.
+Enter<span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>which<span class="w"> </span>to<span class="w"> </span>save<span class="w"> </span>the<span class="w"> </span>key<span class="w"> </span><span class="o">(</span>/root/.ssh/id_rsa<span class="o">)</span>:<span class="w"> </span>
+Enter<span class="w"> </span>passphrase<span class="w"> </span><span class="o">(</span>empty<span class="w"> </span><span class="k">for</span><span class="w"> </span>no<span class="w"> </span>passphrase<span class="o">)</span>:<span class="w"> </span>
+Enter<span class="w"> </span>same<span class="w"> </span>passphrase<span class="w"> </span>again:<span class="w"> </span>
+Your<span class="w"> </span>identification<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>saved<span class="w"> </span><span class="k">in</span><span class="w"> </span>/root/.ssh/id_rsa.
+Your<span class="w"> </span>public<span class="w"> </span>key<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>saved<span class="w"> </span><span class="k">in</span><span class="w"> </span>/root/.ssh/id_rsa.pub.
+The<span class="w"> </span>key<span class="w"> </span>fingerprint<span class="w"> </span>is:
+SHA256:YeXp4ryFLUpc5SCE2A3Ek6pYSNa0ZGI6gyWb6ObA6Fw<span class="w"> </span>root@ansible-server.com
+The<span class="w"> </span>key<span class="err">&#39;</span>s<span class="w"> </span>randomart<span class="w"> </span>image<span class="w"> </span>is:
++---<span class="o">[</span>RSA<span class="w"> </span><span class="m">2048</span><span class="o">]</span>----+
+<span class="p">|</span>.o+Oo<span class="o">=</span>.<span class="w">   </span>.<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=</span><span class="nv">B</span><span class="o">=</span>.B..<span class="w">  </span>o<span class="w"> </span>.<span class="w">     </span><span class="p">|</span>
+<span class="p">|</span>@.<span class="w"> </span>o<span class="w"> </span>..<span class="w"> </span>+<span class="w"> </span>+<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=</span>oo<span class="w">    </span>o<span class="w"> </span>*<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span>+*<span class="w"> </span>E<span class="w">    </span>S<span class="w"> </span>o<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span>O<span class="w"> </span>.<span class="w">  </span>.<span class="w"> </span>+<span class="w"> </span>+<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>+<span class="w">    </span><span class="nv">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>o<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="w">     </span>.<span class="w"> </span>.<span class="w"> </span>+<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span><span class="w">      </span>.<span class="w"> </span>.<span class="w">        </span><span class="p">|</span>
++----<span class="o">[</span>SHA256<span class="o">]</span>-----+
+</code></pre></div>
+<p>推送公钥</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh-copy-id root@192.168.1.113</span>
+</code></pre></div>
+<p>测试：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ssh  root@192.168.1.111</span>
+Web<span class="w"> </span>console:<span class="w"> </span>https://fedora:9090/<span class="w"> </span>or<span class="w"> </span>https://192.168.1.111:9090/
+
+Last<span class="w"> </span>login:<span class="w"> </span>Thu<span class="w"> </span>Sep<span class="w"> </span><span class="m">11</span><span class="w"> </span><span class="m">16</span>:33:01<span class="w"> </span><span class="m">2025</span><span class="w"> </span>from<span class="w"> </span><span class="m">192</span>.168.1.101
+root@fedora:~#<span class="w"> </span>
+</code></pre></div>
+<p>测试ansible</p>
+<div class="highlight"><pre><span></span><code>ansible<span class="w">  </span><span class="o">{</span>主机清单｜<span class="w"> </span>all<span class="w"> </span>｜<span class="w"> </span>host_ip<span class="p">|</span>hostname<span class="o">}</span><span class="w"> </span>-m<span class="w"> </span><span class="o">{</span>指定模块<span class="o">}</span><span class="w"> </span><span class="s2">&quot;ping&quot;</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m  &quot;ping&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">SUCCESS</span><span class="w"> </span><span class="o">=</span>&gt;<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;ansible_facts&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;discovered_interpreter_python&quot;</span>:<span class="w"> </span><span class="s2">&quot;/usr/bin/python&quot;</span>
+<span class="w">    </span><span class="o">}</span>,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;changed&quot;</span>:<span class="w"> </span>false,<span class="w"> </span>
+<span class="w">    </span><span class="s2">&quot;ping&quot;</span>:<span class="w"> </span><span class="s2">&quot;pong&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<h3 id="_1">使用模块</h3>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible  all  -m command  -a  &quot;hostnamectl&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+<span class="w">   </span>Static<span class="w"> </span>hostname:<span class="w"> </span>localhost.localdomain
+<span class="w">         </span>Icon<span class="w"> </span>name:<span class="w"> </span>computer-vm
+<span class="w">           </span>Chassis:<span class="w"> </span>vm
+<span class="w">        </span>Machine<span class="w"> </span>ID:<span class="w"> </span>5ab66a4e84eb4df4833ebe09091314de
+<span class="w">           </span>Boot<span class="w"> </span>ID:<span class="w"> </span>ccc9c4f944944bf39527611eb7ea2d75
+<span class="w">    </span>Virtualization:<span class="w"> </span>kvm
+<span class="w">  </span>Operating<span class="w"> </span>System:<span class="w"> </span>Red<span class="w"> </span>Hat<span class="w"> </span>Enterprise<span class="w"> </span>Linux<span class="w"> </span>Server<span class="w"> </span><span class="m">7</span>.9<span class="w"> </span><span class="o">(</span>Maipo<span class="o">)</span>
+<span class="w">       </span>CPE<span class="w"> </span>OS<span class="w"> </span>Name:<span class="w"> </span>cpe:/o:redhat:enterprise_linux:7.9:GA:server
+<span class="w">            </span>Kernel:<span class="w"> </span>Linux<span class="w"> </span><span class="m">3</span>.10.0-1160.el7.x86_64
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

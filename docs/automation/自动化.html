@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动化概览 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-自动化"># 自动化</a></li><li class="toc-l2"><a href="#-自动化工具">## 自动化工具：</a></li><li class="toc-l2"><a href="#-playbook">## playbook</a></li><li class="toc-l3"><a href="#-json-语言">### json  语言：</a></li><li class="toc-l4"><a href="#-应用场景">#### 应用场景</a></li><li class="toc-l4"><a href="#-语法规则">#### 语法规则</a></li><li class="toc-l2"><a href="#-yaml-语言">## yaml 语言</a></li><li class="toc-l4"><a href="#-yaml-书写格式">#### yaml 书写格式：</a></li><li class="toc-l1"><a href="#字典">#字典</a></li><li class="toc-l1"><a href="#-可以跨越多行"># 可以跨越多行</a></li><li class="toc-l1"><a href="#检查yaml文件语法是否正确">#检查yaml文件语法是否正确</a></li><li class="toc-l3"><a href="#-模版-template">### 模版 template</a></li><li class="toc-l3"><a href="#-jinja2-语法">### Jinja2 语法：</a></li><li class="toc-l1"><a href="#listen-80">#Listen 80</a></li><li class="toc-l3"><a href="#-条件语句when-">### 条件语句`when` ：</a></li><li class="toc-l3"><a href="#-handlers-running-operations-on-change">### Handlers: running operations on change</a></li><li class="toc-l3"><a href="#-loop-循环">### Loop 循环</a></li><li class="toc-l2"><a href="#-角色roles">## 角色roles</a></li><li class="toc-l4"><a href="#-创建一个角色-初始化">#### 创建一个角色 初始化</a></li><li class="toc-l1"><a href="#-/usr/share/ansible/roles"># /usr/share/ansible/roles</a></li><li class="toc-l1"><a href="#-/etc/ansible/roles"># /etc/ansible/roles</a></li><li class="toc-l4"><a href="#-获取官方维护的角色-有大佬通过角色实现的功能呢">#### 获取官方维护的角色 `有大佬通过角色实现的功能呢`</a></li><li class="toc-l3"><a href="#-ansible-加密">### ansible 加密</a></li><li class="toc-l1"><a href="#-手动输入密码"># 手动输入密码</a></li><li class="toc-l1"><a href="#-使用密码文件文件权限建议设为-0600"># 使用密码文件（文件权限建议设为 0600）</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">自动化</h1>
+<blockquote>
+<p>一些基本概念 devOps AIOps GItOps</p>
+</blockquote>
+<h2 id="_2">自动化工具：</h2>
+<p>Cobbler   PXE --&gt; 自动化安装系统</p>
+<p>批量管理服务器 <code>ansible</code></p>
+<div class="highlight"><pre><span></span><code>graph 
+webUI --&gt;ansible
+command  --&gt; ansible
+playbook --&gt; ansible
+roles  --&gt; ansible
+ansible  --&gt;主机清单 &amp; 模块 &amp; plugins  --&gt;网络设备 &amp; server
+</code></pre></div>
+<h2 id="playbook">playbook</h2>
+<blockquote>
+<p>是Yaml语言</p>
+</blockquote>
+<h3 id="json">json  语言：</h3>
+<p>JSON（JavaScript Object Notation）是一种轻量级的数据交换格式，基于 ECMAScript 规范的子集，采用文本格式来存储和表示数据，具有简洁、易读、跨平台等特点。</p>
+<p>核心特性</p>
+<ul>
+<li>
+<p><strong>简洁性</strong>：语法简单，采用键值对（key-value）结构，使用大括号<code>{}</code>表示对象，中括号<code>[]</code>表示数组，数据之间用逗号<code>,</code>分隔，无冗余标签，相比 XML 更紧凑。</p>
+</li>
+<li>
+<p><strong>可读性</strong>：结构清晰，人类可直接阅读和编辑，例如：</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;age&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;isStudent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;hobbies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;reading&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;coding&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;city&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Beijing&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;street&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Main Road&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>
+<p><strong>跨语言支持</strong>：几乎所有主流编程语言（如 Python、Java、JavaScript、C# 等）都内置或有第三方库支持 JSON 的解析和生成，是不同系统间数据交换的理想选择。</p>
+</li>
+<li>
+<p><strong>数据类型有限但实用</strong>：支持字符串（需用双引号包裹）、数字（整数、浮点数）、布尔值（<code>true</code>/<code>false</code>）、<code>null</code>、对象（键值对集合）、数组（有序值列表）。</p>
+</li>
+</ul>
+<h4 id="_3">应用场景</h4>
+<ul>
+<li><strong>前后端数据交互</strong>：网页前端（如 JavaScript）与后端服务器之间通常用 JSON 传递数据，是 AJAX 请求的主要数据格式。</li>
+<li><strong>配置文件</strong>：部分软件或框架使用 JSON 作为配置文件格式（如 npm 的<code>package.json</code>）。</li>
+<li><strong>API 接口</strong>：大量 RESTful API 以 JSON 格式返回数据，方便客户端解析处理。</li>
+<li><strong>数据存储</strong>：小型应用中可直接用 JSON 文件存储简单数据，替代轻量级数据库。</li>
+</ul>
+<h4 id="_4">语法规则</h4>
+<ul>
+<li>键必须用双引号<code>""</code>包裹（区别于 JavaScript 对象的键可省略引号）。</li>
+<li>字符串必须用双引号<code>""</code>包裹，不能用单引号。</li>
+<li>末尾不能有多余的逗号（如数组或对象最后一个元素后不能加逗号）。</li>
+<li>不支持注释（这是与 YAML 的主要区别之一）。</li>
+</ul>
+<h2 id="yaml">yaml 语言</h2>
+<h4 id="yaml_1">yaml 书写格式：</h4>
+<div class="highlight"><pre><span></span><code><span class="c1">#字典</span>
+<span class="nn">---</span>
+
+<span class="nt">martin</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Martin D&#39;vloper</span>
+<span class="w">    </span><span class="nt">job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Developer</span>
+<span class="w">    </span><span class="nt">skills</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">perl</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pascal</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tabitha</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Tabitha Bitumen</span>
+<span class="w">    </span><span class="nt">job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Developer</span>
+<span class="w">    </span><span class="nt">skills</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lisp</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fortran</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">erlang</span>
+<span class="c1"># 可以跨越多行</span>
+<span class="nn">---</span>
+<span class="nt">include_newlines</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">exactly as you see</span>
+<span class="w">            </span><span class="no">will appear these three</span>
+<span class="w">            </span><span class="no">lines of poetry</span>
+
+<span class="nt">fold_newlines</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">            </span><span class="no">this is really a</span>
+</code></pre></div>
+<p>文件的命名：必须以<code>*.yaml|| *.yml</code> 后缀名</p>
+<p>示例语法：</p>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update web servers</span><span class="w">  </span><span class="c1">#任务的名称</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webservers</span><span class="w">     </span><span class="c1">#定义主机/组。hosts--&gt; /etc/ansible/hosts</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span><span class="w">       </span><span class="c1">#任务</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w">   </span><span class="c1">#任务的名称</span>
+<span class="w">    </span><span class="nt">ansible.builtin.yum</span><span class="p">:</span><span class="w">   </span><span class="c1"># 调用任务的模块</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">httpd</span><span class="w">         </span>
+<span class="w">      </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">latest</span>
+</code></pre></div>
+<p>测试：<code>测试主机节点是否可用</code></p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">[</span><span class="nv">root@ansible-server playbook</span><span class="p p-Indicator">]</span><span class="c1"># cat play1.yaml </span>
+<span class="nn">---</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test hosts</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">ping</span>
+</code></pre></div>
+<p>执行<code>playbook</code></p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="c1">#检查yaml文件语法是否正确</span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>playbook<span class="o">]</span><span class="c1"># ansible-playbook  --check play1.yaml  </span>
+<span class="o">[</span>root@ansible-server<span class="w"> </span>playbook<span class="o">]</span><span class="c1"># ansible-playbook  play1.yaml </span>
+
+PLAY<span class="w"> </span><span class="o">[</span>all<span class="o">]</span><span class="w"> </span>****************************************************************************************************
+
+TASK<span class="w"> </span><span class="o">[</span>Gathering<span class="w"> </span>Facts<span class="o">]</span><span class="w"> </span>****************************************************************************************
+ok:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.102<span class="o">]</span>
+ok:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.103<span class="o">]</span>
+ok:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.105<span class="o">]</span>
+ok:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.106<span class="o">]</span>
+
+TASK<span class="w"> </span><span class="o">[</span><span class="nb">test</span><span class="w"> </span>hosts<span class="o">]</span><span class="w"> </span>*********************************************************************************************
+changed:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.103<span class="o">]</span>
+changed:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.106<span class="o">]</span>
+changed:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.105<span class="o">]</span>
+changed:<span class="w"> </span><span class="o">[</span><span class="m">192</span>.168.1.102<span class="o">]</span>
+
+PLAY<span class="w"> </span>RECAP<span class="w"> </span>****************************************************************************************************
+<span class="m">192</span>.168.1.102<span class="w">              </span>:<span class="w"> </span><span class="nv">ok</span><span class="o">=</span><span class="m">2</span><span class="w">    </span><span class="nv">changed</span><span class="o">=</span><span class="m">1</span><span class="w">    </span><span class="nv">unreachable</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">failed</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">skipped</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">rescued</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">ignored</span><span class="o">=</span><span class="m">0</span><span class="w">   </span>
+<span class="m">192</span>.168.1.103<span class="w">              </span>:<span class="w"> </span><span class="nv">ok</span><span class="o">=</span><span class="m">2</span><span class="w">    </span><span class="nv">changed</span><span class="o">=</span><span class="m">1</span><span class="w">    </span><span class="nv">unreachable</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">failed</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">skipped</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">rescued</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">ignored</span><span class="o">=</span><span class="m">0</span><span class="w">   </span>
+<span class="m">192</span>.168.1.105<span class="w">              </span>:<span class="w"> </span><span class="nv">ok</span><span class="o">=</span><span class="m">2</span><span class="w">    </span><span class="nv">changed</span><span class="o">=</span><span class="m">1</span><span class="w">    </span><span class="nv">unreachable</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">failed</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">skipped</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">rescued</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">ignored</span><span class="o">=</span><span class="m">0</span><span class="w">   </span>
+<span class="m">192</span>.168.1.106<span class="w">              </span>:<span class="w"> </span><span class="nv">ok</span><span class="o">=</span><span class="m">2</span><span class="w">    </span><span class="nv">changed</span><span class="o">=</span><span class="m">1</span><span class="w">    </span><span class="nv">unreachable</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">failed</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">skipped</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">rescued</span><span class="o">=</span><span class="m">0</span><span class="w">    </span><span class="nv">ignored</span><span class="o">=</span><span class="m">0</span><span class="w">   </span>
+</code></pre></div>
+<h3 id="template">模版 template</h3>
+<blockquote>
+<p>Ansible使用Jinja2模板来启用动态表达式并访问<a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#playbooks-variables">变量</a>和<a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html#vars-and-facts">事实</a>。您可以将模板与<a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#template-module">模板</a>一起使用。例如，您可以为配置文件创建一个模板，然后将该配置文件部署到多个环境中，并为每个环境提供正确的数据（IP地址、主机名、版本）</p>
+<p>比如： 我们可以使用jinja2定义模版，模版可以获取主机信息，匹配到我们的配置文件；</p>
+</blockquote>
+<h3 id="jinja2">Jinja2 语法：</h3>
+<p>Jinja是一种快速、富有表现力、可扩展的模板引擎。模板中的特殊占位符允许编写类似于Python语法的代码。然后将数据传递给模板以呈现最终文档。</p>
+<p>它包括：</p>
+<ul>
+<li>模板继承和包含。</li>
+<li>在模板中定义和导入宏。</li>
+<li>HTML模板可以使用自动脱码来防止XSS被不可信的用户输入。</li>
+<li>沙盒环境可以安全地渲染不受信任的模板。</li>
+<li>非同步支持生成模板，无需额外的语法即可自动处理同步和非同步功能。</li>
+<li>与Babel的I18N支持。</li>
+<li>模板被及时编译为优化的Python代码并缓存，也可以提前编译。</li>
+<li>异常指向模板中的正确行，以使调试更容易。</li>
+<li>可扩展的过滤器、测试、函数，甚至语法。</li>
+</ul>
+<p>Jinja的理念是，如果可能的话，应用程序逻辑属于Python，但它不应该因过多限制功能而使模板设计师的工作变得困难。</p>
+<p>语法：</p>
+<div class="highlight"><pre><span></span><code>{% ... %} 用于语句
+{{ ... }} 用于打印到模板输出的表达式
+{# ... #} 表示模板输出中未包含的注释
+</code></pre></div>
+<p>Example: <code>index.html 获取到节点的IP地址</code></p>
+<div class="highlight"><pre><span></span><code>[root@ansible-server jinja2]# cat  index.j2 
+&lt;h1&gt;
+获取节点的IP地址: {{ ansible_all_ipv4_addresses }}&lt;/br&gt;
+主机名: {{  ansible_hostname }}&lt;/br&gt;
+获取主机IP地址默认ipv4字段中获取：{{ ansible_default_ipv4[&#39;address&#39;] }}&lt;/br&gt;
+
+网关: {{ ansible_default_ipv4[&#39;gateway&#39;] }}&lt;/br&gt;
+网卡的接口: {{ ansible_default_ipv4[&#39;interface&#39;] }}&lt;/br&gt;
+
+&lt;/h1&gt;
+</code></pre></div>
+<p>验证： <code>使用浏览器验证</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>jinja2<span class="o">]</span><span class="c1"># ansible web  -m shell -a &quot;cat /var/www/html/index.html&quot;</span>
+<span class="m">192</span>.168.1.103<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+&lt;h1&gt;
+获取节点的IP地址<span class="w"> </span><span class="o">[</span>u<span class="s1">&#39;192.168.1.103&#39;</span><span class="o">]</span>&lt;/br&gt;
+主机名:<span class="w"> </span>abbott&lt;/br&gt;
+获取主机IP地址默认ipv4字段中获取：192.168.1.103&lt;/br&gt;
+
+网关:<span class="w"> </span><span class="m">192</span>.168.1.1&lt;/br&gt;
+网卡的接口:<span class="w"> </span>eth0&lt;/br&gt;
+
+&lt;/h1&gt;
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="p">|</span><span class="w"> </span>CHANGED<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">rc</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>&gt;&gt;
+&lt;h1&gt;
+获取节点的IP地址<span class="w"> </span><span class="o">[</span>u<span class="s1">&#39;192.168.1.105&#39;</span><span class="o">]</span>&lt;/br&gt;
+主机名:<span class="w"> </span>abbott&lt;/br&gt;
+获取主机IP地址默认ipv4字段中获取：192.168.1.105&lt;/br&gt;
+
+网关:<span class="w"> </span><span class="m">192</span>.168.1.1&lt;/br&gt;
+网卡的接口:<span class="w"> </span>eth0&lt;/br&gt;
+
+&lt;/h1&gt;
+</code></pre></div>
+<p>Example: 修改配置文件：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#Listen 80</span>
+Listen<span class="w"> </span><span class="o">{{</span><span class="w"> </span>ansible_default_ipv4<span class="o">[</span><span class="s1">&#39;address&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">}}</span>:80
+</code></pre></div>
+<p>验证</p>
+<p>!image-20250915145258725](/images/image-20250915145258725.png)</p>
+<h3 id="when">条件语句<code>when</code> ：</h3>
+<blockquote>
+<p>最简单的条件语句适用于单个任务。创建任务，然后添加应用测试的 <code>when</code> 语句。<code>when</code> 子句是一个原始的 Jinja2 表达式，没有双大括号（参见<a href="https://docs.ansible.com/ansible/devel/playbook_guide/playbooks_variables.html#jinja2-simple">引用简单变量 </a>）。运行任务或 playbook 时，Ansible 会评估所有主机的测试。在测试通过的任何主机上（返回值 True），Ansible 都会运行该任务。</p>
+</blockquote>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>playbook<span class="o">]</span><span class="c1"># cat when/ex1.yaml </span>
+---
+-<span class="w"> </span>hosts:<span class="w"> </span>all
+<span class="w">  </span>tasks:<span class="w"> </span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>modify<span class="w"> </span>hostname
+<span class="w">    </span>hostname:
+<span class="w">      </span>name:<span class="w"> </span>web1-server.com
+<span class="w">    </span>when:<span class="w"> </span>ansible_default_ipv4<span class="o">[</span><span class="s1">&#39;address&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;192.168.1.103&quot;</span><span class="w">  </span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>modify<span class="w"> </span>hostname
+<span class="w">    </span>hostname:
+<span class="w">      </span>name:<span class="w"> </span>web2-server.com
+<span class="w">    </span>when:<span class="w"> </span>ansible_default_ipv4<span class="o">[</span><span class="s1">&#39;address&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;192.168.1.105&quot;</span><span class="w">  </span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>modify<span class="w"> </span>hostname
+<span class="w">    </span>hostname:
+<span class="w">      </span>name:<span class="w"> </span>db1-server.com
+<span class="w">    </span>when:<span class="w"> </span>ansible_default_ipv4<span class="o">[</span><span class="s1">&#39;address&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;192.168.1.102&quot;</span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>modify<span class="w"> </span>hostname
+<span class="w">    </span>hostname:
+<span class="w">      </span>name:<span class="w"> </span>db2-server.com
+<span class="w">    </span>when:<span class="w"> </span>ansible_default_ipv4<span class="o">[</span><span class="s1">&#39;address&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;192.168.1.106&quot;</span><span class="w">  </span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>install<span class="w">  </span>httpd
+<span class="w">    </span>apt:
+<span class="w">      </span>name:<span class="w"> </span>apache2
+<span class="w">      </span>state:<span class="w">  </span>installed
+<span class="w">    </span>when:<span class="w"> </span>ansible_facts<span class="o">[</span><span class="s1">&#39;os_family&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;Debian&quot;</span>
+</code></pre></div>
+<h3 id="handlers-running-operations-on-change">Handlers: running operations on change</h3>
+<blockquote>
+<p>修改配置文件之后再触发动作</p>
+<p>Notify  任务执行了；<code>Notify</code> 出发一个动作 <code>Handlers</code></p>
+</blockquote>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-<span class="w"> </span>hosts:<span class="w"> </span>all
+<span class="w">  </span>vars:<span class="w"> </span>
+<span class="w">    </span>-<span class="w"> </span>http_path:<span class="w"> </span>/etc/httpd/conf
+<span class="w">    </span>-<span class="w"> </span>page_pash:<span class="w"> </span>/var/www/html
+<span class="w">    </span>-<span class="w"> </span>local_path:<span class="w"> </span>/etc/httpd
+
+<span class="w">  </span>tasks:
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>install<span class="w"> </span>httpd
+<span class="w">    </span>yum:
+<span class="w">      </span>name:<span class="w"> </span>httpd
+<span class="w">      </span>state:<span class="w"> </span>installed
+<span class="w">    </span>when:<span class="w"> </span>ansible_facts<span class="o">[</span><span class="s1">&#39;os_family&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;RedHat&quot;</span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>修改配置文件
+<span class="w">    </span>template:
+<span class="w">      </span>src:<span class="w"> </span>httpd.j2
+<span class="w">      </span>dest:<span class="w"> </span><span class="s1">&#39;{{ http_path }}/httpd.conf&#39;</span>
+<span class="w">    </span>notify:
+<span class="w">      </span>-<span class="w"> </span>restart<span class="w"> </span>httpd
+<span class="w">    </span>when:<span class="w"> </span>ansible_facts<span class="o">[</span><span class="s1">&#39;os_family&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;RedHat&quot;</span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>启动服务
+<span class="w">    </span>service:
+<span class="w">      </span>name:<span class="w"> </span>httpd
+<span class="w">      </span>state:<span class="w"> </span>started
+<span class="w">    </span>when:<span class="w"> </span>ansible_facts<span class="o">[</span><span class="s1">&#39;os_family&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;RedHat&quot;</span>
+<span class="w">  </span>-<span class="w"> </span>name:<span class="w"> </span>update<span class="w"> </span>html<span class="w"> </span>page
+<span class="w">    </span>template:
+<span class="w">      </span>src:<span class="w"> </span>index.j2
+<span class="w">      </span>dest:<span class="w"> </span><span class="s1">&#39;{{ page_pash }}/index.html&#39;</span>
+<span class="w">  </span>handlers:
+<span class="w">    </span>-<span class="w"> </span>name:<span class="w"> </span>restart<span class="w"> </span>httpd
+<span class="w">      </span>service:
+<span class="w">        </span>name:<span class="w"> </span>httpd
+<span class="w">        </span>state:<span class="w"> </span>restarted
+<span class="w">      </span>when:<span class="w"> </span>ansible_facts<span class="o">[</span><span class="s1">&#39;os_family&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;RedHat&quot;</span>
+</code></pre></div>
+<h3 id="loop">Loop 循环</h3>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Add several users</span>
+<span class="w">  </span><span class="nt">ansible.builtin.user</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">item</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;wheel&quot;</span>
+<span class="w">  </span><span class="nt">loop</span><span class="p">:</span>
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testuser1</span>
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testuser2</span>
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>-<span class="w"> </span>name:<span class="w"> </span>Add<span class="w"> </span>several<span class="w"> </span>users
+<span class="w">  </span>ansible.builtin.user:
+<span class="w">    </span>name:<span class="w"> </span><span class="s2">&quot;{{ item.name }}&quot;</span>
+<span class="w">    </span>state:<span class="w"> </span>present
+<span class="w">    </span>groups:<span class="w"> </span><span class="s2">&quot;{{ item.groups }}&quot;</span>
+<span class="w">  </span>loop:
+<span class="w">    </span>-<span class="w"> </span><span class="o">{</span><span class="w"> </span>name:<span class="w"> </span><span class="s1">&#39;testuser1&#39;</span>,<span class="w"> </span>groups:<span class="w"> </span><span class="s1">&#39;wheel&#39;</span><span class="w"> </span><span class="o">}</span>
+<span class="w">    </span>-<span class="w"> </span><span class="o">{</span><span class="w"> </span>name:<span class="w"> </span><span class="s1">&#39;testuser2&#39;</span>,<span class="w"> </span>groups:<span class="w"> </span><span class="s1">&#39;root&#39;</span><span class="w"> </span><span class="o">}</span>
+</code></pre></div>
+<h2 id="roles">角色roles</h2>
+<blockquote>
+<p>将复杂的playbook拆解为各个文件夹来管理复杂的任务；</p>
+<p>角色允许您根据已知文件结构自动加载相关变量、文件、任务、处理程序和其他 Ansible 工件。将内容分组到角色后，您可以轻松地重复使用它们并与其他用户共享</p>
+</blockquote>
+<h4 id="_5">创建一个角色 初始化</h4>
+<p>命令：<code>ansible-galaxy</code></p>
+<ul>
+<li>列出已有的角色</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible-galaxy role list </span>
+<span class="c1"># /usr/share/ansible/roles</span>
+<span class="c1"># /etc/ansible/roles</span>
+<span class="o">[</span>WARNING<span class="o">]</span>:<span class="w"> </span>-<span class="w"> </span>the<span class="w"> </span>configured<span class="w"> </span>path<span class="w"> </span>/root/.ansible/roles<span class="w"> </span>does<span class="w"> </span>not<span class="w"> </span>exist.
+</code></pre></div>
+<ul>
+<li>初始化mysql的角色</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible-galaxy  role  init mysql</span>
+-<span class="w"> </span>Role<span class="w"> </span>mysql<span class="w"> </span>was<span class="w"> </span>created<span class="w"> </span>successfully
+</code></pre></div>
+<ul>
+<li>角色目录管理</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tree    -L 2  mysql</span>
+mysql
+├──<span class="w"> </span>defaults<span class="w">      </span><span class="c1">#角色提供的变量的优先级值非常低（有关更多信息，请参阅使用变量）。 角色自己的默认值将优先于其他角色的默认值，但任何/所有其他变量源都将覆盖此属性。</span>
+│<span class="w">   </span>└──<span class="w"> </span>main.yml<span class="w">  </span><span class="c1">#执行的剧本</span>
+├──<span class="w"> </span>files<span class="w">    </span><span class="c1"># 一个或多个可用于角色及其子级的文件 配置文件</span>
+├──<span class="w"> </span>handlers<span class="w">   </span><span class="c1"># 根据某些条件notify触发 handlers</span>
+│<span class="w">   </span>└──<span class="w"> </span>main.yml
+├──<span class="w"> </span>meta
+│<span class="w">   </span>└──<span class="w"> </span>main.yml
+├──<span class="w"> </span>README.md<span class="w">    </span><span class="c1">#描述文件；阐述功能如何使用</span>
+├──<span class="w"> </span>tasks<span class="w">        </span><span class="c1">#任务</span>
+│<span class="w">   </span>└──<span class="w"> </span>main.yml
+├──<span class="w"> </span>templates<span class="w">   </span><span class="c1">#放置模版文件</span>
+├──<span class="w"> </span>tests<span class="w">       </span><span class="c1">#测试</span>
+│<span class="w">   </span>├──<span class="w"> </span>inventory
+│<span class="w">   </span>└──<span class="w"> </span>test.yml
+└──<span class="w"> </span>vars<span class="w">        </span><span class="c1">#定义变量</span>
+<span class="w">    </span>└──<span class="w"> </span>main.yml
+
+<span class="m">8</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">8</span><span class="w"> </span>files
+</code></pre></div>
+<ul>
+<li>移除角色</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible-galaxy role remove  /root/mysql </span>
+-<span class="w"> </span>successfully<span class="w"> </span>removed<span class="w"> </span>/root/mysql
+<span class="o">[</span>root@ansible-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ansible-galaxy role remove  /opt/mysql/</span>
+-<span class="w"> </span>successfully<span class="w"> </span>removed<span class="w"> </span>/opt/mysql/
+</code></pre></div>
+<h4 id="_6">获取官方维护的角色 <code>有大佬通过角色实现的功能呢</code></h4>
+<p>https://galaxy.ansible.com</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@ansible-server<span class="w"> </span>ansible_roles<span class="o">]</span><span class="c1"># ansible-galaxy collection install codezm.lnmp</span>
+Process<span class="w"> </span>install<span class="w"> </span>dependency<span class="w"> </span>map
+Starting<span class="w"> </span>collection<span class="w"> </span>install<span class="w"> </span>process
+Installing<span class="w"> </span><span class="s1">&#39;codezm.lnmp:1.0.2&#39;</span><span class="w"> </span>to<span class="w"> </span><span class="s1">&#39;/root/.ansible/collections/ansible_collections/codezm/lnmp&#39;</span>
+</code></pre></div>
+<p>下载tar包</p>
+<p>!image-20250916115914236](/images/image-20250916115914236.png)</p>
+<h3 id="ansible">ansible 加密</h3>
+<blockquote>
+<p>对敏感文件进行加密 用户名，密码 </p>
+</blockquote>
+<ul>
+<li>创建加密文件呢</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ansible-vault<span class="w"> </span>create<span class="w">  </span>var.yaml
+</code></pre></div>
+<ul>
+<li>在线编辑加密文件</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ansible-vault<span class="w"> </span>edit<span class="w"> </span>var.yml<span class="w"> </span>
+</code></pre></div>
+<ul>
+<li>在已有的文件上进行加密</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ansible-vault<span class="w"> </span>encrypt<span class="w"> </span>main.yml
+</code></pre></div>
+<ul>
+<li>调用加密文件</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 手动输入密码</span>
+ansible-playbook<span class="w"> </span>-i<span class="w"> </span>inventory<span class="w"> </span>playbook.yml<span class="w"> </span>--ask-vault-pass
+
+<span class="c1"># 使用密码文件（文件权限建议设为 0600）</span>
+ansible-playbook<span class="w"> </span>-i<span class="w"> </span>inventory<span class="w"> </span>playbook.yml<span class="w"> </span>--vault-password-file<span class="w"> </span>/path/to/vault-pass.txt
+</code></pre></div>
+<p>主机清单文件</p>
+<p>https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html</p>
+<div class="highlight"><pre><span></span><code><span class="m">192</span>.168.1.103<span class="w"> </span><span class="nv">ansible_host</span><span class="o">=</span><span class="m">192</span>.168.1.103<span class="w"> </span><span class="nv">ansible_port</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>abbott<span class="w">  </span><span class="nv">ansible_password</span><span class="o">=</span><span class="m">123456</span>
+<span class="m">192</span>.168.1.105<span class="w"> </span><span class="nv">ansible_host</span><span class="o">=</span><span class="m">192</span>.168.1.103<span class="w"> </span><span class="nv">ansible_port</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>abbott<span class="w">  </span><span class="nv">ansible_password</span><span class="o">=</span><span class="m">123456</span>
+<span class="m">192</span>.168.1.102<span class="w"> </span><span class="nv">ansible_host</span><span class="o">=</span><span class="m">192</span>.168.1.102<span class="w"> </span><span class="nv">ansible_port</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>abbott<span class="w">  </span><span class="nv">ansible_password</span><span class="o">=</span><span class="m">123456</span>
+<span class="m">192</span>.168.1.106<span class="w"> </span><span class="nv">ansible_host</span><span class="o">=</span><span class="m">192</span>.168.1.106<span class="w"> </span><span class="nv">ansible_port</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">ansible_user</span><span class="o">=</span>abbott<span class="w">  </span><span class="nv">ansible_password</span><span class="o">=</span><span class="m">123456</span>
+</code></pre></div>
+<h3 id="ansible-web-ui">ansible web ui</h3>
+<blockquote>
+<p>Ansible Tower 平台，是需要订阅</p>
+<p>awx 开源</p>
+</blockquote>
+<p>https://blog.csdn.net/radapp/article/details/140304357</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

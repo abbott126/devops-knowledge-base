@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作负载管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-工作负载管理-workload-manager"># 工作负载管理 workload manager</a></li><li class="toc-l3"><a href="#-控制器的核心工作原理">### 控制器的核心工作原理</a></li><li class="toc-l3"><a href="#-k8s-中常用的核心控制器">### K8s 中常用的核心控制器</a></li><li class="toc-l4"><a href="#-1.-deployment部署控制器">#### 1. Deployment（部署控制器）</a></li><li class="toc-l4"><a href="#-2.-statefulset有状态集控制器">#### 2. StatefulSet（有状态集控制器）</a></li><li class="toc-l4"><a href="#-3.-daemonset守护进程集控制器">#### 3. DaemonSet（守护进程集控制器）</a></li><li class="toc-l4"><a href="#-4.-replicaset副本集控制器">#### 4. ReplicaSet（副本集控制器）</a></li><li class="toc-l4"><a href="#-5.-job任务控制器">#### 5. Job（任务控制器）</a></li><li class="toc-l4"><a href="#-6.-cronjob定时任务控制器">#### 6. CronJob（定时任务控制器）</a></li><li class="toc-l4"><a href="#-7.-horizontalpodautoscalerhpa水平-pod-自动扩缩容控制器">#### 7. HorizontalPodAutoscaler（HPA，水平 Pod 自动扩缩容控制器）</a></li><li class="toc-l3"><a href="#-控制器与-pod-的关系">### 控制器与 Pod 的关系</a></li><li class="toc-l3"><a href="#-总结">### 总结</a></li><li class="toc-l3"><a href="#-deployment部署控制器">### Deployment（部署控制器）</a></li><li class="toc-l1"><a href="#-apiversion指定-kubernetes-api-版本deployment-属于-apps-组版本为-v1"># apiVersion：指定 Kubernetes API 版本，Deployment 属于 apps 组，版本为 v1</a></li><li class="toc-l1"><a href="#-kind定义资源类型这里是-deployment部署控制器"># kind：定义资源类型，这里是 Deployment（部署控制器）</a></li><li class="toc-l1"><a href="#-metadata资源的元数据用于标识和描述-deployment"># metadata：资源的元数据，用于标识和描述 Deployment</a></li><li class="toc-l1"><a href="#-specdeployment-的核心配置定义期望状态"># spec：Deployment 的核心配置，定义期望状态</a></li><li class="toc-l1"><a href="#-replicas期望运行的-pod-副本数控制器会自动维持这个数量"># replicas：期望运行的 Pod 副本数（控制器会自动维持这个数量）</a></li><li class="toc-l1"><a href="#-selector选择器用于关联被管理的-pod通过标签匹配"># selector：选择器，用于关联被管理的 Pod（通过标签匹配）</a></li><li class="toc-l1"><a href="#-templatepod-模板定义要创建的-pod-的规格deployment-根据此模板生成-pod"># template：Pod 模板，定义要创建的 Pod 的规格（Deployment 根据此模板生成 Pod）</a></li><li class="toc-l1"><a href="#-metadatapod-的元数据"># metadata：Pod 的元数据</a></li><li class="toc-l1"><a href="#-specpod-的具体配置包含容器信息"># spec：Pod 的具体配置（包含容器信息）</a></li><li class="toc-l1"><a href="#-containerspod-中运行的容器列表这里只有一个-nginx-容器"># containers：Pod 中运行的容器列表（这里只有一个 Nginx 容器）</a></li><li class="toc-l3"><a href="#-更新资源">### 更新资源</a></li><li class="toc-l3"><a href="#-回滚deployment">### 回滚`deployment`</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="workload-manager">工作负载管理 workload manager</h1>
+<p>在 Kubernetes（K8s）中，<strong>控制器（Controller）</strong> 是实现集群状态自动化管理的核心组件，它遵循 “声明式 API” 理念：用户通过 YAML 定义资源的 “期望状态”，控制器持续监控集群的 “实际状态”，并通过一系列操作将实际状态向期望状态推进。</p>
+<p>简单来说，控制器就是 K8s 中的 “自动化运维工具”，负责 Pod 的创建、扩缩容、自愈、更新等核心操作，避免人工干预。</p>
+<h3 id="_1">控制器的核心工作原理</h3>
+<ol>
+<li><strong>监听状态</strong>：通过 API Server 实时监听目标资源（如 Pod、Deployment）的状态变化。</li>
+<li><strong>对比状态</strong>：将 “实际状态” 与用户定义的 “期望状态” 进行对比。</li>
+<li><strong>执行调和（Reconciliation）</strong>：若实际状态与期望状态不一致，控制器会触发一系列操作（如创建 Pod、删除异常实例、调整副本数），直到两者一致。</li>
+</ol>
+<p>这个 “监听 - 对比 - 调和” 的循环，是所有 K8s 控制器的核心逻辑。</p>
+<h3 id="k8s">K8s 中常用的核心控制器</h3>
+<h4 id="1-deployment">1. Deployment（部署控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：管理无状态应用，提供 Pod 的创建、扩缩容、滚动更新、回滚等功能，是最常用的控制器。</li>
+<li>关键特性</li>
+<li>支持设n，自动维持 Pod 数量（如 Pod 异常退出时自动重启）。</li>
+<li>滚动更新（Rolling Update）：逐步替换旧版本 Pod，确保服务不中断。</li>
+<li>回滚（Rollback）：若更新失败，可快速回滚到之前的稳定版本。</li>
+<li><strong>适用场景</strong>：Web 服务、API 接口等无状态应用（无需持久化存储，实例可随意替换）。</li>
+</ul>
+<h4 id="2-statefulset">2. StatefulSet（有状态集控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：管理有状态应用，解决 Deployment 无法满足的有状态场景需求。</li>
+<li>关键特性</li>
+<li>为每个 Pod 分配固定的名称（格式：<code>&lt;statefulset-name&gt;-&lt;ordinal-index&gt;</code>，如 <code>mysql-0</code>、<code>mysql-1</code>）和网络标识（通过 Headless Service 实现固定 DNS）。</li>
+<li>支持有序部署 / 删除（按序号从 0 到 N-1 启动，反向停止）。</li>
+<li>与 PersistentVolumeClaim（PVC）模板结合，为每个 Pod 分配独立的持久化存储（避免数据共享冲突）。</li>
+<li><strong>适用场景</strong>：数据库（MySQL、PostgreSQL）、分布式存储（Elasticsearch、ZooKeeper）等需要固定标识和独立存储的应用。</li>
+</ul>
+<h4 id="3-daemonset">3. DaemonSet（守护进程集控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：确保集群中所有（或指定）节点上都运行一个相同的 Pod 副本，类似传统的 “守护进程”。</li>
+<li>关键特性</li>
+<li>新节点加入集群时，自动在该节点上创建对应的 Pod；节点移除时，自动删除 Pod。</li>
+<li>支持通过节点选择器（nodeSelector）或亲和性规则，仅在特定节点上部署 Pod。</li>
+<li><strong>适用场景</strong>：日志收集（Fluentd、Logstash）、监控代理（Prometheus Node Exporter）、网络插件（Calico、Flannel）等需要在每个节点上运行的服务。</li>
+</ul>
+<h4 id="4-replicaset">4. ReplicaSet（副本集控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：确保集群中始终运行指定数量的 Pod 副本，是 Deployment 的底层依赖（Deployment 通过控制 ReplicaSet 实现副本管理）。</li>
+<li><strong>关键特性</strong>：仅负责维持副本数，不支持滚动更新、回滚等高级功能。</li>
+<li><strong>注意</strong>：实际使用中，优先选择 Deployment 而非直接使用 ReplicaSet，因为 Deployment 提供了更完整的生命周期管理能力。</li>
+</ul>
+<h4 id="5-job">5. Job（任务控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：管理一次性任务（批处理任务），确保任务执行完成后终止 Pod。</li>
+<li>关键特性</li>
+<li>任务成功完成后，Pod 状态变为 <code>Succeeded</code>，不再重启。</li>
+<li>支持并行执行多个任务（通过 <code>parallelism</code> 配置并行数）。</li>
+<li><strong>适用场景</strong>：数据备份、批量计算、一次性脚本执行等短期任务。</li>
+</ul>
+<h4 id="6-cronjob">6. CronJob（定时任务控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：管理周期性执行的任务，类似 Linux 中的 <code>crontab</code>。</li>
+<li>关键特性</li>
+<li>通过 <code>schedule</code> 字段定义执行周期（如 <code>0 3 * * *</code> 表示每天凌晨 3 点执行）。</li>
+<li>支持配置任务超时时间、失败重试策略等。</li>
+<li><strong>适用场景</strong>：定时数据清理、定时报表生成、定时备份等周期性任务。</li>
+</ul>
+<h4 id="7-horizontalpodautoscalerhpa-pod">7. HorizontalPodAutoscaler（HPA，水平 Pod 自动扩缩容控制器）</h4>
+<ul>
+<li><strong>核心作用</strong>：根据 Pod 的 CPU / 内存使用率或自定义指标（如请求量），自动调整控制器（Deployment、StatefulSet 等）的副本数，实现弹性伸缩。</li>
+<li>关键特性</li>
+<li>支持设置最小副本数和最大副本数，避免扩缩容过度。</li>
+<li>可结合监控系统（如 Prometheus）获取自定义指标。</li>
+<li><strong>适用场景</strong>：流量波动较大的应用（如电商促销期间自动扩容，低峰期自动缩容，节省资源）。</li>
+</ul>
+<h3 id="pod">控制器与 Pod 的关系</h3>
+<ul>
+<li>控制器不直接管理 Pod，而是通过 “控制循环” 间接操作：用户定义控制器的期望状态（如 Deployment 的 <code>replicas: 3</code>），控制器根据该状态创建 / 删除 Pod，或调整 Pod 的数量。</li>
+<li>Pod 是控制器的 “被管理对象”，控制器确保 Pod 的状态始终符合期望。例如，Deployment 管理的 Pod 若因节点故障被删除，Deployment 会立即在其他健康节点上创建新的 Pod 以维持副本数。</li>
+</ul>
+<h3 id="_2">总结</h3>
+<p>K8s 控制器的核心价值是 “自动化运维”，通过不同类型的控制器，可满足无状态、有状态、守护进程、定时任务等多种业务场景的需求。实际使用中，需根据应用的特性选择合适的控制器：</p>
+<ul>
+<li>无状态应用 → Deployment</li>
+<li>有状态应用 → StatefulSet</li>
+<li>节点级服务 → DaemonSet</li>
+<li>一次性任务 → Job</li>
+<li>定时任务 → CronJob</li>
+<li>弹性伸缩 → HPA</li>
+</ul>
+<h3 id="deployment">Deployment（部署控制器）</h3>
+<p>常用命令：</p>
+<div class="highlight"><pre><span></span><code>rollout：管理资源的滚动更新（如<span class="w"> </span>Deployment<span class="w"> </span>的版本升级、回滚等操作）
+
+scale：为<span class="w"> </span>Deployment（部署控制器）、ReplicaSet（副本集）或<span class="w"> </span>Replication<span class="w"> </span>Controller（复制控制器）设置新的副本数量（即调整资源的实例规模）
+
+autoscale：为<span class="w"> </span>Deployment、ReplicaSet、StatefulSet（有状态集）或<span class="w"> </span>Replication<span class="w"> </span>Controller<span class="w"> </span>配置自动扩缩容（根据<span class="w"> </span>CPU<span class="w"> </span>使用率、自定义指标等自动调整副本数）
+</code></pre></div>
+<p>示例：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># apiVersion：指定 Kubernetes API 版本，Deployment 属于 apps 组，版本为 v1</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="c1"># kind：定义资源类型，这里是 Deployment（部署控制器）</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="c1"># metadata：资源的元数据，用于标识和描述 Deployment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx-deployment</span><span class="w">  </span><span class="c1"># Deployment 的名称（唯一标识）</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">  </span><span class="c1"># 给 Deployment 自身打的标签（用于分类或关联其他资源）</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w">  </span><span class="c1"># 标签键值对，键为 app，值为 nginx</span>
+<span class="c1"># spec：Deployment 的核心配置，定义期望状态</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># replicas：期望运行的 Pod 副本数（控制器会自动维持这个数量）</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">  </span><span class="c1"># selector：选择器，用于关联被管理的 Pod（通过标签匹配）</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">  </span><span class="c1"># 匹配标签：仅管理带有 app: nginx 标签的 Pod</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">  </span><span class="c1"># template：Pod 模板，定义要创建的 Pod 的规格（Deployment 根据此模板生成 Pod）</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># metadata：Pod 的元数据</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w">  </span><span class="c1"># 给 Pod 打的标签（必须与上面的 selector.matchLabels 匹配，否则无法被管理）</span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
+<span class="w">    </span><span class="c1"># spec：Pod 的具体配置（包含容器信息）</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># containers：Pod 中运行的容器列表（这里只有一个 Nginx 容器）</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w">  </span><span class="c1"># 容器名称（在 Pod 内唯一）</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:1.14.2</span><span class="w">  </span><span class="c1"># 容器使用的镜像（Nginx 1.14.2 版本）</span>
+<span class="w">        </span><span class="nt">ports</span><span class="p">:</span><span class="w">  </span><span class="c1"># 容器暴露的端口（仅用于标识，不自动映射到宿主机）</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w">  </span><span class="c1"># 容器内 Nginx 实际监听的端口（默认 80）</span>
+</code></pre></div>
+<p>创建<code>Deployment</code>资源对象</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w">  </span>Example-1.yaml
+</code></pre></div>
+<p>查看Pod</p>
+<ol>
+<li>获取所有的资源对象的Pod <code>只在defaults</code>的名称空间下的所有的的Pod</li>
+</ol>
+<p><img alt="image-20251027095116045" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251027095116045.png" /></p>
+<ol>
+<li>通过资源对象类型查看相应的Pod的资源</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl   get  deployments</span>
+NAME<span class="w">               </span>READY<span class="w">   </span>UP-TO-DATE<span class="w">   </span>AVAILABLE<span class="w">   </span>AGE
+nginx-deployment<span class="w">   </span><span class="m">3</span>/3<span class="w">     </span><span class="m">3</span><span class="w">            </span><span class="m">3</span><span class="w">           </span>5m35s
+
+NAME<span class="w"> </span><span class="c1">#列出命名空间中的 nginx-deployment 的名称</span>
+READY<span class="w"> </span><span class="c1">#显示可供用户使用的应用程序副本数量。</span>
+UP-TO-DATE<span class="w">   </span><span class="c1">#显示已更新到所需状态的副本数量。 </span>
+AVAILABLE<span class="w">  </span><span class="c1">#显示可供用户使用的应用程序副本数量。</span>
+AGE<span class="w"> </span><span class="c1">#显示应用程序已运行的时间。</span>
+</code></pre></div>
+<ol>
+<li>查看副本的资源<code>rs==&gt;ReplicaSets</code> </li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl   get  rs</span>
+NAME<span class="w">                         </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>AGE
+nginx-deployment-d556bf558<span class="w">   </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">       </span>13m
+<span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  get replicaSets </span>
+NAME<span class="w">                         </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>AGE
+nginx-deployment-d556bf558<span class="w">   </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">       </span>15m
+
+NAME<span class="w"> </span>列出命名空间中的<span class="w"> </span>ReplicaSets<span class="w"> </span>的名称
+DESIRED<span class="w"> </span>显示您在创建<span class="w"> </span>Deployment<span class="w"> </span>时定义的应用程序所需的副本数量。这是期望状态。
+CURRENT<span class="w"> </span>显示当前运行的副本数量
+READY<span class="w"> </span>显示可供用户使用的应用程序副本数量。
+AGE<span class="w"> </span>显示应用程序已运行的时间。
+</code></pre></div>
+<ol>
+<li>要查看为每个 Pod 自动生成的标签;可以运行 <code>kubectl get pods --show-labels</code> </li>
+</ol>
+<p><img alt="image-20251027100833038" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251027100833038.png" /></p>
+<p>描述资源</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl describe    deployment </span>
+Name:<span class="w">                   </span>nginx-deployment
+Namespace:<span class="w">              </span>default
+CreationTimestamp:<span class="w">      </span>Mon,<span class="w"> </span><span class="m">27</span><span class="w"> </span>Oct<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">09</span>:46:27<span class="w"> </span>+0800
+Labels:<span class="w">                 </span><span class="nv">app</span><span class="o">=</span>nginx
+Annotations:<span class="w">            </span>deployment.kubernetes.io/revision:<span class="w"> </span><span class="m">1</span>
+Selector:<span class="w">               </span><span class="nv">app</span><span class="o">=</span>nginx
+Replicas:<span class="w">               </span><span class="m">3</span><span class="w"> </span>desired<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w"> </span>updated<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w"> </span>total<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w"> </span>available<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>unavailable
+StrategyType:<span class="w">           </span>RollingUpdate
+MinReadySeconds:<span class="w">        </span><span class="m">0</span>
+RollingUpdateStrategy:<span class="w">  </span><span class="m">25</span>%<span class="w"> </span>max<span class="w"> </span>unavailable,<span class="w"> </span><span class="m">25</span>%<span class="w"> </span>max<span class="w"> </span>surge
+Pod<span class="w"> </span>Template:
+<span class="w">  </span>Labels:<span class="w">  </span><span class="nv">app</span><span class="o">=</span>nginx
+<span class="w">  </span>Containers:
+<span class="w">   </span>nginx:
+<span class="w">    </span>Image:<span class="w">         </span>nginx:1.14.2
+<span class="w">    </span>Port:<span class="w">          </span><span class="m">80</span>/TCP
+<span class="w">    </span>Host<span class="w"> </span>Port:<span class="w">     </span><span class="m">0</span>/TCP
+<span class="w">    </span>Environment:<span class="w">   </span>&lt;none&gt;
+<span class="w">    </span>Mounts:<span class="w">        </span>&lt;none&gt;
+<span class="w">  </span>Volumes:<span class="w">         </span>&lt;none&gt;
+<span class="w">  </span>Node-Selectors:<span class="w">  </span>&lt;none&gt;
+<span class="w">  </span>Tolerations:<span class="w">     </span>&lt;none&gt;
+Conditions:
+<span class="w">  </span>Type<span class="w">           </span>Status<span class="w">  </span>Reason
+<span class="w">  </span>----<span class="w">           </span>------<span class="w">  </span>------
+<span class="w">  </span>Available<span class="w">      </span>True<span class="w">    </span>MinimumReplicasAvailable
+<span class="w">  </span>Progressing<span class="w">    </span>True<span class="w">    </span>NewReplicaSetAvailable
+OldReplicaSets:<span class="w">  </span>&lt;none&gt;
+NewReplicaSet:<span class="w">   </span>nginx-deployment-d556bf558<span class="w"> </span><span class="o">(</span><span class="m">3</span>/3<span class="w"> </span>replicas<span class="w"> </span>created<span class="o">)</span>
+Events:
+<span class="w">  </span>Type<span class="w">    </span>Reason<span class="w">             </span>Age<span class="w">   </span>From<span class="w">                   </span>Message
+<span class="w">  </span>----<span class="w">    </span>------<span class="w">             </span>----<span class="w">  </span>----<span class="w">                   </span>-------
+<span class="w">  </span>Normal<span class="w">  </span>ScalingReplicaSet<span class="w">  </span>26m<span class="w">   </span>deployment-controller<span class="w">  </span>Scaled<span class="w"> </span>up<span class="w"> </span>replica<span class="w"> </span><span class="nb">set</span><span class="w"> </span>nginx-deployment-d556bf558<span class="w"> </span>to<span class="w"> </span><span class="m">3</span>
+</code></pre></div>
+<h3 id="_3">更新资源</h3>
+<ol>
+<li>通过命令行的方式更新</li>
+</ol>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">set</span><span class="w"> </span>image<span class="w"> </span>deployment/nginx-deployment<span class="w"> </span><span class="nv">nginx</span><span class="o">=</span>nginx:1.16.1
+</code></pre></div>
+<ol>
+<li>修改配置文件</li>
+</ol>
+<p><img alt="image-20251027103650835" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251027103650835.png" /></p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w">  </span>apply<span class="w"> </span>-f<span class="w">  </span>Example-1.yaml
+</code></pre></div>
+<ol>
+<li>在线编辑配置文件</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl edit deployment/nginx-deployment</span>
+</code></pre></div>
+<ol>
+<li>运行 <code>kubectl get rs</code> 以查看 Deployment 通过创建一个新的 ReplicaSet 并将其扩展到 3 个副本，同时将旧的 ReplicaSet 减少到 0 个副本，从而更新了 Pods。</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl get rs</span>
+NAME<span class="w">                          </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>AGE
+nginx-deployment-7dbfbc79cf<span class="w">   </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">       </span>24m
+nginx-deployment-bf56f49c<span class="w">     </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">       </span>4m39s
+nginx-deployment-d556bf558<span class="w">    </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">       </span>53m
+</code></pre></div>
+<h3 id="deployment_1">回滚<code>deployment</code></h3>
+<blockquote>
+<p>新版本有问题；比如镜像<code>写错误</code></p>
+</blockquote>
+<p><img alt="image-20251027104731265" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251027104731265.png" /></p>
+<blockquote>
+<p>回滚到上次发布的版本</p>
+</blockquote>
+<ol>
+<li>获取版本更新的记录（日志）</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl rollout history deployment/nginx-deployment</span>
+deployment.apps/nginx-deployment<span class="w"> </span>
+REVISION<span class="w">  </span>CHANGE-CAUSE
+<span class="m">1</span><span class="w">         </span>&lt;none&gt;
+<span class="m">2</span><span class="w">         </span>&lt;none&gt;
+<span class="m">3</span><span class="w">         </span>&lt;none&gt;
+<span class="m">4</span><span class="w">         </span>&lt;none&gt;
+</code></pre></div>
+<ol>
+<li>确定版本及回滚</li>
+</ol>
+<p>查看回退版本的信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  rollout  history  deployment    --revision=3</span>
+deployment.apps/nginx-deployment<span class="w"> </span>with<span class="w"> </span>revision<span class="w"> </span><span class="c1">#3</span>
+Pod<span class="w"> </span>Template:
+<span class="w">  </span>Labels:<span class="w">    </span><span class="nv">app</span><span class="o">=</span>nginx
+<span class="w"> </span>pod-template-hash<span class="o">=</span>bf56f49c
+<span class="w">  </span>Containers:
+<span class="w">   </span>nginx:
+<span class="w">    </span>Image:<span class="w">   </span>nginx:latest
+<span class="w">    </span>Port:<span class="w">    </span><span class="m">80</span>/TCP
+<span class="w">    </span>Host<span class="w"> </span>Port:<span class="w">   </span><span class="m">0</span>/TCP
+<span class="w">    </span>Environment:<span class="w"> </span>&lt;none&gt;
+<span class="w">    </span>Mounts:<span class="w">  </span>&lt;none&gt;
+<span class="w">  </span>Volumes:<span class="w">   </span>&lt;none&gt;
+<span class="w">  </span>Node-Selectors:<span class="w">    </span>&lt;none&gt;
+<span class="w">  </span>Tolerations:<span class="w">   </span>&lt;none&gt;
+</code></pre></div>
+<p>不指定版本回退上一个版本</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl   rollout  undo  deployment</span>
+deployment.apps/nginx-deployment<span class="w"> </span>rolled<span class="w"> </span>back
+</code></pre></div>
+<p>查看版本历史</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl rollout  history  deployment  </span>
+deployment.apps/nginx-deployment<span class="w"> </span>
+REVISION<span class="w">  </span>CHANGE-CAUSE
+<span class="m">1</span><span class="w">         </span>&lt;none&gt;
+<span class="m">2</span><span class="w">         </span>&lt;none&gt;
+<span class="m">4</span><span class="w">         </span>&lt;none&gt;
+<span class="m">5</span><span class="w">         </span>&lt;none&gt;
+<span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  rollout  history  deployment/nginx-deployment</span>
+deployment.apps/nginx-deployment<span class="w"> </span>
+REVISION<span class="w">  </span>CHANGE-CAUSE
+<span class="m">1</span><span class="w">         </span>&lt;none&gt;
+<span class="m">4</span><span class="w">         </span>&lt;none&gt;
+<span class="m">5</span><span class="w">         </span>&lt;none&gt;
+<span class="m">6</span><span class="w">         </span>&lt;none&gt;
+</code></pre></div>
+<p>回退到指定版本</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl   rollout  undo  deployment --to-revision=2</span>
+</code></pre></div>
+<h3 id="scaling-a-deployment">扩/缩容 Scaling a Deployment</h3>
+<p>手动扩容：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  scale   --replicas=5  deployment/nginx-deployment</span>
+</code></pre></div>
+<p>缩容：</p>
+<div class="highlight"><pre><span></span><code>ter<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  scale --replicas=1 deployment/nginx-deployment</span>
+deployment.apps/nginx-deployment<span class="w"> </span>scaled
+</code></pre></div>
+<p>更新策略</p>
+<div class="highlight"><pre><span></span><code>strategy:<span class="w">  </span><span class="c1"># 定义 Deployment 的更新策略（控制如何替换旧版本 Pod）</span>
+<span class="w">  </span>rollingUpdate:<span class="w">  </span><span class="c1"># 滚动更新的具体参数配置</span>
+<span class="w">    </span>maxSurge:<span class="w"> </span><span class="m">25</span>%<span class="w">  </span><span class="c1"># 允许超出期望副本数的最大比例（或绝对值）</span>
+<span class="w">                   </span><span class="c1"># 含义：更新过程中，集群中同时运行的 Pod 总数最多比期望副本数（replicas）多 25%</span>
+<span class="w">                   </span><span class="c1"># 示例：若 replicas=4，最多可同时运行 4 + 4×25% = 5 个 Pod（先创建 1 个新 Pod 再删除旧 Pod）</span>
+<span class="w">    </span>maxUnavailable:<span class="w"> </span><span class="m">25</span>%<span class="w">  </span><span class="c1"># 允许不可用的 Pod 最大比例（或绝对值）</span>
+<span class="w">                         </span><span class="c1"># 含义：更新过程中，不可用的 Pod 数量最多不超过期望副本数的 25%</span>
+<span class="w">                         </span><span class="c1"># 示例：若 replicas=4，最多允许 4×25% = 1 个 Pod 不可用（每次删除旧 Pod 不超过 1 个）</span>
+<span class="w">  </span>type:<span class="w"> </span>RollingUpdate<span class="w">  </span><span class="c1"># 指定更新策略类型为滚动更新（Kubernetes 的默认策略）</span>
+</code></pre></div>
+<h3 id="_4">暂停/取消更新</h3>
+<blockquote>
+<p>在生产环境下会设置暂停更新；等灰度发布测试成功之后在更新</p>
+</blockquote>
+<p>暂停</p>
+<div class="highlight"><pre><span></span><code>deployment<span class="o">]</span><span class="c1"># kubectl  rollout  pause  deployment/nginx-deployment</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl rollout history deployment/nginx-deployment</span>
+</code></pre></div>
+<p>取消</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl rollout resume  deployments/nginx-deployment</span>
+</code></pre></div>
+<p>自动扩容</p>
+<blockquote>
+<p>根据CPU的压力；判断是否扩容/缩容</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>deployment<span class="o">]</span><span class="c1"># kubectl autoscale deployment/nginx-deployment  --min=2  --max=5 -n web</span>
+</code></pre></div>
+<h2 id="clean-up-policy">Clean up Policy 清理策略</h2>
+<div class="highlight"><pre><span></span><code>spec:
+<span class="w">  </span><span class="c1"># 1. 进度超时时间：控制 Deployment 更新的最大容忍时间</span>
+<span class="w">  </span>progressDeadlineSeconds:<span class="w"> </span><span class="m">600</span><span class="w">  </span><span class="c1"># 单位：秒（600秒 = 10分钟）</span>
+<span class="w">                                </span><span class="c1"># 含义：若 Deployment 更新（如滚动更新）超过 10 分钟仍未完成（未达到可用状态），</span>
+<span class="w">                                </span><span class="c1"># Kubernetes 会将其标记为“更新失败”（Progressing 状态变为 False，Reason 为 ProgressDeadlineExceeded），</span>
+<span class="w">                                </span><span class="c1"># 但不会自动终止更新，需手动处理（如回滚、调整参数后重试）。</span>
+
+<span class="w">  </span><span class="c1"># 2. 副本数：定义期望运行的 Pod 数量</span>
+<span class="w">  </span>replicas:<span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="c1"># 期望保持 1 个 Pod 副本运行</span>
+<span class="w">               </span><span class="c1"># Deployment 会通过控制器逻辑自动维持这个数量（如 Pod 故障时重建）。</span>
+
+<span class="w">  </span><span class="c1"># 3. 历史版本保留限制：控制旧 ReplicaSet 的保留数量</span>
+<span class="w">  </span>revisionHistoryLimit:<span class="w"> </span><span class="m">10</span><span class="w">  </span><span class="c1"># 默认为 10，表示最多保留 10 个旧版本的 ReplicaSet（每个 ReplicaSet 对应一次 Deployment 更新）</span>
+<span class="w">                            </span><span class="c1"># 超过此数量后，最旧的 ReplicaSet 会被自动删除，释放资源。</span>
+<span class="w">                            </span><span class="c1"># 作用：旧 ReplicaSet 用于回滚操作（`kubectl rollout undo`），保留适量历史版本可兼顾回滚需求和资源消耗。</span>
+</code></pre></div>
+<h3 id="_5">核心作用总结</h3>
+<ul>
+<li><code>progressDeadlineSeconds</code>：防止更新过程无限期阻塞，为更新设置 “超时门槛”，便于及时发现更新异常（如镜像拉取失败、探针检测不通过导致的更新卡壳）。</li>
+<li><code>replicas</code>：定义应用的实例数量，是 Deployment 实现 “自愈” 和 “扩缩容” 的基础（结合 <code>kubectl scale</code> 可手动调整，结合 HPA 可自动调整）。</li>
+<li><code>revisionHistoryLimit</code>：平衡历史版本管理和资源占用，避免旧 ReplicaSet 过多导致集群资源浪费（尤其频繁更新的 Deployment）。</li>
+</ul>
+<p>获取某个名称空间下的<code>deployment</code>资源</p>
+<p><img alt="image-20251027114739749" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251027114739749.png" /></p>
+<p>常用命令：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  get po,deployment,rs   -n web</span>
+NAME<span class="w">                                  </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+pod/nginx-deployment-bf56f49c-4bnf7<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>138m
+pod/nginx-deployment-bf56f49c-mhcf6<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>9m44s
+
+NAME<span class="w">                               </span>READY<span class="w">   </span>UP-TO-DATE<span class="w">   </span>AVAILABLE<span class="w">   </span>AGE
+deployment.apps/nginx-deployment<span class="w">   </span><span class="m">2</span>/2<span class="w">     </span><span class="m">2</span><span class="w">            </span><span class="m">2</span><span class="w">           </span>147m
+
+NAME<span class="w">                                          </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>AGE
+replicaset.apps/nginx-deployment-66c9646bf9<span class="w">   </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">       </span>147m
+replicaset.apps/nginx-deployment-bf56f49c<span class="w">     </span><span class="m">2</span><span class="w">         </span><span class="m">2</span><span class="w">         </span><span class="m">2</span><span class="w">       </span>138m
+<span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  get po,deployment,rs   -n web -o wide</span>
+NAME<span class="w">                                  </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE<span class="w">    </span>IP<span class="w">               </span>NODE<span class="w">     </span>NOMINATED<span class="w"> </span>NODE<span class="w">   </span>READINESS<span class="w"> </span>GATES
+pod/nginx-deployment-bf56f49c-4bnf7<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>138m<span class="w">   </span><span class="m">172</span>.16.137.146<span class="w">   </span>work03<span class="w">   </span>&lt;none&gt;<span class="w">           </span>&lt;none&gt;
+pod/nginx-deployment-bf56f49c-mhcf6<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m<span class="w">    </span><span class="m">172</span>.16.75.77<span class="w">     </span>work02<span class="w">   </span>&lt;none&gt;<span class="w">           </span>&lt;none&gt;
+
+NAME<span class="w">                               </span>READY<span class="w">   </span>UP-TO-DATE<span class="w">   </span>AVAILABLE<span class="w">   </span>AGE<span class="w">    </span>CONTAINERS<span class="w">   </span>IMAGES<span class="w">         </span>SELECTOR
+deployment.apps/nginx-deployment<span class="w">   </span><span class="m">2</span>/2<span class="w">     </span><span class="m">2</span><span class="w">            </span><span class="m">2</span><span class="w">           </span>147m<span class="w">   </span>nginx<span class="w">        </span>nginx:latest<span class="w">   </span><span class="nv">app</span><span class="o">=</span>nginx
+
+NAME<span class="w">                                          </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>AGE<span class="w">    </span>CONTAINERS<span class="w">   </span>IMAGES<span class="w">         </span>SELECTOR
+replicaset.apps/nginx-deployment-66c9646bf9<span class="w">   </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="m">0</span><span class="w">       </span>147m<span class="w">   </span>nginx<span class="w">        </span>nginx:lates<span class="w">    </span><span class="nv">app</span><span class="o">=</span>nginx,pod-template-hash<span class="o">=</span>66c9646bf9
+replicaset.apps/nginx-deployment-bf56f49c<span class="w">     </span><span class="m">2</span><span class="w">         </span><span class="m">2</span><span class="w">         </span><span class="m">2</span><span class="w">       </span>138m<span class="w">   </span>nginx<span class="w">        </span>nginx:latest<span class="w">   </span><span class="nv">app</span><span class="o">=</span>nginx,pod-template-hash<span class="o">=</span>bf56f49c
+</code></pre></div>
+<h2 id="deployment_2">删除deployment 的资源</h2>
+<p>指定名称空间下的<code>deployment 的资源</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  delete  deployments/nginx-deployment -n web</span>
+deployment.apps<span class="w"> </span><span class="s2">&quot;nginx-deployment&quot;</span><span class="w"> </span>deleted
+
+<span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  delete deployments/nginx-deployment </span>
+deployment.apps<span class="w"> </span><span class="s2">&quot;nginx-deployment&quot;</span><span class="w"> </span>deleted
+
+<span class="c1"># 删除所有的Pod</span>
+<span class="o">[</span>root@master<span class="w"> </span>deployment<span class="o">]</span><span class="c1"># kubectl  delete  po --all </span>
+</code></pre></div>
+<h3 id="statefulset">StatefulSet</h3>
+<blockquote>
+<p>是用于管理有状态的应用工作负载 API 对象。</p>
+</blockquote>
+<p>Example: </p>
+<div class="highlight"><pre><span></span><code><span class="c1"># API 版本，StatefulSet 在 apps/v1 版本中定义</span>
+apiVersion:<span class="w"> </span>apps/v1
+<span class="c1"># 资源类型为 StatefulSet（有状态集合，用于管理有状态应用）</span>
+kind:<span class="w"> </span>StatefulSet
+metadata:
+<span class="w">  </span><span class="c1"># StatefulSet 的名称，用于标识该资源</span>
+<span class="w">  </span>name:<span class="w"> </span>web
+spec:
+<span class="w">  </span><span class="c1"># 选择器：用于匹配要管理的 Pod 标签，必须与下面 template.metadata.labels 一致</span>
+<span class="w">  </span>selector:
+<span class="w">    </span>matchLabels:
+<span class="w">      </span>app:<span class="w"> </span>nginx<span class="w"> </span><span class="c1"># 匹配标签为 app: nginx 的 Pod</span>
+<span class="w">  </span><span class="c1"># 服务名称：为 StatefulSet 中的 Pod 提供稳定网络标识的 Headless Service 名称</span>
+<span class="w">  </span><span class="c1"># 需提前创建名为 nginx 的 Headless Service（无 ClusterIP）</span>
+<span class="w">  </span>serviceName:<span class="w"> </span><span class="s2">&quot;nginx&quot;</span>
+<span class="w">  </span><span class="c1"># 副本数：指定要运行的 Pod 数量，这里为 3 个</span>
+<span class="w">  </span>replicas:<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="c1"># 默认值为 1</span>
+<span class="w">  </span><span class="c1"># 最小就绪秒数：Pod 就绪后等待多久才视为可用，避免频繁切换状态</span>
+<span class="w">  </span>minReadySeconds:<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="c1"># 默认值为 0</span>
+<span class="w">  </span><span class="c1"># Pod 模板：定义 StatefulSet 生成的 Pod 的规格</span>
+<span class="w">  </span>template:
+<span class="w">    </span>metadata:
+<span class="w">      </span><span class="c1"># Pod 的标签，必须与 spec.selector.matchLabels 匹配</span>
+<span class="w">      </span>labels:
+<span class="w">        </span>app:<span class="w"> </span>nginx
+<span class="w">    </span>spec:
+<span class="w">      </span><span class="c1"># 终止宽限期：删除 Pod 时等待的秒数，确保优雅关闭</span>
+<span class="w">      </span>terminationGracePeriodSeconds:<span class="w"> </span><span class="m">10</span>
+<span class="w">      </span><span class="c1"># 容器配置列表</span>
+<span class="w">      </span>containers:
+<span class="w">      </span>-<span class="w"> </span>name:<span class="w"> </span>nginx<span class="w"> </span><span class="c1"># 容器名称</span>
+<span class="w">        </span>image:<span class="w"> </span>nginx:latest<span class="w"> </span><span class="c1"># 使用的镜像（最新版 Nginx）</span>
+<span class="w">        </span><span class="c1"># 容器暴露的端口配置</span>
+<span class="w">        </span>ports:
+<span class="w">        </span>-<span class="w"> </span>containerPort:<span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="c1"># 容器内监听的端口</span>
+<span class="w">          </span>name:<span class="w"> </span>web<span class="w"> </span><span class="c1"># 端口名称，用于标识</span>
+<span class="w">        </span><span class="c1"># 卷挂载：将存储卷挂载到容器内的指定路径</span>
+<span class="w">        </span>volumeMounts:
+<span class="w">        </span>-<span class="w"> </span>name:<span class="w"> </span>www<span class="w"> </span><span class="c1"># 要挂载的卷名称（需与下面 volumes.name 对应）</span>
+<span class="w">          </span>mountPath:<span class="w"> </span>/usr/share/nginx/html/index.html<span class="w"> </span><span class="c1"># 容器内的挂载路径（Nginx 默认首页位置）</span>
+<span class="w">      </span><span class="c1"># 存储卷定义：供容器挂载的卷</span>
+<span class="w">      </span>volumes:
+<span class="w">      </span>-<span class="w"> </span>name:<span class="w"> </span>www<span class="w"> </span><span class="c1"># 卷名称，与 volumeMounts.name 对应</span>
+<span class="w">        </span><span class="c1"># 使用 hostPath 卷：将节点（宿主机）的路径挂载到容器</span>
+<span class="w">        </span>hostPath:
+<span class="w">          </span><span class="c1"># 宿主机上的路径（这里指向宿主机的 /opt/index.html 文件）</span>
+<span class="w">          </span>path:<span class="w"> </span>/opt/index.html
+<span class="w">          </span><span class="c1"># 路径类型：如果宿主机上不存在该文件，则自动创建一个空文件</span>
+<span class="w">          </span>type:<span class="w"> </span>FileOrCreate
+<span class="w">          </span><span class="c1"># 其他可选类型说明：</span>
+<span class="w">          </span><span class="c1"># - DirectoryOrCreate：路径不存在则创建目录</span>
+<span class="w">          </span><span class="c1"># - Directory：必须存在目录，否则挂载失败</span>
+<span class="w">          </span><span class="c1"># - File：必须存在文件，否则挂载失败</span>
+<span class="w">          </span><span class="c1"># - Socket：必须存在 socket 文件</span>
+<span class="w">          </span><span class="c1"># - CharDevice：必须存在字符设备</span>
+<span class="w">          </span><span class="c1"># - BlockDevice：必须存在块设备</span>
+</code></pre></div>
+<p>创建<code>StatefulSet</code></p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w">  </span>file.yaml
+</code></pre></div>
+<p>查看信息</p>
+<ol>
+<li>获取（po,StatefulSet）  默认在<code>defaults</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get po,StatefulSet  </span>
+NAME<span class="w">        </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+pod/web-0<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>24m
+pod/web-1<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>23m
+pod/web-2<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>23m
+
+NAME<span class="w">                   </span>READY<span class="w">   </span>AGE
+statefulset.apps/web<span class="w">   </span><span class="m">3</span>/3<span class="w">     </span>24m
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<ol>
+<li>详细信息<code>kubectl describe</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   describe StatefulSet</span>
+
+
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   describe StatefulSet</span>
+Name:<span class="w">               </span>web
+Namespace:<span class="w">          </span>default
+CreationTimestamp:<span class="w">  </span>Mon,<span class="w"> </span><span class="m">27</span><span class="w"> </span>Oct<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">15</span>:16:16<span class="w"> </span>+0800
+Selector:<span class="w">           </span><span class="nv">app</span><span class="o">=</span>nginx
+Labels:<span class="w">             </span>&lt;none&gt;
+Annotations:<span class="w">        </span>&lt;none&gt;
+Replicas:<span class="w">           </span><span class="m">3</span><span class="w"> </span>desired<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w"> </span>total
+Update<span class="w"> </span>Strategy:<span class="w">    </span>RollingUpdate
+<span class="w">  </span>Partition:<span class="w">        </span><span class="m">0</span>
+Pods<span class="w"> </span>Status:<span class="w">        </span><span class="m">3</span><span class="w"> </span>Running<span class="w"> </span>/<span class="w"> </span><span class="m">0</span><span class="w"> </span>Waiting<span class="w"> </span>/<span class="w"> </span><span class="m">0</span><span class="w"> </span>Succeeded<span class="w"> </span>/<span class="w"> </span><span class="m">0</span><span class="w"> </span>Failed
+Pod<span class="w"> </span>Template:
+<span class="w">  </span>Labels:<span class="w">  </span><span class="nv">app</span><span class="o">=</span>nginx
+<span class="w">  </span>Containers:
+<span class="w">   </span>nginx:
+<span class="w">    </span>Image:<span class="w">        </span>nginx:latest
+<span class="w">    </span>Port:<span class="w">         </span><span class="m">80</span>/TCP
+<span class="w">    </span>Host<span class="w"> </span>Port:<span class="w">    </span><span class="m">0</span>/TCP
+<span class="w">    </span>Environment:<span class="w">  </span>&lt;none&gt;
+<span class="w">    </span>Mounts:
+<span class="w">      </span>/usr/share/nginx/html/index.html<span class="w"> </span>from<span class="w"> </span>www<span class="w"> </span><span class="o">(</span>rw<span class="o">)</span>
+<span class="w">  </span>Volumes:
+<span class="w">   </span>www:
+<span class="w">    </span>Type:<span class="w">          </span>HostPath<span class="w"> </span><span class="o">(</span>bare<span class="w"> </span>host<span class="w"> </span>directory<span class="w"> </span>volume<span class="o">)</span>
+<span class="w">    </span>Path:<span class="w">          </span>/opt/index.html
+<span class="w">    </span>HostPathType:<span class="w">  </span>FileOrCreate
+<span class="w">  </span>Node-Selectors:<span class="w">  </span>&lt;none&gt;
+<span class="w">  </span>Tolerations:<span class="w">     </span>&lt;none&gt;
+Volume<span class="w"> </span>Claims:<span class="w">     </span>&lt;none&gt;
+Events:
+<span class="w">  </span>Type<span class="w">    </span>Reason<span class="w">            </span>Age<span class="w">   </span>From<span class="w">                    </span>Message
+<span class="w">  </span>----<span class="w">    </span>------<span class="w">            </span>----<span class="w">  </span>----<span class="w">                    </span>-------
+<span class="w">  </span>Normal<span class="w">  </span>SuccessfulCreate<span class="w">  </span>25m<span class="w">   </span>statefulset-controller<span class="w">  </span>create<span class="w"> </span>Pod<span class="w"> </span>web-0<span class="w"> </span><span class="k">in</span><span class="w"> </span>StatefulSet<span class="w"> </span>web<span class="w"> </span>successful
+<span class="w">  </span>Normal<span class="w">  </span>SuccessfulCreate<span class="w">  </span>24m<span class="w">   </span>statefulset-controller<span class="w">  </span>create<span class="w"> </span>Pod<span class="w"> </span>web-1<span class="w"> </span><span class="k">in</span><span class="w"> </span>StatefulSet<span class="w"> </span>web<span class="w"> </span>successful
+<span class="w">  </span>Normal<span class="w">  </span>SuccessfulCreate<span class="w">  </span>24m<span class="w">   </span>statefulset-controller<span class="w">  </span>create<span class="w"> </span>Pod<span class="w"> </span>web-2<span class="w"> </span><span class="k">in</span><span class="w"> </span>StatefulSet<span class="w"> </span>web<span class="w"> </span>successful
+</code></pre></div>
+<h1 id="daemonset">DaemonSet控制器</h1>
+<p>查看<code>daemonset</code>资源对象</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get po,ds  -n web-daemoset</span>
+NAME<span class="w">            </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+pod/web-9954f<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>8m18s
+pod/web-ljwvn<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>8m18s
+pod/web-psr28<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>8m18s
+
+NAME<span class="w">                 </span>DESIRED<span class="w">   </span>CURRENT<span class="w">   </span>READY<span class="w">   </span>UP-TO-DATE<span class="w">   </span>AVAILABLE<span class="w">   </span>NODE<span class="w"> </span>SELECTOR<span class="w">   </span>AGEc
+daemonset.apps/web<span class="w">   </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">         </span><span class="m">3</span><span class="w">       </span><span class="m">3</span><span class="w">            </span><span class="m">3</span><span class="w">           </span>&lt;none&gt;<span class="w">          </span>8m18s
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get  po   -l  app=nginx-daemoset -n web-daemoset </span>
+NAME<span class="w">        </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+web-9954f<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>5m15s
+web-ljwvn<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>5m15s
+web-psr28<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>5m15s
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get  po   -l  app=nginx-daemoset </span>
+</code></pre></div>
+<p>描述资源 <code>describe</code></p>
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+<p>删除：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>DaemonSet<span class="o">]</span><span class="c1"># kubectl delete   -f Example-1.yaml --force </span>
+
+
+<span class="o">[</span>root@master<span class="w"> </span>DaemonSet<span class="o">]</span><span class="c1"># kubectl  delete  ds  web   -n web-daemoset</span>
+daemonset.apps<span class="w"> </span><span class="s2">&quot;web&quot;</span><span class="w"> </span>deleted
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

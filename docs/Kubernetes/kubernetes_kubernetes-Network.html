@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes 网络 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-kubernetes-network"># kubernetes Network</a></li><li class="toc-l2"><a href="#-集群的网络">## 集群的网络</a></li><li class="toc-l2"><a href="#-kubernetes-ip地址范围">## Kubernetes IP地址范围</a></li><li class="toc-l2"><a href="#-cluster-networking-types">## Cluster networking types</a></li><li class="toc-l2"><a href="#-pod-网络">## Pod 网络</a></li><li class="toc-l2"><a href="#-pod-内部通信">## Pod 内部通信</a></li><li class="toc-l2"><a href="#-pod-间通信">## Pod 间通信</a></li><li class="toc-l2"><a href="#-实现-pod-网络模型">## 实现 Pod 网络模型</a></li><li class="toc-l2"><a href="#-pod-网络的局限性和服务">## Pod 网络的局限性和服务</a></li><li class="toc-l2"><a href="#-service">## Service</a></li><li class="toc-l3"><a href="#-ingress">### ingress</a></li><li class="toc-l4"><a href="#-为什么需要-ingress">#### **为什么需要 Ingress？**</a></li><li class="toc-l4"><a href="#-ingress-的核心组成">#### **Ingress 的核心组成**</a></li><li class="toc-l4"><a href="#-常见-ingress-控制器">#### **常见 Ingress 控制器**</a></li><li class="toc-l2"><a href="#-先决条件">## 先决条件</a></li><li class="toc-l1"><a href="#定义后端service的字段">#定义后端service的字段</a></li><li class="toc-l1"><a href="#后端service">#后端service</a></li><li class="toc-l1"><a href="#service-名称">#service 名称</a></li><li class="toc-l1"><a href="#service-端口">#service 端口</a></li><li class="toc-l3"><a href="#-load-balancers">### load balancers</a></li><li class="toc-l4"><a href="#-实现lb">#### 实现LB</a></li><li class="toc-l2"><a href="#-纯软件解决方案metallb">## 纯软件解决方案：MetalLB</a></li><li class="toc-l4"><a href="#-一metallb-工作原理">#### 一、MetalLB 工作原理</a></li><li class="toc-l4"><a href="#-二部署-metallb-步骤以-layer-2-模式为例">#### 二、部署 MetalLB 步骤（以 Layer 2 模式为例）</a></li><li class="toc-l1"><a href="#-下载最新版本的部署文件v0.13.10-为示例可替换为最新版"># 下载最新版本的部署文件（v0.13.10 为示例，可替换为最新版）</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="kubernetes-network">kubernetes Network</h1>
+<h2 id="_1">集群的网络</h2>
+<p>网络是Kubernetes的核心部分，但要准确理解它是如何工作的可能具有挑战性。有4个不同的网络问题需要解决：</p>
+<ol>
+<li>高度耦合的容器到容器通信：这可以通过以下方式解决<a href="https://kubernetes.io/docs/concepts/workloads/pods/">豆荚</a>和<code>localhost</code>通信。</li>
+<li>Pod-to-Pod沟通：这是本文档的主要重点。</li>
+<li>Pod-to-Service通信：<a href="https://kubernetes.io/docs/concepts/services-networking/service/">服务</a>涵盖此项。</li>
+<li>外部与服务之间的通信：服务部门也涵盖此信息。</li>
+</ol>
+<p>Kubernetes就是关于在应用程序之间共享机器。通常，共享机器需要确保两个应用程序不会尝试使用相同的端口。跨多个开发人员的端口协调规模非常困难，并且会暴露用户无法控制的集群级问题。</p>
+<p>动态端口分配给系统带来了很多复杂功能——每个应用程序都必须将端口作为标志，API服务器必须知道如何将动态端口号插入到配置块中，服务必须知道如何找到彼此，等等。Kubernetes没有处理这个问题，而是采取了不同的方法。</p>
+<h2 id="kubernetes-ip">Kubernetes IP地址范围</h2>
+<p>Kubernetes集群需要从以下组件中配置的一系列可用地址中为Pod、服务和节点分配非重叠的IP地址：</p>
+<ul>
+<li>网络插件被配置为为Pods分配IP地址。</li>
+<li>kube-apiserver被配置为为服务分配IP地址。</li>
+<li>kubelet或云控制器管理器被配置为为为节点分配IP地址。</li>
+</ul>
+<p><img alt="网络" src="https://kubernetes.io/docs/images/kubernetes-cluster-network.svg" /></p>
+<h2 id="cluster-networking-types">Cluster networking types</h2>
+<p>负责配置的 IP 系列的 Kubernetes 集群可分为：</p>
+<ul>
+<li>仅 IPv4：网络插件 kube-apiserver 和 kubelet/cloud-controller-manager 配置为仅分配 IPv4 地址。</li>
+<li>仅 IPv6：网络插件 kube-apiserver 和 kubelet/cloud-controller-manager 配置为仅分配 IPv6 地址。</li>
+<li>IPv4/IPv6 或 IPv6/IPv4 <a href="https://kubernetes.io/docs/concepts/services-networking/dual-stack/">双栈 </a>：</li>
+<li>网络插件配置为分配 IPv4 和 IPv6 地址。</li>
+<li>kube-apiserver 配置为分配 IPv4 和 IPv6 地址。</li>
+<li>kubelet 或 cloud-controller-manager 配置为分配 IPv4 和 IPv6 地址。</li>
+<li>所有组件都必须就配置的主 IP 系列达成一致。</li>
+</ul>
+<p>Kubernetes 集群仅考虑 Pod、Services 和 Nodes 对象上存在的 IP 系列，独立于所表示对象的现有 IP。例如，服务器或 Pod 的接口上可以有多个 IP 地址，但只有 <code>node.status.addresses</code>或 <code>pod.status.ips</code> 中的 IP 地址才能考虑实现 Kubernetes 网络模型和定义集群类型。</p>
+<h2 id="pod">Pod 网络</h2>
+<p>是 Kubernetes 集群中实现 Pod 间通信、以及 Pod 与集群内外资源通信的关键机制。每个 Pod 都会被分配一个独立的 IP 地址，使其能够像虚拟机一样，通过 IP 地址进行寻址和通信。 </p>
+<p>Pod 网络的核心原则</p>
+<p>Kubernetes 的网络模型设计遵循以下基本原则： </p>
+<ul>
+<li><strong>IP-Per-Pod</strong>：集群中的每个 Pod 都有一个唯一的 IP 地址。</li>
+<li><strong>无需 NAT</strong>：所有 Pod 之间都可以直接使用各自的 Pod IP 地址进行通信，无需进行网络地址转换（NAT），无论这些 Pod 是否位于同一节点上。</li>
+<li><strong>节点通信</strong>：节点上的代理（如 Kubelet）可以与该节点上的所有 Pod 进行通信。 </li>
+</ul>
+<h2 id="pod_1">Pod 内部通信</h2>
+<p>在单个 Pod 内，所有容器共享同一个网络命名空间、IP 地址和端口空间。这意味着 Pod 中的不同容器可以直接通过 <code>localhost</code> 或 <code>127.0.0.1</code> 相互通信。 </p>
+<h2 id="pod_2">Pod 间通信</h2>
+<p>Pod 间的通信模式根据 Pod 是否在同一节点上而有所不同，但对 Pod 本身是透明的。 </p>
+<ul>
+<li><strong>同一节点内</strong>：位于同一节点上的 Pods 可以通过该节点上的虚拟网络桥接进行通信，延迟较低。</li>
+<li><strong>不同节点间</strong>：位于不同节点上的 Pods 之间的通信，则由底层的网络解决方案（CNI 插件）创建的覆盖网络（overlay network）或路由机制来处理。CNI 插件负责确保即使 Pod 位于不同物理节点上，Pod IP 也能正常路由。</li>
+</ul>
+<p>!image-20251028125251870](/images/image-20251028125251870.png) </p>
+<h2 id="pod_3">实现 Pod 网络模型</h2>
+<p>Kubernetes 本身不提供 Pod 网络功能，而是通过以下组件和机制来定义和实现网络要求： </p>
+<ul>
+<li><strong>CNI（容器网络接口）</strong>：CNI 是一种标准接口，定义了网络插件如何为 Pod 分配 IP 地址和配置网络。当创建 Pod 时，<code>kubelet</code> 会调用配置好的 CNI 插件来完成网络设置。</li>
+<li><strong>CNI 插件</strong>：实现了 CNI 标准的插件，负责具体的网络配置工作。常见的 CNI 插件包括：</li>
+<li><strong>Calico</strong>：提供强大的网络策略和网络安全功能。</li>
+<li><strong>Flannel</strong>：轻量级、易于部署的覆盖网络解决方案。</li>
+<li><strong>Weave Net</strong>：提供简便的跨主机容器网络。</li>
+<li><strong>Cilium</strong>：基于 eBPF 技术，提供高性能网络和安全策略。</li>
+<li><strong>IP 地址管理（IPAM）</strong>：作为 CNI 的一部分，IPAM 负责为 Pod 分配唯一的 IP 地址。通常，每个节点会被分配一个不重叠的 Pod IP 地址段，然后该节点上的 Pods 将从这个地址段中获取 IP 地址。 </li>
+</ul>
+<h2 id="pod_4">Pod 网络的局限性和服务</h2>
+<p>由于 Pod 是短暂的（当 Pod 被重新创建时，其 IP 地址会改变），直接依赖 Pod IP 进行通信是不稳定的。为了解决这个问题，Kubernetes 引入了 <strong>Service</strong> 抽象： </p>
+<ul>
+<li><strong>Service</strong>：为一组 Pod 提供一个稳定的 IP 地址和 DNS 名称。客户端只需通过 Service 的 IP 地址或 DNS 名称访问，Service 会负责将请求负载均衡到后端健康的 Pod 上，从而隐藏了 Pod IP 地址动态变化的细节。 </li>
+</ul>
+<p>总而言之，Pod 网络是 Kubernetes 平台实现容器互联互通的基础，它通过 CNI 插件为每个 Pod 提供唯一的 IP 地址，并通过 Service 机制提供稳定的访问入口，确保了分布式应用的高效通信。 </p>
+<h2 id="service">Service</h2>
+<div class="highlight"><pre><span></span><code>graph LR
+
+subgraph cluster
+P(pod)
+end
+subgraph API
+a(service API)
+end
+
+clinet  -.NodePort&lt;br&gt;clusterIP&lt;br&gt;loadblance.-&gt;  API  -.coredns.-&gt; P
+</code></pre></div>
+<p>service 语法：</p>
+<div class="highlight"><pre><span></span><code>apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Service
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>my-service
+<span class="w">  </span>namespace:<span class="w"> </span>default
+spec:
+<span class="w">  </span>ports:
+<span class="w">    </span>-<span class="w"> </span>port:<span class="w"> </span><span class="m">22</span>
+</code></pre></div>
+<p>创建service</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>service<span class="o">]</span><span class="c1"># kubectl  apply -f  Example-01.yaml </span>
+service/my-service<span class="w"> </span>created
+</code></pre></div>
+<p>查看<code>service</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>service<span class="o">]</span><span class="c1"># kubectl  get svc</span>
+NAME<span class="w">         </span>TYPE<span class="w">        </span>CLUSTER-IP<span class="w">       </span>EXTERNAL-IP<span class="w">   </span>PORT<span class="o">(</span>S<span class="o">)</span><span class="w">   </span>AGE
+kubernetes<span class="w">   </span>ClusterIP<span class="w">   </span><span class="m">10</span>.96.0.1<span class="w">        </span>&lt;none&gt;<span class="w">        </span><span class="m">443</span>/TCP<span class="w">   </span>6d1h
+my-service<span class="w">   </span>ClusterIP<span class="w">   </span><span class="m">10</span>.102.111.219<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">22</span>/TCP<span class="w">    </span>7s
+</code></pre></div>
+<p>!image-20251028114825773](/images/image-20251028114825773.png)</p>
+<p>注释输出的字段：</p>
+<div class="highlight"><pre><span></span><code>NAMESPACE：<span class="w">  </span><span class="c1">#标识service在那个名称空间</span>
+NAME：<span class="w">  </span><span class="c1">#service 的名称</span>
+TYPE：<span class="w"> </span><span class="c1">#ClusterIP 默认</span>
+ClusterIP：#service<span class="w"> </span>在集群的的IP地址
+EXTERNAL-IP：<span class="w"> </span><span class="c1">#对外的IP地址  loadblance</span>
+PORT:<span class="w"> </span><span class="c1">#service的端口号</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  describe  svc   my-service</span>
+Name:<span class="w">                     </span>my-service
+Namespace:<span class="w">                </span>default
+Labels:<span class="w">                   </span>&lt;none&gt;
+Annotations:<span class="w">              </span>&lt;none&gt;
+Selector:<span class="w">                 </span>&lt;none&gt;
+Type:<span class="w">                     </span>ClusterIP
+IP<span class="w"> </span>Family<span class="w"> </span>Policy:<span class="w">         </span>SingleStack
+IP<span class="w"> </span>Families:<span class="w">              </span>IPv4
+IP:<span class="w">                       </span><span class="m">10</span>.102.111.219
+IPs:<span class="w">                      </span><span class="m">10</span>.102.111.219
+Port:<span class="w">                     </span>&lt;unset&gt;<span class="w">  </span><span class="m">22</span>/TCP
+TargetPort:<span class="w">               </span><span class="m">22</span>/TCP
+Endpoints:<span class="w">                </span>&lt;none&gt;
+Session<span class="w"> </span>Affinity:<span class="w">         </span>None
+Internal<span class="w"> </span>Traffic<span class="w"> </span>Policy:<span class="w">  </span>Cluster
+Events:<span class="w">                   </span>&lt;none&gt;
+</code></pre></div>
+<p>以yaml 输出</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl get svc  my-service  -o yaml</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Service
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>my2-service
+<span class="w">  </span>namespace:<span class="w"> </span>default
+spec:
+<span class="w">  </span>ports:
+<span class="w">  </span>-<span class="w"> </span>port:<span class="w"> </span><span class="m">22</span>
+<span class="w">  </span>type:<span class="w"> </span>NodePort
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>service<span class="o">]</span><span class="c1"># kubectl  get svc my2-service  -o wide </span>
+NAME<span class="w">          </span>TYPE<span class="w">       </span>CLUSTER-IP<span class="w">       </span>EXTERNAL-IP<span class="w">   </span>PORT<span class="o">(</span>S<span class="o">)</span><span class="w">        </span>AGE<span class="w">   </span>SELECTOR
+my2-service<span class="w">   </span>NodePort<span class="w">   </span><span class="m">10</span>.101.190.244<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">22</span>:32477/TCP<span class="w">   </span>37s<span class="w">   </span>&lt;none&gt;
+</code></pre></div>
+<h3 id="ingress">ingress</h3>
+<blockquote>
+<p>帮助k8s实现暴露到外部的一个控制器；</p>
+</blockquote>
+<p>在 Kubernetes 中，<strong>Ingress</strong> 是管理集群外部访问集群内服务（通常是 HTTP/HTTPS 流量）的 API 资源，它提供了路由规则、域名绑定、SSL 终止、负载均衡等功能，是集群外部流量进入内部服务的 “入口网关”。</p>
+<h4 id="ingress_1"><strong>为什么需要 Ingress？</strong></h4>
+<p>Kubernetes 中的 Service 虽然能暴露服务，但存在局限：</p>
+<ul>
+<li><strong>NodePort</strong> 会占用节点端口，且暴露方式不友好（需用 <code>节点IP:端口</code> 访问）。</li>
+<li><strong>LoadBalancer</strong> 依赖云厂商，成本较高，且每个服务都需要独立的负载均衡器。</li>
+</ul>
+<p>Ingress 解决了这些问题：</p>
+<ul>
+<li>统一管理所有 HTTP/HTTPS 流量的路由规则。</li>
+<li>支持基于域名、路径的精细化路由（例如将 <code>api.example.com</code> 路由到 API 服务，<code>web.example.com</code> 路由到 Web 服务）。</li>
+<li>集中配置 SSL 证书，实现 HTTPS 加密。</li>
+<li>无需为每个服务单独暴露端口，通过一个入口点管理所有服务。</li>
+</ul>
+<h4 id="ingress_2"><strong>Ingress 的核心组成</strong></h4>
+<ol>
+<li>
+<p><strong>Ingress 资源</strong>：通过 YAML 定义的路由规则（如域名、路径、后端服务等）。</p>
+</li>
+<li>
+<p>Ingress 控制器（Ingress Controller）</p>
+</li>
+</ol>
+<p>：实际执行路由规则的组件（如 Nginx、Traefik 等），是 Ingress 功能的 “执行者”。</p>
+<blockquote>
+<p>注意：仅创建 Ingress 资源无效，必须先部署 Ingress 控制器，否则规则不会生效。</p>
+</blockquote>
+<h4 id="ingress_3"><strong>常见 Ingress 控制器</strong></h4>
+<ul>
+<li><strong>Nginx Ingress Controller</strong>：最常用，基于 Nginx 反向代理实现，支持丰富的配置。</li>
+<li><strong>Traefik</strong>：云原生网关，自动发现服务，配置简单，适合动态环境。</li>
+<li><strong>Cilium Ingress Controller</strong> 是由 Cilium 提供的 ingress controller。</li>
+<li><strong>HAProxy Ingress</strong>：基于 HAProxy，性能优秀，适合高并发场景。</li>
+<li><strong>Istio Ingress Gateway</strong>：服务网格 Istio 的入口组件，支持更复杂的流量治理（如熔断、限流）。</li>
+</ul>
+<p><img alt="image-20251029103205981" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029103205981.png" /></p>
+<h2 id="_2">先决条件</h2>
+<blockquote>
+<p>需要满足条件：一个或者多个ingress </p>
+<p>为了使 Ingress 资源工作，集群中必须运行一个 ingress 控制器</p>
+<p>官方地址：https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters</p>
+</blockquote>
+<p>Ingress</p>
+<div class="highlight"><pre><span></span><code>apiVersion:<span class="w"> </span>networking.k8s.io/v1
+kind:<span class="w"> </span>Ingress
+metadata:
+<span class="w">  </span>name:<span class="w"> </span>minimal-ingress
+<span class="w">  </span>annotations:
+<span class="w">    </span>nginx.ingress.kubernetes.io/rewrite-target:<span class="w"> </span>/
+spec:
+<span class="w">  </span>ingressClassName:<span class="w"> </span>nginx-example
+<span class="w">  </span>rules:
+<span class="w">  </span>-<span class="w"> </span>http:
+<span class="w">      </span>paths:
+<span class="w">      </span>-<span class="w"> </span>path:<span class="w"> </span>/
+<span class="w">        </span>pathType:<span class="w"> </span>Prefix
+<span class="w">        </span><span class="c1">#定义后端service的字段</span>
+<span class="w">        </span>backend:
+<span class="w">          </span><span class="c1">#后端service</span>
+<span class="w">          </span>service:
+<span class="w">            </span><span class="c1">#service 名称</span>
+<span class="w">            </span>name:<span class="w"> </span><span class="nb">test</span>
+<span class="w">            </span><span class="c1">#service 端口</span>
+<span class="w">            </span>port:
+<span class="w">              </span>number:<span class="w"> </span><span class="m">80</span>
+</code></pre></div>
+<blockquote>
+<p>pathType </p>
+<p>每个 Ingress 中的路径都需要对应一个路径类型。未包含显式 <code>pathType</code> 的路径将无法通过验证。支持三种路径类型：</p>
+<p><code>ImplementationSpecific</code> : 使用此路径类型时，匹配由 IngressClass 处理。</p>
+<p><code>Exact</code> : 精确匹配 URL 路径，并且区分大小写</p>
+<p><code>Prefix</code> : 根据 URL 路径的前缀进行匹配，前缀由 <code>/</code> 分割。匹配是区分大小写的，并且逐路径元素进行匹配。</p>
+</blockquote>
+<h3 id="load-balancers">load balancers</h3>
+<blockquote>
+<p>https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#a-pure-software-solution-metallb</p>
+</blockquote>
+<p>在传统的云环境中，网络负载均衡器可以按需提供，因此只需要一个 Kubernetes 清单就可以为外部客户端提供 Ingress-Nginx 控制器的单一接入点，进而间接地为集群内的任何应用程序提供服务。裸金属环境缺乏这种便利，需要采用稍微不同的设置来为外部消费者提供相同类型的访问</p>
+<h4 id="lb">实现LB</h4>
+<p>基于云厂商</p>
+<p><img alt="image-20251029161907784" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029161907784.png" /></p>
+<h2 id="metallb">纯软件解决方案：MetalLB</h2>
+<p>MetalLB 为不运行在受支持云提供商上的 Kubernetes 集群提供了网络负载均衡器实现，有效地允许在任何集群中使用 LoadBalancer 服务。</p>
+<p><img alt="image-20251029162037104" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029162037104.png" /></p>
+<p><img alt="image-20251029170924886" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029170924886.png" /></p>
+<p>MetalLB 是专门为裸金属（Bare-metal）Kubernetes 集群设计的 <strong>LoadBalacer 实现</strong>，可解决本地集群（非云环境）中 <code>Service</code> 类型为 <code>LoadBalancer</code> 时无法分配外部 IP 的问题（云厂商通常通过自家 LB 服务自动分配 IP，本地集群无此能力）。</p>
+<h4 id="metallb_1">一、MetalLB 工作原理</h4>
+<p>MetalLB 会为集群中的 <code>LoadBalancer</code> 类型 Service 分配一个<strong>预配置的静态 IP 池</strong>中的 IP，并通过以下两种模式将 IP 暴露到集群外部：</p>
+<ol>
+<li><strong>Layer 2 模式</strong>（二层模式）：通过 ARP/NDP 协议在本地局域网广播 IP 映射，使该 IP 与集群中某节点绑定（类似 “浮动 IP”），适合小型网络。</li>
+<li><strong>BGP 模式</strong>（三层模式）：通过 BGP 协议与外部路由器通信，动态宣告 IP 路由，适合大规模网络或需要更高可用性的场景。</li>
+</ol>
+<p>最常用的是 <strong>Layer 2 模式</strong>（配置简单，无需路由器支持）。</p>
+<h4 id="metallb-layer-2">二、部署 MetalLB 步骤（以 Layer 2 模式为例）</h4>
+<ol>
+<li>
+<p>前提条件</p>
+</li>
+<li>
+<p>Kubernetes 集群版本 ≥ v1.19（推荐 v1.24+）。</p>
+</li>
+<li>集群未启用云厂商的 LoadBalancer 控制器（如 GKE、EKS 自带的 LB，本地集群默认满足）。</li>
+<li>
+<p>准备一个<strong>未被局域网中其他设备占用的 IP 段</strong>（作为 MetalLB 的 IP 池，例如 <code>192.168.1.200-192.168.1.210</code>）。</p>
+</li>
+<li>
+<p>安装 MetalLB</p>
+</li>
+</ol>
+<p>推荐用官方 Manifest 部署（适用于大多数集群）：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 下载最新版本的部署文件（v0.13.10 为示例，可替换为最新版）</span>
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
+
+<span class="c1"># 验证部署（命名空间为 metallb-system）</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>metallb-system
+<span class="c1"># 预期输出：controller 和 speaker  pods 运行中</span>
+<span class="c1"># NAME                          READY   STATUS    RESTARTS   AGE</span>
+<span class="c1"># metallb-controller-xxxxxx     1/1     Running   0          1m</span>
+<span class="c1"># metallb-speaker-xxxxx         1/1     Running   0          1m</span>
+<span class="c1"># metallb-speaker-yyyyy         1/1     Running   0          1m</span>
+</code></pre></div>
+<ul>
+<li><code>controller</code>：负责 IP 分配和管理 <code>LoadBalancer</code> Service。</li>
+<li>
+<p><code>speaker</code>：运行在每个节点上，负责通过 ARP/BGP 广播 IP（DaemonSet 类型）。</p>
+</li>
+<li>
+<p>配置 IP 池（Layer 2 模式）</p>
+</li>
+</ul>
+<p>创建 <code>IPAddressPool</code> 和 <code>L2Advertisement</code> 资源，定义可用 IP 范围并启用二层广播：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># metallb-config.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IPAddressPool</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-pool</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">addresses</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.200-192.168.1.210</span><span class="w">  </span><span class="c1"># 替换为你的局域网空闲 IP 段</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">L2Advertisement</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l2-advert</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ipAddressPools</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-pool</span><span class="w">  </span><span class="c1"># 关联上面定义的 IP 池</span>
+</code></pre></div>
+<p>应用配置：</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>metallb-config.yaml
+</code></pre></div>
+<h5 id="metallb_2">三、验证 MetalLB 功能</h5>
+<p>创建一个 <code>LoadBalancer</code> 类型的 Service，测试是否能自动分配 IP：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># test-service.yaml</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx-test</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w">  </span><span class="c1"># 假设已有标签为 app=nginx 的 Pod</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">    </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LoadBalancer</span><span class="w">  </span><span class="c1"># 关键：使用 LoadBalancer 类型</span>
+</code></pre></div>
+<p>部署 Service 并查看：</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>test-service.yaml
+
+<span class="c1"># 查看 Service，关注 EXTERNAL-IP 字段</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>nginx-test
+<span class="c1"># 预期输出（EXTERNAL-IP 会从 MetalLB 池中分配）：</span>
+<span class="c1"># NAME         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)        AGE</span>
+<span class="c1"># nginx-test   LoadBalancer   10.96.xxx.xxx   192.168.1.200   80:32123/TCP   10s</span>
+</code></pre></div>
+<ul>
+<li>此时，外部设备（如本地电脑）可通过 <code>192.168.1.200:80</code> 访问该 Service，流量会被转发到后端 Pod。</li>
+</ul>
+<p>设置ingress-nginx的网络类型<code>LoadBalancer</code><img alt="image-20251029171359694" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029171359694.png" /></p>
+<p><img alt="image-20251029171312097" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251029171312097.png" /></p>
+<h5 id="_3">四、关键配置说明</h5>
+<ol>
+<li>
+<p><strong>IP 池规划</strong></p>
+</li>
+<li>
+<p>IP 段必须在局域网网段内（如 <code>192.168.1.0/24</code>），且未被其他设备使用（避免 IP 冲突）。</p>
+</li>
+<li>
+<p>可配置多个 IP 池（多个 <code>IPAddressPool</code>），并通过 <code>L2Advertisement</code> 关联不同池。</p>
+</li>
+<li>
+<p><strong>高可用（Layer 2 模式）</strong></p>
+</li>
+<li>
+<p>Layer 2 模式下，MetalLB 会将 IP 绑定到集群中的一个节点（“领导者” 节点），若该节点故障，会自动漂移到其他节点（约 10-30 秒切换）。</p>
+</li>
+<li>
+<p>需确保节点间网络互通，且防火墙允许 ARP 广播（否则 IP 漂移可能失败）。</p>
+</li>
+<li>
+<p><strong>BGP 模式（可选）</strong></p>
+</li>
+</ol>
+<p>若局域网有支持 BGP 的路由器（如 Cisco、Juniper），可配置 BGP 模式实现更灵活的路由控制（如跨子网访问），需额外定义 <code>BGPPeer</code> 资源关联路由器。</p>
+<h5 id="_4">五、常见问题解决</h5>
+<ol>
+<li><strong>Service 一直处于 <code>&lt;pending&gt;</code> 状态</strong></li>
+<li>检查 MetalLB 组件是否正常运行：<code>kubectl logs -n metallb-system &lt;controller-pod&gt;</code>。</li>
+<li>确认 IP 池配置正确（IP 段未被占用，且在局域网内）。</li>
+<li><strong>外部无法访问分配的 EXTERNAL-IP</strong></li>
+<li>检查节点防火墙是否开放 Service 对应的端口（Layer 2 模式下，流量会先到绑定 IP 的节点，再转发到 Pod）。</li>
+<li>确认本地电脑与 EXTERNAL-IP 网段互通（如 <code>ping 192.168.1.200</code> 测试）。</li>
+<li><strong>IP 冲突</strong></li>
+<li>确保 IP 池中的 IP 未被其他设备使用（可通过 <code>arp-scan</code> 工具扫描局域网 IP 占用情况）。</li>
+</ol>
+<h5 id="_5">六、总结</h5>
+<p>MetalLB 是本地 Kubernetes 集群实现 <code>LoadBalancer</code> 类型 Service 的最佳方案，通过 Layer 2 模式可快速部署，解决外部 IP 分配问题。只需规划好 IP 池，即可让集群中的服务像云环境一样通过固定 IP 暴露，无需手动配置 NodePort 或第三方 LB。</p></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

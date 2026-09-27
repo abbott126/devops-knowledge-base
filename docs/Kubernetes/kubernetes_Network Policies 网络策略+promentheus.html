@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络策略 Prometheus - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-network-policies-网络策略"># Network Policies 网络策略</a></li><li class="toc-l3"><a href="#-一核心概念与默认行为">### 一、核心概念与默认行为</a></li><li class="toc-l3"><a href="#-二network-policy-关键字段解析">### 二、Network Policy 关键字段解析</a></li><li class="toc-l3"><a href="#-三常见-network-policy-场景示例">### 三、常见 Network Policy 场景示例</a></li><li class="toc-l4"><a href="#-场景-1拒绝所有入站流量默认拒绝">#### 场景 1：拒绝所有入站流量（默认拒绝）</a></li><li class="toc-l4"><a href="#-场景-2允许特定-pod-间的双向通信">#### 场景 2：允许特定 Pod 间的双向通信</a></li><li class="toc-l1"><a href="#-1.-允许-backend-接收-frontend-的入站流量"># 1. 允许 backend 接收 frontend 的入站流量</a></li><li class="toc-l1"><a href="#-2.-允许-frontend-接收-backend-的入站流量若需双向"># 2. 允许 frontend 接收 backend 的入站流量（若需双向）</a></li><li class="toc-l4"><a href="#-场景-3限制-pod-出站流量仅允许访问特定服务">#### 场景 3：限制 Pod 出站流量（仅允许访问特定服务）</a></li><li class="toc-l1"><a href="#-允许访问同一命名空间内-appapi-的-8080-端口"># 允许访问同一命名空间内 app=api 的 8080 端口</a></li><li class="toc-l1"><a href="#-允许访问外部-192.168.1.0/24-网段如本地数据库"># 允许访问外部 192.168.1.0/24 网段（如本地数据库）</a></li><li class="toc-l3"><a href="#-四策略优先级与生效逻辑">### 四、策略优先级与生效逻辑</a></li><li class="toc-l3"><a href="#-五验证与调试方法">### 五、验证与调试方法</a></li><li class="toc-l1"><a href="#-查看指定命名空间的所有-network-policy"># 查看指定命名空间的所有 Network Policy</a></li><li class="toc-l1"><a href="#-查看策略详情含规则"># 查看策略详情（含规则）</a></li><li class="toc-l1"><a href="#-进入-frontend-pod测试访问-backend-的-db-pod3306-端口"># 进入 frontend Pod，测试访问 backend 的 db Pod（3306 端口）</a></li><li class="toc-l1"><a href="#-查看-calico-节点日志以-calico-为例"># 查看 Calico 节点日志（以 Calico 为例）</a></li><li class="toc-l3"><a href="#-六注意事项">### 六、注意事项</a></li><li class="toc-l2"><a href="#-案例-监控系统-prometheus">## 案例： 监控系统 Prometheus</a></li><li class="toc-l3"><a href="#-功能">### 功能</a></li><li class="toc-l4"><a href="#-prometheus-架构">#### Prometheus 架构</a></li><li class="toc-l3"><a href="#-部署方案">### 部署方案</a></li><li class="toc-l4"><a href="#-基于二进制裸金属实现方式">#### 基于二进制（裸金属）实现方式</a></li><li class="toc-l1"><a href="#-the-job-name-is-added-as-a-label-job-to-any-timeseries-scraped-from-this-config."># The job name is added as a label `job=` to any timeseries scraped from this config.</a></li><li class="toc-l1"><a href="#-metrics_path-defaults-to-/metrics"># metrics_path defaults to '/metrics'</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="network-policies">Network Policies 网络策略</h1>
+<p>Kubernetes <strong>Network Policies（网络策略）</strong> 是用于<strong>控制集群内 Pod 间网络流量</strong>的 API 资源，支持通过标签（Label）精准定义 “允许哪些 Pod 与哪些 Pod 通信”，默认拒绝所有未授权流量，可实现微服务间的网络隔离与安全访问控制。</p>
+<h3 id="_1">一、核心概念与默认行为</h3>
+<ol>
+<li><strong>核心作用</strong></li>
+<li>仅允许 “明确授权” 的 Pod 间通信，拒绝所有未匹配规则的流量（入站 / 出站）。</li>
+<li>基于 <strong>Pod 标签（Pod Selector）</strong> 和 <strong>命名空间标签（Namespace Selector）</strong> 筛选流量源 / 目标，支持按端口、协议（TCP/UDP/SCTP）细化规则。</li>
+<li><strong>默认行为</strong></li>
+<li>若未创建任何 Network Policy，集群内所有 Pod 可<strong>自由通信</strong>（无网络隔离）。</li>
+<li>一旦为某命名空间或 Pod 配置 Network Policy，仅匹配规则的流量会被允许，其余流量默认拒绝。</li>
+<li><strong>依赖条件</strong></li>
+<li>需 Kubernetes 网络插件支持（如 Calico、Flannel（需额外配置）、Cilium 等），纯原生 <code>kube-proxy</code> 不支持 Network Policies。</li>
+</ol>
+<h3 id="network-policy">二、Network Policy 关键字段解析</h3>
+<p>以一个 “允许 <code>frontend</code> 命名空间的 Pod 访问 <code>backend</code> 命名空间 <code>app=db</code> 的 Pod 的 3306 端口” 的规则为例，核心字段如下：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend-db-policy</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span><span class="w">  </span><span class="c1"># 策略作用的命名空间（仅对该命名空间内的 Pod 生效）</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span><span class="w">  </span><span class="c1"># 目标 Pod 筛选（策略保护的 Pod）</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span><span class="w">  </span><span class="c1"># 仅对标签为 app=db 的 Pod 生效</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span><span class="w">  </span><span class="c1"># 策略类型：Ingress（入站流量）、Egress（出站流量），可同时配置</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ingress</span>
+<span class="w">  </span><span class="nt">ingress</span><span class="p">:</span><span class="w">  </span><span class="c1"># 入站流量规则（允许哪些源访问目标 Pod）</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">from</span><span class="p">:</span><span class="w">  </span><span class="c1"># 流量来源（支持多源配置）</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">namespaceSelector</span><span class="p">:</span><span class="w">  </span><span class="c1"># 按命名空间筛选来源</span>
+<span class="w">        </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend</span><span class="w">  </span><span class="c1"># 仅允许标签为 env=frontend 的命名空间的 Pod</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podSelector</span><span class="p">:</span><span class="w">  </span><span class="c1"># 按 Pod 标签筛选来源（可选，与 namespaceSelector 组合为“且”关系）</span>
+<span class="w">        </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span><span class="w">  </span><span class="c1"># 进一步限制来源 Pod 需带 role=api 标签</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">  </span><span class="c1"># 允许访问的端口与协议（仅允许 3306 端口的 TCP 流量）</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TCP</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span>
+</code></pre></div>
+<p>关键字段说明：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>podSelector</code></td>
+<td>定义策略<strong>作用的目标 Pod</strong>（必须配置，筛选当前命名空间内的 Pod）。若为空（<code>matchLabels: {}</code>），则对命名空间内所有 Pod 生效。</td>
+</tr>
+<tr>
+<td><code>policyTypes</code></td>
+<td>声明策略控制的流量方向：<code>Ingress</code>（入站，外部访问目标 Pod）、<code>Egress</code>（出站，目标 Pod 访问外部），至少配置一种。</td>
+</tr>
+<tr>
+<td><code>ingress[].from</code></td>
+<td>定义<strong>允许的入站流量来源</strong>，支持 3 种来源：- <code>namespaceSelector</code>：来自特定标签的命名空间的所有 Pod；- <code>podSelector</code>：来自当前命名空间内特定标签的 Pod；- <code>ipBlock</code>：来自特定 IP 段（如 <code>cidr: 192.168.1.0/24</code>）的流量。</td>
+</tr>
+<tr>
+<td><code>ingress[].ports</code></td>
+<td>定义允许入站流量访问的<strong>端口和协议</strong>（若不配置，允许所有端口）。</td>
+</tr>
+<tr>
+<td><code>egress[].to</code> / <code>egress[].ports</code></td>
+<td>与 <code>ingress</code> 对应，控制目标 Pod 的<strong>出站流量</strong>（允许访问哪些外部目标、哪些端口）。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="network-policy_1">三、常见 Network Policy 场景示例</h3>
+<p>根据实际需求，可配置不同场景的网络策略，以下为 3 个典型案例：</p>
+<h4 id="1">场景 1：拒绝所有入站流量（默认拒绝）</h4>
+<p>对某命名空间内的所有 Pod 禁用入站流量（仅允许 Pod 自身的出站流量，如访问外部服务）：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-deny-ingress</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">  </span><span class="c1"># 作用于命名空间内所有 Pod</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ingress</span><span class="w">  </span><span class="c1"># 仅控制入站流量，未配置 ingress.from 则默认拒绝所有入站</span>
+</code></pre></div>
+<h4 id="2-pod">场景 2：允许特定 Pod 间的双向通信</h4>
+<p>允许 <code>app=frontend</code> 的 Pod 与 <code>app=backend</code> 的 Pod 互相访问（双向流量）：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. 允许 backend 接收 frontend 的入站流量</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend-allow-frontend</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ingress</span>
+<span class="w">  </span><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">from</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend</span><span class="w">  </span><span class="c1"># 允许同一命名空间内 app=frontend 的 Pod 访问</span>
+
+<span class="c1"># 2. 允许 frontend 接收 backend 的入站流量（若需双向）</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend-allow-backend</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ingress</span>
+<span class="w">  </span><span class="nt">ingress</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">from</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backend</span>
+</code></pre></div>
+<h4 id="3-pod">场景 3：限制 Pod 出站流量（仅允许访问特定服务）</h4>
+<p>控制 <code>app=web</code> 的 Pod 仅能访问 <code>app=api</code> 的 8080 端口和外部 <code>192.168.1.0/24</code> 网段：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkPolicy</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">web-egress-policy</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">web</span>
+<span class="w">  </span><span class="nt">policyTypes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Egress</span><span class="w">  </span><span class="c1"># 控制出站流量</span>
+<span class="w">  </span><span class="nt">egress</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 允许访问同一命名空间内 app=api 的 8080 端口</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">to</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podSelector</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TCP</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
+<span class="w">  </span><span class="c1"># 允许访问外部 192.168.1.0/24 网段（如本地数据库）</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">to</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ipBlock</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">cidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.0/24</span>
+</code></pre></div>
+<h3 id="_2">四、策略优先级与生效逻辑</h3>
+<ol>
+<li><strong>多策略叠加</strong></li>
+</ol>
+<p>若多个 Network Policy 作用于同一个 Pod，<strong>所有允许规则会 “叠加”</strong>（即满足任一策略的允许条件，流量就会被放行），但只要有一个策略明确拒绝（通过 <code>ipBlock</code> 排除），则流量被拒绝。</p>
+<ol>
+<li><strong>命名空间隔离</strong></li>
+</ol>
+<p>策略仅对其所在的命名空间内的 Pod 生效，无法直接控制跨命名空间的 Pod 策略（需通过 <code>namespaceSelector</code> 引用其他命名空间）。</p>
+<ol>
+<li><strong>流量方向独立</strong></li>
+</ol>
+<p><code>Ingress</code> 和 <code>Egress</code> 规则独立生效，例如：可允许 Pod 接收所有入站流量，但仅允许其访问特定外部服务（限制出站）。</p>
+<h3 id="_3">五、验证与调试方法</h3>
+<ol>
+<li><strong>查看网络策略</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看指定命名空间的所有 Network Policy</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>networkpolicy<span class="w"> </span>-n<span class="w"> </span>backend
+<span class="c1"># 查看策略详情（含规则）</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>networkpolicy<span class="w"> </span>backend-db-policy<span class="w"> </span>-n<span class="w"> </span>backend
+</code></pre></div>
+<ol>
+<li><strong>测试流量连通性</strong></li>
+</ol>
+<p>通过 <code>kubectl exec</code> 进入 Pod，使用 <code>curl</code>/<code>ping</code> 测试与目标 Pod 的通信，验证规则是否生效：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 进入 frontend Pod，测试访问 backend 的 db Pod（3306 端口）</span>
+kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>frontend-pod<span class="w"> </span>-n<span class="w"> </span>frontend<span class="w"> </span>--<span class="w"> </span>curl<span class="w"> </span>-v<span class="w"> </span>backend-db-pod:3306
+</code></pre></div>
+<ol>
+<li><strong>查看网络插件日志</strong></li>
+</ol>
+<p>若流量不符合预期，可查看网络插件日志（如 Calico）定位问题：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看 Calico 节点日志（以 Calico 为例）</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>calico-system<span class="w"> </span>calico-node-xxxxxx
+</code></pre></div>
+<h3 id="_4">六、注意事项</h3>
+<ol>
+<li><strong>网络插件兼容性</strong></li>
+</ol>
+<p>确保使用的网络插件支持 Network Policies（如 Calico、Cilium、Weave Net），避免使用仅支持基础网络的插件（如原生 Flannel）。</p>
+<ol>
+<li><strong>默认拒绝的风险</strong></li>
+</ol>
+<p>配置 <code>default-deny-ingress</code> 或 <code>default-deny-egress</code> 时，需确保已为必要的流量（如 DNS 解析、监控采集）配置允许规则，避免服务不可用。</p>
+<ol>
+<li><strong>标签管理</strong></li>
+</ol>
+<p>策略依赖 Pod / 命名空间标签，需确保标签定义清晰且不频繁变动，避免因标签修改导致策略失效。</p>
+<p>Network Policies 是 Kubernetes 集群网络安全的核心工具，通过精细化的规则配置，可有效隔离不同服务的流量，降低跨服务攻击风险。若需针对特定场景（如跨命名空间访问、IP 段限制）配置策略，可以补充需求，我会提供更具体的示例。</p>
+<h2 id="prometheus">案例： 监控系统 Prometheus</h2>
+<blockquote>
+<p>promethues 监控系统，为云原生而产生的应用</p>
+<p>监控系统</p>
+<ul>
+<li>
+<p>不是容器化的业务： zabbix 监控硬件，</p>
+</li>
+<li>
+<p>容器化的业务： Prometheus监控</p>
+</li>
+</ul>
+<p>链路追踪系统：</p>
+<ul>
+<li>
+<p><strong>OpenTelemetry</strong>：<strong>当前的事实标准和未来趋势</strong>。它是一个 CNCF 毕业项目，提供了一套与供应商无关的 API、SDK 和工具，用于采集和导出遥测数据（链路、指标、日志）。它旨在统一之前的 OpenTracing 和 OpenCensus 两大标准。</p>
+</li>
+<li>
+<p><strong>Zipkin</strong>：由 Twitter 开发的开源先驱，简单易用，生态成熟。</p>
+</li>
+<li>
+<p><strong>Jaeger</strong>：由 Uber 开发并开源，是 CNCF 毕业项目。功能强大，支持高扩展性、多种存储后端和复杂的分布式场景。常与 OpenTelemetry 配合使用（OTel 采集，Jaeger 展示）。</p>
+</li>
+</ul>
+<p>日志监控系统：EL/FK </p>
+</blockquote>
+<p>Prometheus 是一个开源的系统监控和告警工具包，最初由 SoundCloud 公司开发。自 2012 年成立以来，许多公司和组织都采用了 Prometheus，该项目有一个非常活跃的开发者和用户社区。现在它已经是一个独立的开源项目，并且独立于任何公司进行维护。为了强调这一点，并澄清项目的治理结构，Prometheus 在 2016 年加入 Cloud Native Computing Foundation，成为继 Kubernetes 之后的第二个托管项目。</p>
+<h3 id="_5">功能</h3>
+<p>Prometheus 的主要功能是:</p>
+<ul>
+<li>多维数据模型，时间序列数据通过指标名称和键/值对进行标识</li>
+<li>PromQL，一种灵活的查询语言，利用这种多维性</li>
+<li>没有依赖分布式存储；单服务器节点是自治的</li>
+<li>时间序列收集是通过 HTTP 拉取模型进行的</li>
+<li>支持通过中间网关推送时间序列</li>
+<li>目标是通过服务发现或静态配置来发现的</li>
+<li>支持多种绘图和仪表板模式</li>
+</ul>
+<h4 id="prometheus_1">Prometheus 架构</h4>
+<p>!image-20251030100052847](/images/image-20251030100052847.png)</p>
+<h3 id="_6">部署方案</h3>
+<ul>
+<li>基于二进制部署</li>
+<li>基于容器</li>
+<li>基于k8s--&gt;yaml --&gt; helm</li>
+</ul>
+<h4 id="_7">基于二进制（裸金属）实现方式</h4>
+<p>部署<strong>prometheus server</strong></p>
+<p>下载软件包</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@promethues-server<span class="w"> </span>test<span class="o">]</span><span class="c1"># tar xf  prometheus-3.5.0.linux-amd64.tar.gz  -C  /usr/local/</span>
+<span class="o">[</span>root@promethues-server<span class="w"> </span>test<span class="o">]</span><span class="c1"># cd /usr/local/</span>
+
+<span class="o">[</span>root@promethues-server<span class="w"> </span>prometheus-3.5.0.linux-amd64<span class="o">]</span><span class="c1"># ./prometheus --config.file=prometheus.yml &amp;</span>
+</code></pre></div>
+<p><img alt="image-20251030112341248" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030112341248.png" /></p>
+<p>部署监控节点（node_exporter）</p>
+<p>下载组件</p>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+</code></pre></div>
+<p>启动<br />
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@work01<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar xf  node_exporter-1.10.2.linux-amd64.tar.gz  -C /usr/local/</span>
+<span class="o">[</span>root@work01<span class="w"> </span>~<span class="o">]</span><span class="c1"># cd /usr/local/ </span>
+
+<span class="o">[</span>root@work01<span class="w"> </span>node_exporter-1.10.2.linux-amd64<span class="o">]</span><span class="c1"># ls</span>
+LICENSE<span class="w">  </span>node_exporter<span class="w">  </span>NOTICE
+<span class="o">[</span>root@work01<span class="w"> </span>node_exporter-1.10.2.linux-amd64<span class="o">]</span><span class="c1"># ./node_exporter  &amp;</span>
+</code></pre></div></p>
+<p><img alt="image-20251030113154266" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030113154266.png" /></p>
+<p>Promethues自带的WebUI </p>
+<p><img alt="image-20251030114509072" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030114509072.png" /></p>
+<p>修改配置文件被<code>node</code> 加入promethues <code>prometheus.yml</code> </p>
+<div class="highlight"><pre><span></span><code>scrape_configs:
+<span class="w">  </span><span class="c1"># The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span>
+<span class="w">  </span>-<span class="w"> </span>job_name:<span class="w"> </span><span class="s2">&quot;prometheus&quot;</span>
+
+<span class="w">    </span><span class="c1"># metrics_path defaults to &#39;/metrics&#39;</span>
+<span class="w">    </span><span class="c1"># scheme defaults to &#39;http&#39;.</span>
+
+<span class="w">    </span>static_configs:
+<span class="w">      </span>-<span class="w"> </span>targets:<span class="w"> </span><span class="o">[</span><span class="s2">&quot;localhost:9090&quot;</span><span class="o">]</span>
+<span class="w">       </span><span class="c1"># The label name is added as a label `label_name=&lt;label_value&gt;` to any timeseries scraped from this config.</span>
+<span class="w">        </span>labels:
+<span class="w">          </span>app:<span class="w"> </span><span class="s2">&quot;prometheus&quot;</span>
+<span class="w">  </span>-<span class="w"> </span>job_name:<span class="w"> </span><span class="s2">&quot;work01&quot;</span>
+<span class="w">    </span>static_configs:
+<span class="w">       </span>-<span class="w"> </span>targets:<span class="w"> </span><span class="o">[</span><span class="s2">&quot;192.168.1.64:9100&quot;</span><span class="o">]</span>
+<span class="w">  </span>-<span class="w"> </span>job_name:<span class="w"> </span><span class="s2">&quot;work03&quot;</span>
+<span class="w">    </span>static_configs:
+<span class="w">       </span>-<span class="w"> </span>targets:<span class="w"> </span><span class="o">[</span><span class="s2">&quot;192.168.1.71:9100&quot;</span><span class="o">]</span>
+</code></pre></div>
+<h2 id="grafana-webui">grafana  webui</h2>
+<p>官网：https://grafana.com </p>
+<blockquote>
+<p>第三方webui </p>
+</blockquote>
+<p><img alt="image-20251030141258178" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030141258178.png" /></p>
+<p>部署方式：</p>
+<ul>
+<li>容器</li>
+<li>二进制裸金属</li>
+<li>K8s(helm)</li>
+</ul>
+<h4 id="yum">基于YUM部署</h4>
+<blockquote>
+<p>官方地址： https://grafana.com/grafana/download?pg=oss-graf&amp;plcmt=hero-btn-1</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@promethues-server<span class="w"> </span>prometheus-3.5.0.linux-amd64<span class="o">]</span><span class="c1">#  yum install -y https://dl.grafana.com/grafana-enterprise/release/12.2.1/grafana-enterprise_12.2.1_18655849634_linux_amd64.rpm</span>
+
+<span class="c1">#运行</span>
+<span class="o">[</span>root@promethues-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># systemctl start grafana-server.service  --now</span>
+</code></pre></div>
+<p><img alt="image-20251030145154092" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030145154092.png" /></p>
+<p><img alt="image-20251030145104996" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030145104996.png" /></p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>必须要有「数据源」<span class="w">  </span>--&gt;<span class="w">  </span>prometheus<span class="w"> </span>zabbix<span class="w">  </span>Es<span class="w">  </span>--&gt;<span class="w"> </span>
+<span class="m">2</span>.<span class="w"> </span>展示出来<span class="w"> </span><span class="o">[</span>dashboard<span class="o">]</span><span class="w"> </span>--&gt;<span class="w"> </span>官方获取dashboad<span class="w"> </span>模版
+</code></pre></div>
+<p>安装插件:</p>
+<div class="highlight"><pre><span></span><code>:~#<span class="w"> </span>grafana-cli<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>alexanderzobnin-zabbix-app
+</code></pre></div>
+<p><img alt="image-20251030150812595" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030150812595.png" /></p>
+<p><img alt="image-20251030150849307" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251030150849307.png" /></p>
+<h3 id="k8s">基于k8s</h3>
+<blockquote>
+<p>https://github.com/prometheus-operator/kube-prometheus</p>
+</blockquote>
+<p>此仓库收集了 Kubernetes 部署文件、Grafana 仪表板和 Prometheus 规则，并结合了文档和脚本，以使用 Prometheus Operator 提供易于操作的端到端 Kubernetes 集群监控。</p>
+<p>此包包含的组件：</p>
+<ul>
+<li>The <a href="https://github.com/prometheus-operator/prometheus-operator">Prometheus Operator</a> Prometheus Operator</li>
+<li>Highly available <a href="https://prometheus.io/">Prometheus</a><br />
+  高可用的 Prometheus</li>
+<li>Highly available <a href="https://github.com/prometheus/alertmanager">Alertmanager</a><br />
+  高可用 Alertmanager</li>
+<li><a href="https://github.com/prometheus/node_exporter">Prometheus node-exporter</a></li>
+<li><a href="https://github.com/prometheus/blackbox_exporter">Prometheus blackbox-exporter</a></li>
+<li><a href="https://github.com/kubernetes-sigs/prometheus-adapter">Prometheus Adapter for Kubernetes Metrics APIs<br />
+  Kubernetes Metrics APIs 的 Prometheus Adapter</a></li>
+<li><a href="https://github.com/kubernetes/kube-state-metrics">kube-state-metrics</a></li>
+<li><a href="https://grafana.com/">Grafana</a></li>
+</ul>
+<h2 id="prerequisites">Prerequisites 前提条件</h2>
+<p>您将需要一个 Kubernetes 集群，就是这样！默认情况下假定 kubelet 使用 token 认证和授权，否则 Prometheus 需要一个客户端证书，这将赋予它对 kubelet 的完全访问权限，而不是仅仅是对指标的访问。token 认证和授权允许更精细和更简单的访问控制。</p>
+<p>这意味着 kubelet 配置必须包含这些标志：</p>
+<ul>
+<li><code>--authentication-token-webhook=true</code> This flag enables, that a <code>ServiceAccount</code> token can be used to authenticate against the kubelet(s). This can also be enabled by setting the kubelet configuration value <code>authentication.webhook.enabled</code> to <code>true</code>.<br />
+<code>--authentication-token-webhook=true</code> 此标志启用 token 可以用于对 kubelet 进行认证。也可以通过将 kubelet 配置值 <code>ServiceAccount</code> 设置为 <code>authentication.webhook.enabled</code> 来启用。</li>
+<li><code>--authorization-mode=Webhook</code> This flag enables, that the kubelet will perform an RBAC request with the API to determine, whether the requesting entity (Prometheus in this case) is allowed to access a resource, in specific for this project the <code>/metrics</code> endpoint. This can also be enabled by setting the kubelet configuration value <code>authorization.mode</code> to <code>Webhook</code>.<br />
+<code>--authorization-mode=Webhook</code> 此标志启用 kubelet 将向 API 发送一个 RBAC 请求，以确定请求实体（在这种情况下为 Prometheus）是否被允许访问资源，对于这个项目来说，是 <code>/metrics</code> 端点。也可以通过将 kubelet 配置值 <code>authorization.mode</code> 设置为 <code>Webhook</code> 来启用。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>kube-prometheus stack kube-prometheus 堆栈</th>
+<th>Kubernetes 1.29</th>
+<th>Kubernetes 1.30</th>
+<th>Kubernetes 1.31</th>
+<th>Kubernetes 1.32</th>
+<th>Kubernetes 1.33</th>
+<th>Kubernetes 1.34</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/prometheus-operator/kube-prometheus/tree/release-0.14"><code>release-0.14</code></a></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr>
+<td><a href="https://github.com/prometheus-operator/kube-prometheus/tree/release-0.15"><code>release-0.15</code></a></td>
+<td>x</td>
+<td>x</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>x</td>
+</tr>
+<tr>
+<td><a href="https://github.com/prometheus-operator/kube-prometheus/tree/release-0.16"><code>release-0.16</code></a></td>
+<td>x</td>
+<td>x</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><a href="https://github.com/prometheus-operator/kube-prometheus/tree/main"><code>main</code></a></td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+</tbody>
+</table></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomcat - Web 服务 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-tomcat"># Tomcat</a></li><li class="toc-l2"><a href="#-目标">## 目标：</a></li><li class="toc-l2"><a href="#-二什么使用使用tomcat">## 二、什么使用使用Tomcat</a></li><li class="toc-l2"><a href="#-三-部署tomcat">## 三、 部署Tomcat</a></li><li class="toc-l1"><a href="#配置java">#配置Java</a></li><li class="toc-l1"><a href="#全局变量-所有用户都可以使用">#全局变量 所有用户都可以使用</a></li><li class="toc-l1"><a href="#局部变量-某个用户定义变量">#局部变量 某个用户定义变量</a></li><li class="toc-l1"><a href="#临时变量">#临时变量</a></li><li class="toc-l1"><a href="#-创建用户且加入wheel组"># 创建用户且加入wheel组</a></li><li class="toc-l2"><a href="#-allow-root-to-run-any-commands-anywhere">## Allow root to run any commands anywhere</a></li><li class="toc-l2"><a href="#-allows-people-in-group-wheel-to-run-all-commands">## Allows people in group wheel to run all commands</a></li><li class="toc-l1"><a href="#-.bashrc"># .bashrc</a></li><li class="toc-l1"><a href="#-source-global-definitions"># Source global definitions</a></li><li class="toc-l1"><a href="#-uncomment-the-following-line-if-you-dont-like-systemctls-auto-paging-feature"># Uncomment the following line if you don't like systemctl's auto-paging feature:</a></li><li class="toc-l1"><a href="#-export-systemd_pager"># export SYSTEMD_PAGER=</a></li><li class="toc-l1"><a href="#-user-specific-aliases-and-functions"># User specific aliases and functions</a></li><li class="toc-l3"><a href="#-端口">### 端口：</a></li><li class="toc-l3"><a href="#-tomcat-目录">### Tomcat 目录</a></li><li class="toc-l3"><a href="#-管理tomcat">### 管理Tomcat</a></li><li class="toc-l1"><a href="#依次将上面检索context.xml关于修改将127的地址修改.">#依次将上面检索`context.xml`关于修改将127的地址修改"^.*$"</a></li><li class="toc-l1"><a href="#重启服务">#重启服务</a></li><li class="toc-l3"><a href="#-发布应用-java">### 发布应用 Java：</a></li><li class="toc-l4"><a href="#-利用tomcat发布应用">####  利用`Tomcat`发布应用</a></li><li class="toc-l4"><a href="#-使用java命令管理应用">#### 使用Java命令管理应用</a></li><li class="toc-l1"><a href="#语法">#语法</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="tomcat">Tomcat</h1>
+<blockquote>
+<p>httpd   nginx   Tomcat</p>
+</blockquote>
+<p>Tomcat 是基于jsp 开发 </p>
+<ul>
+<li>管理Java应用</li>
+<li>页面比较漂亮</li>
+</ul>
+<h2 id="_1">目标：</h2>
+<ul>
+<li>[ ] 什么是tomcat</li>
+<li>[ ] 什么使用使用Tomcat</li>
+<li>[ ] 如何部署Tomcat </li>
+<li>[ ] 如何使用Tomcat </li>
+<li>[ ] 发布应用</li>
+<li>[ ] 部署Java应用的时候不使用Tomcat</li>
+<li>[ ] 结束</li>
+</ul>
+<h2 id="tomcat_1">二、什么使用使用Tomcat</h2>
+<ol>
+<li>如果是使用<code>springboot</code>框架 开发 就不能使用Tomcat发布</li>
+<li>测试环境会使用<code>Tomcat</code> 内存溢出(使用)</li>
+<li>微服务不能Tomcat</li>
+<li>自动化任务(可能)</li>
+</ol>
+<h2 id="tomcat_2">三、 部署Tomcat</h2>
+<blockquote>
+<p>你要想运行java 的应用必须满足一个条件：JDK</p>
+</blockquote>
+<p>3.1 检查Java环境</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># java </span>
+bash:<span class="w"> </span>java:<span class="w"> </span>未找到命
+</code></pre></div>
+<p>3.2 安装Java环境</p>
+<ul>
+<li>
+<ol>
+<li>Openjdk</li>
+</ol>
+</li>
+<li>官方JDK</li>
+<li>官方<code>Jdk</code></li>
+</ul>
+<p>下载Jdk并安装jdk</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>~/<span class="w"> </span>scp<span class="w"> </span>Downloads/jdk-17.0.16_linux-x64_bin.tar.gz<span class="w"> </span>root@192.168.19.181:~
+root@192.168.19.181<span class="s1">&#39;s password: </span>
+<span class="s1">jdk-17.0.16_linux-x64_bin.tar.gz                                      100%  174MB  32.3MB/s   00:05 </span>
+
+
+<span class="s1">[root@nginx-proxy ~]# scp  jdk-17.0.16_linux-x64_bin.tar.gz 192.168.18.30:~</span>
+<span class="s1">root@192.168.18.30&#39;</span>s<span class="w"> </span>password:<span class="w"> </span>
+jdk-17.0.16_linux-x64_bin.tar.gz<span class="w">  </span>
+
+
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir   /usr/local/java</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar xf  jdk-17.0.16_linux-x64_bin.tar.gz  -C /usr/local/java/</span>
+
+
+
+<span class="c1">#配置Java</span>
+</code></pre></div>
+<p>配置环境变量</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#全局变量 所有用户都可以使用</span>
+<span class="c1">#局部变量 某个用户定义变量</span>
+<span class="c1">#临时变量</span>
+</code></pre></div>
+<p>临时变量：</p>
+<blockquote>
+<p>在现有终端上配置变量</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># #临时</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># export  JAVA_HOME=/usr/local/java/jdk-17.0.16/</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># export  PATH=$PATH:$JAVA_HOME/bin</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>jdk-17.0.16<span class="o">]</span><span class="c1"># java</span>
+</code></pre></div>
+<p>局部变量:</p>
+<blockquote>
+<p>创建普通用户配置环境变量</p>
+</blockquote>
+<p>创建用户</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># useradd  abbott</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># passwd abbott</span>
+<span class="c1"># 创建用户且加入wheel组</span>
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>sudo<span class="w"> </span>useradd<span class="w">  </span><span class="nb">test</span><span class="w">  </span>-G<span class="w"> </span>wheel
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>passwd<span class="w">  </span><span class="nb">test</span><span class="w"> </span>
+passwd：只有根用户才能指定用户名。
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>sudo<span class="w">  </span>passwd<span class="w">  </span><span class="nb">test</span><span class="w"> </span>
+</code></pre></div>
+<p>授予可以调用<code>sudo</code>的权限(修改配置文件 <code>/etc/sudoers</code>)</p>
+<div class="highlight"><pre><span></span><code><span class="c1">## Allow root to run any commands anywhere </span>
+root<span class="w">    </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+abbott<span class="w">  </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+
+<span class="c1">## Allows people in group wheel to run all commands</span>
+%wheel<span class="w">  </span><span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span><span class="w">       </span>ALL
+</code></pre></div>
+<p>配置局部变量：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>cat<span class="w"> </span>.bashrc<span class="w"> </span>
+<span class="c1"># .bashrc</span>
+
+<span class="c1"># Source global definitions</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span>/etc/bashrc<span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span>.<span class="w"> </span>/etc/bashrc
+<span class="k">fi</span>
+
+<span class="c1"># Uncomment the following line if you don&#39;t like systemctl&#39;s auto-paging feature:</span>
+<span class="c1"># export SYSTEMD_PAGER=</span>
+
+<span class="c1"># User specific aliases and functions</span>
+<span class="nb">export</span><span class="w">  </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/java/jdk-17.0.16/
+<span class="nb">export</span><span class="w">  </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span><span class="nb">source</span><span class="w">  </span>.bashrc<span class="w">   </span><span class="c1">#加载/刷新配置</span>
+</code></pre></div>
+<p>测试：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>abbott@tomcat-server<span class="w"> </span>~<span class="o">]</span>$<span class="w"> </span>java
+用法：java<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>&lt;主类&gt;<span class="w"> </span><span class="o">[</span>args...<span class="o">]</span>
+<span class="w">           </span>（执行类）
+<span class="w">   </span>或<span class="w">  </span>java<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>-jar<span class="w"> </span>&lt;jar<span class="w"> </span>文件&gt;<span class="w"> </span><span class="o">[</span>args...<span class="o">]</span>
+<span class="w">           </span>（执行<span class="w"> </span>jar<span class="w"> </span>文件）
+</code></pre></div>
+<p>全局变量</p>
+<blockquote>
+<p><code>/etc/profile</code></p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># vim /etc/profile</span>
+.....
+<span class="nb">unset</span><span class="w"> </span>i
+<span class="nb">unset</span><span class="w"> </span>-f<span class="w"> </span>pathmunge
+
+<span class="nb">export</span><span class="w">  </span><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/java/jdk-17.0.16/
+<span class="nb">export</span><span class="w">  </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># source  /etc/profile</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># java</span>
+</code></pre></div>
+<p>配置tomcat</p>
+<ul>
+<li>解压且启动</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># ls</span>
+anaconda-ks.cfg<span class="w">  </span>apache-tomcat-10.1.44.tar.gz<span class="w">  </span>jdk-17.0.16_linux-x64_bin.tar.gz<span class="w">  </span>nginx-1.28.0.tar.gz
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># mkdir  /usr/local/tomcat  &amp;&amp;  tar xf  apache-tomcat-10.1.44.tar.gz  -C /usr/local/tomcat  </span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>~<span class="o">]</span><span class="c1"># cd /usr/local/tomcat/</span>
+
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># bin/startup.sh </span>
+Using<span class="w"> </span>CATALINA_BASE:<span class="w">   </span>/usr/local/tomcat/tomcat10
+Using<span class="w"> </span>CATALINA_HOME:<span class="w">   </span>/usr/local/tomcat/tomcat10
+Using<span class="w"> </span>CATALINA_TMPDIR:<span class="w"> </span>/usr/local/tomcat/tomcat10/temp
+Using<span class="w"> </span>JRE_HOME:<span class="w">        </span>/usr/local/java/jdk-17.0.16
+Using<span class="w"> </span>CLASSPATH:<span class="w">       </span>/usr/local/tomcat/tomcat10/bin/bootstrap.jar:/usr/local/tomcat/tomcat10/bin/tomcat-juli.jar
+Using<span class="w"> </span>CATALINA_OPTS:<span class="w">   </span>
+Tomcat<span class="w"> </span>started.
+
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># ss  -luntp </span>
+Netid<span class="w">  </span>State<span class="w">      </span>Recv-Q<span class="w"> </span>Send-Q<span class="w">    </span>Local<span class="w"> </span>Address:Port<span class="w">                   </span>Peer<span class="w"> </span>Address:Port<span class="w">              </span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">1</span><span class="w">        </span><span class="o">[</span>::ffff:127.0.0.1<span class="o">]</span>:8005<span class="w">                           </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;java&quot;</span>,pid<span class="o">=</span><span class="m">18500</span>,fd<span class="o">=</span><span class="m">51</span><span class="o">))</span>
+tcp<span class="w">    </span>LISTEN<span class="w">     </span><span class="m">0</span><span class="w">      </span><span class="m">100</span><span class="w">                </span><span class="o">[</span>::<span class="o">]</span>:8080<span class="w">                           </span><span class="o">[</span>::<span class="o">]</span>:*<span class="w">                   </span>users:<span class="o">((</span><span class="s2">&quot;java&quot;</span>,pid<span class="o">=</span><span class="m">18500</span>,fd<span class="o">=</span><span class="m">42</span><span class="o">))</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># </span>
+</code></pre></div>
+<ul>
+<li>验证</li>
+</ul>
+<blockquote>
+<p>使用浏览器：http://serverip:8080</p>
+</blockquote>
+<p>!image-20250820105034915](/images/image-20250820105034915.png)</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --permanent  --add-port=8080/tcp</span>
+success
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --reload </span>
+cdsuccess
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># firewall-cmd   --list-all</span>
+</code></pre></div>
+<h3 id="_2">端口：</h3>
+<blockquote>
+<p>8080 #对外提供服务端口号</p>
+<p>8005 #管理端口</p>
+</blockquote>
+<h3 id="tomcat_3">Tomcat 目录</h3>
+<div class="highlight"><pre><span></span><code>bin<span class="w">   </span><span class="c1">#二进制执行文件         </span>
+conf<span class="w">  </span><span class="c1">#配置文件目录           </span>
+lib<span class="w">   </span><span class="c1">#库文件目录</span>
+logs<span class="w">  </span><span class="c1">#日志目录</span>
+webapps<span class="w">  </span><span class="c1">#web应用目录</span>
+</code></pre></div>
+<h3 id="tomcat_4">管理Tomcat</h3>
+<blockquote>
+<p>用户可以访问8005端口</p>
+</blockquote>
+<ol>
+<li>修改<code>context.xml</code>  允许客户端使用IP地址请求8005端口；默认仅限于<code>127.0.0.1</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>logs<span class="o">]</span><span class="c1"># find  /  -name  context.xml</span>
+/usr/local/tomcat/tomcat10/conf/context.xml
+/usr/local/tomcat/tomcat10/webapps/docs/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/examples/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/host-manager/META-INF/context.xml
+/usr/local/tomcat/tomcat10/webapps/manager/META-INF/context.xml
+
+
+
+<span class="c1">#依次将上面检索`context.xml`关于修改将127的地址修改&quot;^.*$&quot;</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># cat /usr/local/tomcat/tomcat10/webapps/manager/META-INF/context.xml | grep allow</span>
+<span class="w">         </span><span class="nv">allow</span><span class="o">=</span><span class="s2">&quot;^.*</span>$<span class="s2">&quot;</span><span class="w"> </span>/&gt;
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># </span>
+
+<span class="c1">#重启服务</span>
+</code></pre></div>
+<p>!image-20250820115437939](/images/image-20250820115437939.png)</p>
+<ol>
+<li>配置用户/角色和密码</li>
+</ol>
+<div class="highlight"><pre><span></span><code>[root@tomcat-server tomcat10]# cat  conf/tomcat-users.xml 
+&lt;tomcat-users xmlns=&quot;http://tomcat.apache.org/xml&quot;
+              xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+              xsi:schemaLocation=&quot;http://tomcat.apache.org/xml tomcat-users.xsd&quot;
+              version=&quot;1.0&quot;&gt;
+  &lt;role rolename=&quot;manager-gui&quot;/&gt;
+  &lt;user username=&quot;tomcat&quot; password=&quot;tomcat&quot; roles=&quot;manager-gui&quot;/&gt;
+  &lt;role rolename=&quot;admin-gui&quot;/&gt;
+  &lt;user username=&quot;tomcat&quot; password=&quot;tomcat&quot; roles=&quot;admin-gui&quot;/&gt;
+&lt;/tomcat-users&gt;
+</code></pre></div>
+<h3 id="java">发布应用 Java：</h3>
+<blockquote>
+<p>java应用都会构建为<code>.jar || .war</code>  包</p>
+</blockquote>
+<ol>
+<li>利用<code>Tomcat</code>发布应用</li>
+<li>是用Java命令管理应用</li>
+</ol>
+<h4 id="tomcat_5">利用<code>Tomcat</code>发布应用</h4>
+<p>案例： <code>jenkins</code> </p>
+<p>获取地址： <a href="https://www.jenkins.io/">https://www.<strong>jenkins</strong>.io</a></p>
+<p>!image-20250820152152134](/images/image-20250820152152134.png)</p>
+<p>第二种方案：</p>
+<blockquote>
+<p>直接将应用的war包推送到webapps目录下</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># cd webapps/</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>webapps<span class="o">]</span><span class="c1"># ls</span>
+docs<span class="w">  </span>examples<span class="w">  </span>host-manager<span class="w">  </span>jenkins<span class="w">  </span>jenkins.war<span class="w">  </span>manager<span class="w">  </span>ROOT
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>webapps<span class="o">]</span><span class="c1"># pwd</span>
+/usr/local/tomcat/tomcat10/webapps
+</code></pre></div>
+<h4 id="java_1">使用Java命令管理应用</h4>
+<div class="highlight"><pre><span></span><code><span class="c1">#语法</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># java  -jar  *.war  || *.jar</span>
+
+<span class="c1">#前台运行</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># java -jar jenkins.war </span>
+Running<span class="w"> </span>from:<span class="w"> </span>/usr/local/jenkins.war
+webroot:<span class="w"> </span>/root/.jenkins/war
+<span class="c1"># 后台运行并且输出日志</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># nohup  java -jar jenkins.war   &amp;  </span>
+<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="m">9763</span>
+</code></pre></div>
+<p>查看后台运行的进程</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># jobs   #查看后台运行或者停止的任务</span>
+<span class="o">[</span><span class="m">1</span><span class="o">]</span>-<span class="w">  </span>运行中<span class="w">               </span>nohup<span class="w"> </span>java<span class="w"> </span>-jar<span class="w"> </span>jenkins.war<span class="w"> </span><span class="p">&amp;</span>
+<span class="o">[</span><span class="m">2</span><span class="o">]</span>+<span class="w">  </span>已停止<span class="w">               </span>vim<span class="w"> </span>abc
+
+
+<span class="c1">#将后台的任务调度到前台运行</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># fg  [后台任务的编号]</span>
+
+<span class="c1"># 查看Java应用的进程命令</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>local<span class="o">]</span><span class="c1"># jps  </span>
+<span class="m">9763</span><span class="w"> </span>war
+</code></pre></div>
+<p>分析：</p>
+<blockquote>
+<p><code>jps</code> 常与其他 Java 工具（如 <code>jstat</code>、<code>jmap</code>、<code>jstack</code> 等）配合使用，用于 Java 应用程序的监控和问题排查。</p>
+</blockquote>
+<p>错误信息：</p>
+<blockquote>
+<p>运行jenkins 的检测到系统缺少字体</p>
+</blockquote>
+<p>!image-20250820145346963](/images/image-20250820145346963.png)</p>
+<p>解决方法：</p>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>fontconfig<span class="w"> </span>freetype-devel
+</code></pre></div>
+<h2 id="_3">最终实现结果：</h2>
+<p>!image-20250820155117253](/images/image-20250820155117253.png)</p>
+<h1 id="_4">命令快捷方式：</h1>
+<div class="highlight"><pre><span></span><code>!<span class="o">{</span>command/编号<span class="o">}</span>
+
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># !firewall-cmd^C</span>
+<span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># !116</span>
+
+ctrl+r<span class="w">   </span><span class="c1">#检索历史命令</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

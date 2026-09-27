@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平板端页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #42b883 0%, #347474 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: #42b883;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .device-indicator {
+            display: inline-block;
+            background: #42b883;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            margin-top: 12px;
+            font-size: 1rem;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .logo {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #42b883;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #42b883;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #42b883;
+            color: white;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 20px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card h2 {
+            color: #42b883;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        footer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .footer-column h3 {
+            color: #42b883;
+            margin-bottom: 15px;
+        }
+        
+        .footer-links {
+            list-style-type: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #42b883;
+        }
+        
+        .copyright {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+        
+        .mobile-only, .desktop-only {
+            display: none;
+        }
+        
+        .tablet-only {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>平板端页面</h1>
+            <p class="subtitle">专为平板设备优化设计</p>
+            <div class="device-indicator">
+                平板端视图
+            </div>
+        </header>
+        
+        <nav class="navbar">
+            <div class="logo">应用名称</div>
+            <div class="nav-links">
+                <a href="#">首页</a>
+                <a href="#">发现</a>
+                <a href="#">收藏</a>
+                <a href="#">设置</a>
+            </div>
+            <div class="user-actions">
+                <button class="btn btn-primary">个人中心</button>
+            </div>
+        </nav>
+        
+        <div class="content">
+            <div class="main-content">
+                <div class="card">
+                    <h2>平板特性</h2>
+                    <p>平衡移动便捷性和桌面功能性的设计。</p>
+                    <ul class="feature-list">
+                        <li>适合手持设备的布局</li>
+                        <li>触摸和手写笔支持</li>
+                        <li>横竖屏自适应</li>
+                        <li>分屏多任务支持</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>媒体消费</h2>
+                    <p>为阅读和媒体消费优化的体验。</p>
+                    <ul class="feature-list">
+                        <li>舒适的阅读模式</li>
+                        <li>高清图片和视频</li>
+                        <li>手势控制媒体播放</li>
+                        <li>离线下载功能</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>创作工具</h2>
+                    <p>利用平板优势的创作和编辑功能。</p>
+                    <ul class="feature-list">
+                        <li>手写和绘图支持</li>
+                        <li>图片编辑工具</li>
+                        <li>文档注释功能</li>
+                        <li>音频录制和编辑</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>娱乐功能</h2>
+                    <p>充分利用平板娱乐潜力的功能。</p>
+                    <ul class="feature-list">
+                        <li>游戏优化</li>
+                        <li>AR/VR体验</li>
+                        <li>社交分享</li>
+                        <li>家庭控制中心</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="card tablet-only">
+                    <h2>平板专属</h2>
+                    <p>这些功能仅在平板端显示，为平板用户提供特别价值。</p>
+                    <ul class="feature-list">
+                        <li>手写笔优化</li>
+                        <li>多窗口应用</li>
+                        <li>键盘附件支持</li>
+                        <li>横竖屏自适应</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>快捷功能</h2>
+                    <ul class="feature-list">
+                        <li>快速笔记</li>
+                        <li>屏幕截图</li>
+                        <li>分屏浏览</li>
+                        <li>一键共享</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-column">
+                <h3>应用</h3>
+                <ul class="footer-links">
+                    <li><a href="#">功能特性</a></li>
+                    <li><a href="#">使用教程</a></li>
+                    <li><a href="#">常见问题</a></li>
+                    <li><a href="#">用户评价</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>支持</h3>
+                <ul class="footer-links">
+                    <li><a href="#">帮助中心</a></li>
+                    <li><a href="#">联系我们</a></li>
+                    <li><a href="#">隐私政策</a></li>
+                    <li><a href="#">服务条款</a></li>
+                </ul>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 平板端专属页面 | 专为平板设备设计</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

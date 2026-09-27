@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关系型数据库高可用 - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-关系型数据库的高可用"># 关系型数据库的高可用</a></li><li class="toc-l2"><a href="#-主从复制ab">## 主从复制（AB）</a></li><li class="toc-l3"><a href="#-复制的技术">### 复制的技术：</a></li><li class="toc-l2"><a href="#-复制实现架构">## 复制实现架构</a></li><li class="toc-l3"><a href="#-实现ab复制">### 实现AB复制</a></li><li class="toc-l1"><a href="#-创建用户"># 创建用户</a></li><li class="toc-l1"><a href="#-创建数据目录-3306"># 创建数据目录 `3306`</a></li><li class="toc-l1"><a href="#修改权限">#修改权限</a></li><li class="toc-l1"><a href="#初始化">#初始化</a></li><li class="toc-l1"><a href="#-mysql-env"># mysql env</a></li><li class="toc-l2"><a href="#-配置主从异步">## 配置主从（异步）</a></li><li class="toc-l3"><a href="#-配置用户和密码">### 配置用户和密码</a></li><li class="toc-l3"><a href="#-查看数据库的连接状态">### 查看数据库的连接状态</a></li><li class="toc-l3"><a href="#-半同步复制">### 半同步复制</a></li><li class="toc-l3"><a href="#-检查是否有半同步插件">### 检查是否有半同步插件</a></li><li class="toc-l3"><a href="#-安装半同步插件">### 安装半同步插件</a></li><li class="toc-l1"><a href="#查看半同步状态">#查看半同步状态</a></li><li class="toc-l3"><a href="#-启动插件">### 启动插件</a></li><li class="toc-l1"><a href="#-master"># master</a></li><li class="toc-l1"><a href="#-slave"># slave</a></li><li class="toc-l1"><a href="#master节点">#master节点</a></li><li class="toc-l1"><a href="#从节点">#从节点</a></li><li class="toc-l1"><a href="#master">#master</a></li><li class="toc-l1"><a href="#slave">#slave</a></li><li class="toc-l3"><a href="#-查看是否开启半同步复制的master">### 查看是否开启半同步复制的(master)</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="_1">关系型数据库的高可用</h1>
+<p>高可用方案：</p>
+<ul>
+<li>复制</li>
+<li>MHA  </li>
+<li>MMM</li>
+<li>innodb  高可用</li>
+<li>官方提供的组件实现高可用</li>
+</ul>
+<h2 id="ab">主从复制（AB）</h2>
+<p>复制使来自一个 MySQL 数据库服务器（称为源）的数据能够复制到一个或多个 MySQL 数据库服务器（称为副本）。默认情况下，复制是异步的;副本不需要永久连接即可从源接收更新。根据配置，您可以复制数据库中的所有数据库、选定的数据库，甚至数据库中的选定表。</p>
+<h3 id="_2">复制的技术：</h3>
+<p>基于二进制日志的技术实现；</p>
+<p>基于GTID技术实现复制；</p>
+<blockquote>
+<p>默认采用的异步复制技术</p>
+<p>半同步复制 技术</p>
+<p>延迟复制 技术</p>
+</blockquote>
+<h2 id="_3">复制实现架构</h2>
+<p>!image-20250903095115839](/images/image-20250903095115839.png)</p>
+<p>主从复制的过程</p>
+<p>!image-20250903100021302](/images/image-20250903100021302.png)</p>
+<blockquote>
+<p>注意版本：</p>
+<ul>
+<li>5.7  以前的版本需要手动开启二进制日志； </li>
+<li>8 以后的版本默认就开启二进制日志；</li>
+</ul>
+</blockquote>
+<h3 id="ab_1">实现AB复制</h3>
+<p>准备环境： 两台服务器  8+版本  预编译的二进制方式 </p>
+<p>步骤：</p>
+<div class="highlight"><pre><span></span><code><span class="m">1</span>.<span class="w"> </span>准备节点<span class="w"> </span>+<span class="w"> </span>修改主机名<span class="w"> </span>+<span class="w"> </span>配置防火墙
+<span class="m">2</span>.<span class="w"> </span>获取软件包
+<span class="m">3</span>.<span class="w"> </span>解压
+</code></pre></div>
+<p>部署数据库：</p>
+<ul>
+<li>指定配置文件</li>
+<li>指定安装目录及数据存放目录</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># tar xf  mysql-8.0.43-linux-glibc2.17-x86_64.tar.xz   -C /usr/local/mysql8/</span>
+
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># ln  -s  mysql-8.0.43-linux-glibc2.17-x86_64 mysql</span>
+
+
+<span class="c1"># 创建用户</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># groupadd mysql</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># useradd -r -g mysql -s /bin/false mysql</span>
+
+<span class="c1"># 创建数据目录 `3306`</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mkdir  3306</span>
+
+<span class="c1">#修改权限</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql<span class="o">]</span><span class="c1"># chown   mysql:mysql  ../3306  -R </span>
+
+<span class="c1">#初始化</span>
+bin/mysqld<span class="w"> </span>--initialize<span class="w">  </span>--basedir<span class="o">=</span>/usr/local/mysql8/mysql<span class="w"> </span>--datadir<span class="o">=</span>/usr/local/mysql8/3306/data/<span class="w"> </span>--user<span class="o">=</span>mysql
+</code></pre></div>
+<blockquote>
+<p>--basedir=string    #指定安装目录</p>
+<p>--datadir=string    #指定数据存放目录</p>
+<p>--user=string  #指定用户</p>
+</blockquote>
+<p>启动数据库指定配置文件<code>my.cnf</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>mysqld<span class="o">]</span>
+<span class="nv">user</span><span class="o">=</span>mysql
+<span class="nv">basedir</span><span class="o">=</span>/usr/local/mysql8/
+<span class="nv">datadir</span><span class="o">=</span>/usr/local/mysql8/3306/data
+pid-file<span class="o">=</span>/usr/local/mysql8/3306/mysqld.pid
+<span class="nv">socket</span><span class="o">=</span><span class="w"> </span>/usr/local/mysql8/3306/mysql.sock
+log-error<span class="w"> </span><span class="o">=</span>/usr/local/mysql8/3306/error.log
+<span class="nv">port</span><span class="o">=</span><span class="m">3306</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>bin/mysqld_safe<span class="w"> </span>--defaults-file<span class="o">=</span>/usr/local/mysql8/3306/my.cnf<span class="w">  </span>--user<span class="o">=</span>mysql
+</code></pre></div>
+<p>配置环境变量</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># mysql env</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MYSQL_HOME</span><span class="o">=</span>/usr/local/mysql8/mysql
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$MYSQL_HOME</span>/bin
+</code></pre></div>
+<p>登陆数据库</p>
+<blockquote>
+<p>提示信息：</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mysql -uroot -p</span>
+Enter<span class="w"> </span>password:<span class="w"> </span>
+ERROR<span class="w"> </span><span class="m">2002</span><span class="w"> </span><span class="o">(</span>HY000<span class="o">)</span>:<span class="w"> </span>Can<span class="s1">&#39;t connect to local MySQL server through socket &#39;</span>/tmp/mysql.sock<span class="err">&#39;</span><span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="o">)</span>
+</code></pre></div>
+<blockquote>
+<p>解决方法</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># ln -s /usr/local/mysql8/3306/mysql.sock  /tmp/</span>
+</code></pre></div>
+<blockquote>
+<p>更新密码</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>alter<span class="w">  </span>user<span class="w"> </span><span class="s1">&#39;root&#39;</span>@<span class="s1">&#39;localhost&#39;</span><span class="w"> </span>identified<span class="w">  </span>by<span class="w"> </span><span class="s1">&#39;Root@123.&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.04<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<h2 id="_4">配置主从（异步）</h2>
+<blockquote>
+<p>服务器时间一定同步</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># date </span>
+Wed<span class="w"> </span>Sep<span class="w">  </span><span class="m">3</span><span class="w"> </span><span class="m">11</span>:30:36<span class="w"> </span>CST<span class="w"> </span><span class="m">2025</span>
+<span class="o">[</span>root@mysql-slave<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># date </span>
+Wed<span class="w"> </span>Sep<span class="w">  </span><span class="m">3</span><span class="w"> </span><span class="m">11</span>:30:51<span class="w"> </span>CST<span class="w"> </span><span class="m">2025</span>
+</code></pre></div>
+<p>主服务器上开启<code>二进制日志</code></p>
+<ul>
+<li>开启二进制日志</li>
+<li>配置server_id   #标识节点信息；1-255</li>
+</ul>
+<div class="highlight"><pre><span></span><code>log-bin<span class="o">=</span>3306bin<span class="w"> </span>
+server-id<span class="o">=</span><span class="m">10</span>
+</code></pre></div>
+<blockquote>
+<p>8 以后版本默认开启二进制日志</p>
+</blockquote>
+<p>查看二进制日志是否开启</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">VARIABLES</span><span class="w">  </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%log_bin%&#39;</span><span class="p">;</span>
+<span class="o">+---------------------------------+------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Variable_name</span><span class="w">                   </span><span class="o">|</span><span class="w"> </span><span class="k">Value</span><span class="w">                                    </span><span class="o">|</span>
+<span class="o">+---------------------------------+------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">log_bin</span><span class="w">                         </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">                                       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">log_bin_basename</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="k">local</span><span class="o">/</span><span class="n">mysql8</span><span class="o">/</span><span class="mi">3306</span><span class="o">/</span><span class="k">data</span><span class="o">/</span><span class="k">binlog</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">log_bin_index</span><span class="w">                   </span><span class="o">|</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="k">local</span><span class="o">/</span><span class="n">mysql8</span><span class="o">/</span><span class="mi">3306</span><span class="o">/</span><span class="k">data</span><span class="o">/</span><span class="k">binlog</span><span class="p">.</span><span class="k">index</span><span class="w"> </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">log_bin_trust_function_creators</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">OFF</span><span class="w">                                      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">log_bin_use_v1_row_events</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="k">OFF</span><span class="w">                                      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">sql_log_bin</span><span class="w">                     </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">                                       </span><span class="o">|</span>
+<span class="o">+---------------------------------+------------------------------------------+</span>
+<span class="mi">6</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>重启数据库且检查日志文件名称</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mysql  -uroot  -pRoot@123.  -e  &quot;show VARIABLES  like &#39;%log_bin%&#39;;&quot;</span>
+mysql:<span class="w"> </span><span class="o">[</span>Warning<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>a<span class="w"> </span>password<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>interface<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>insecure.
++---------------------------------+-------------------------------------------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w">                   </span><span class="p">|</span><span class="w"> </span>Value<span class="w">                                     </span><span class="p">|</span>
++---------------------------------+-------------------------------------------+
+<span class="p">|</span><span class="w"> </span>log_bin<span class="w">                         </span><span class="p">|</span><span class="w"> </span>ON<span class="w">                                        </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>log_bin_basename<span class="w">                </span><span class="p">|</span><span class="w"> </span>/usr/local/mysql8/3306/data/3306bin<span class="w">       </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>log_bin_index<span class="w">                   </span><span class="p">|</span><span class="w"> </span>/usr/local/mysql8/3306/data/3306bin.index<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>log_bin_trust_function_creators<span class="w"> </span><span class="p">|</span><span class="w"> </span>OFF<span class="w">                                       </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>log_bin_use_v1_row_events<span class="w">       </span><span class="p">|</span><span class="w"> </span>OFF<span class="w">                                       </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>sql_log_bin<span class="w">                     </span><span class="p">|</span><span class="w"> </span>ON<span class="w">                                        </span><span class="p">|</span>
++---------------------------------+-------------------------------------------+
+</code></pre></div>
+<p>获取master日志文件名称及起始位置</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w"> </span>master<span class="w"> </span>status<span class="p">;</span>
++----------------+----------+--------------+------------------+-------------------+
+<span class="p">|</span><span class="w"> </span>File<span class="w">           </span><span class="p">|</span><span class="w"> </span>Position<span class="w"> </span><span class="p">|</span><span class="w"> </span>Binlog_Do_DB<span class="w"> </span><span class="p">|</span><span class="w"> </span>Binlog_Ignore_DB<span class="w"> </span><span class="p">|</span><span class="w"> </span>Executed_Gtid_Set<span class="w"> </span><span class="p">|</span>
++----------------+----------+--------------+------------------+-------------------+
+<span class="p">|</span><span class="w"> </span>3306bin.000001<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">157</span><span class="w"> </span><span class="p">|</span><span class="w">              </span><span class="p">|</span><span class="w">                  </span><span class="p">|</span><span class="w">                   </span><span class="p">|</span>
++----------------+----------+--------------+------------------+-------------------+
+<span class="m">1</span><span class="w"> </span>row<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>从服务器上开启<code>IO/线程 SQL线程</code></p>
+<ul>
+<li>配置server_id</li>
+</ul>
+<div class="highlight"><pre><span></span><code>server-id<span class="o">=</span><span class="m">20</span>
+</code></pre></div>
+<h3 id="_5">配置用户和密码</h3>
+<p>master 创建用户及授权</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>create<span class="w"> </span>user<span class="w">  </span><span class="s1">&#39;repl&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="w"> </span>identified<span class="w">  </span>with<span class="w">  </span>mysql_native_password<span class="w">  </span>by<span class="w">  </span><span class="s1">&#39;repl@123&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.05<span class="w"> </span>sec<span class="o">)</span>
+mysql&gt;<span class="w"> </span>GRANT<span class="w"> </span>REPLICATION<span class="w"> </span>SLAVE<span class="w"> </span>ON<span class="w"> </span>*.*<span class="w"> </span>TO<span class="w"> </span><span class="s1">&#39;repl&#39;</span>@<span class="s1">&#39;%&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.03<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>slave 创建连接</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>CHANGE<span class="w"> </span>MASTER<span class="w"> </span>TO<span class="w"> </span><span class="se">\</span>
+<span class="nv">MASTER_HOST</span><span class="o">=</span><span class="s1">&#39;192.168.122.134&#39;</span>,
+<span class="nv">MASTER_USER</span><span class="o">=</span><span class="s1">&#39;repl&#39;</span>,
+<span class="nv">MASTER_PASSWORD</span><span class="o">=</span><span class="s1">&#39;repl@123&#39;</span>,<span class="w"> </span>
+<span class="nv">MASTER_LOG_FILE</span><span class="o">=</span><span class="s1">&#39;3306bin.000001&#39;</span>,
+<span class="nv">MASTER_LOG_POS</span><span class="o">=</span><span class="m">660</span><span class="p">;</span>
+</code></pre></div>
+<p>开启slave</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>start<span class="w"> </span>slave<span class="p">;</span>
+mysql&gt;<span class="w"> </span>stop<span class="w">   </span>slave<span class="p">;</span><span class="w"> </span><span class="c1">#停止slave</span>
+</code></pre></div>
+<p>查看状态</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">start</span><span class="w">  </span><span class="k">slave</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">warning</span><span class="w"> </span><span class="p">(</span><span class="mf">0.06</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">slave</span><span class="w"> </span><span class="k">status</span><span class="w"> </span><span class="err">\</span><span class="n">G</span><span class="p">;</span>
+<span class="o">***************************</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="o">***************************</span>
+<span class="w">               </span><span class="n">Slave_IO_State</span><span class="o">:</span><span class="w"> </span><span class="n">Waiting</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">source</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">send</span><span class="w"> </span><span class="k">event</span>
+<span class="w">                  </span><span class="k">Master_Host</span><span class="o">:</span><span class="w"> </span><span class="mf">192.168.122.134</span>
+<span class="w">                  </span><span class="k">Master_User</span><span class="o">:</span><span class="w"> </span><span class="n">repl</span>
+<span class="w">                  </span><span class="k">Master_Port</span><span class="o">:</span><span class="w"> </span><span class="mi">3306</span>
+<span class="w">                </span><span class="n">Connect_Retry</span><span class="o">:</span><span class="w"> </span><span class="mi">60</span>
+<span class="w">              </span><span class="k">Master_Log_File</span><span class="o">:</span><span class="w"> </span><span class="n">3306bin</span><span class="mf">.000002</span>
+<span class="w">          </span><span class="n">Read_Master_Log_Pos</span><span class="o">:</span><span class="w"> </span><span class="mi">157</span>
+<span class="w">               </span><span class="k">Relay_Log_File</span><span class="o">:</span><span class="w"> </span><span class="n">mysql</span><span class="o">-</span><span class="k">slave</span><span class="o">-</span><span class="k">relay</span><span class="o">-</span><span class="n">bin</span><span class="mf">.000005</span>
+<span class="w">                </span><span class="k">Relay_Log_Pos</span><span class="o">:</span><span class="w"> </span><span class="mi">369</span>
+<span class="w">        </span><span class="n">Relay_Master_Log_File</span><span class="o">:</span><span class="w"> </span><span class="n">3306bin</span><span class="mf">.000002</span>
+<span class="w">             </span><span class="n">Slave_IO_Running</span><span class="o">:</span><span class="w"> </span><span class="n">Yes</span>
+<span class="w">            </span><span class="n">Slave_SQL_Running</span><span class="o">:</span><span class="w"> </span><span class="n">Yes</span>
+</code></pre></div>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code>在master上创建一个测试；在slave节点查看是否有数据同步
+<span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql  -uroot -p  -e &quot;create database db1;&quot;</span>
+Enter<span class="w"> </span>password:<span class="w"> </span>
+
+
+<span class="o">[</span>root@mysql-slave<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql -uroot -pRoot@123. -e  &#39;show databases;&#39;</span>
+mysql:<span class="w"> </span><span class="o">[</span>Warning<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>a<span class="w"> </span>password<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>interface<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>insecure.
++--------------------+
+<span class="p">|</span><span class="w"> </span>Database<span class="w">           </span><span class="p">|</span>
++--------------------+
+<span class="p">|</span><span class="w"> </span>db1<span class="w">                </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>information_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>mysql<span class="w">              </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>performance_schema<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>sys<span class="w">                </span><span class="p">|</span>
++--------------------+
+</code></pre></div>
+<h3 id="_6">查看数据库的连接状态</h3>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w"> </span>PROCESSLIST<span class="p">;</span>
++----+-----------------+-----------------------+------+-------------+------+-----------------------------------------------------------------+------------------+
+<span class="p">|</span><span class="w"> </span>Id<span class="w"> </span><span class="p">|</span><span class="w"> </span>User<span class="w">            </span><span class="p">|</span><span class="w"> </span>Host<span class="w">                  </span><span class="p">|</span><span class="w"> </span>db<span class="w">   </span><span class="p">|</span><span class="w"> </span>Command<span class="w">     </span><span class="p">|</span><span class="w"> </span>Time<span class="w"> </span><span class="p">|</span><span class="w"> </span>State<span class="w">                                                           </span><span class="p">|</span><span class="w"> </span>Info<span class="w">             </span><span class="p">|</span>
++----+-----------------+-----------------------+------+-------------+------+-----------------------------------------------------------------+------------------+
+<span class="p">|</span><span class="w">  </span><span class="m">5</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>event_scheduler<span class="w"> </span><span class="p">|</span><span class="w"> </span>localhost<span class="w">             </span><span class="p">|</span><span class="w"> </span>NULL<span class="w"> </span><span class="p">|</span><span class="w"> </span>Daemon<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">8899</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>Waiting<span class="w"> </span>on<span class="w"> </span>empty<span class="w"> </span>queue<span class="w">                                          </span><span class="p">|</span><span class="w"> </span>NULL<span class="w">             </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>repl<span class="w">            </span><span class="p">|</span><span class="w"> </span><span class="m">192</span>.168.122.150:56996<span class="w"> </span><span class="p">|</span><span class="w"> </span>NULL<span class="w"> </span><span class="p">|</span><span class="w"> </span>Binlog<span class="w"> </span>Dump<span class="w"> </span><span class="p">|</span><span class="w">  </span><span class="m">485</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>Source<span class="w"> </span>has<span class="w"> </span>sent<span class="w"> </span>all<span class="w"> </span>binlog<span class="w"> </span>to<span class="w"> </span>replica<span class="p">;</span><span class="w"> </span>waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>updates<span class="w"> </span><span class="p">|</span><span class="w"> </span>NULL<span class="w">             </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span><span class="m">14</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>root<span class="w">            </span><span class="p">|</span><span class="w"> </span>localhost<span class="w">             </span><span class="p">|</span><span class="w"> </span>NULL<span class="w"> </span><span class="p">|</span><span class="w"> </span>Query<span class="w">       </span><span class="p">|</span><span class="w">    </span><span class="m">0</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>init<span class="w">                                                            </span><span class="p">|</span><span class="w"> </span>show<span class="w"> </span>PROCESSLIST<span class="w"> </span><span class="p">|</span>
++----+-----------------+-----------------------+------+-------------+------+-----------------------------------------------------------------+------------------+
+<span class="m">3</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span>set,<span class="w"> </span><span class="m">1</span><span class="w"> </span>warning<span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>测试：<code>master重启slave 是否还能同步数据吗？</code></p>
+<div class="highlight"><pre><span></span><code>能正常同步
+</code></pre></div>
+<h3 id="_7">半同步复制</h3>
+<p>官网地址：https://dev.mysql.com/doc/refman/8.4/en/replication-semisync.html</p>
+<blockquote>
+<p>默认情况下，MySQL 复制是异步的。源将事件写入其二进制日志，副本在准备就绪时请求它们。源不知道副本是否或何时检索并处理了事务，并且不能保证任何事件都会到达任何副本。使用异步复制时，如果源崩溃，则它已提交的事务可能不会传输到任何副本。在这种情况下，从源到副本的故障转移可能会导致故障转移到缺少相对于源的事务的服务器。</p>
+</blockquote>
+<p>半同步复制介于异步复制和完全同步复制之间。源等待至少一个副本接收并记录事件（所需的副本数是可配置的），然后提交事务。源不会等待所有副本确认接收，它只需要副本的确认，而不是事件已在副本端完全执行和提交。因此，半同步复制保证，如果源崩溃，它已提交的所有事务都已传输到至少一个副本.</p>
+<p>与异步复制相比，半同步复制提供了改进的数据完整性，因为当提交成功返回时，已知数据至少存在于两个位置。在半同步源收到来自所需数量的副本的确认之前，事务处于保留状态且未提交。</p>
+<h3 id="_8">检查是否有半同步插件</h3>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w">  </span>plugins<span class="p">;</span>
++----------------------------------+----------+--------------------+---------------------+---------+
+<span class="p">|</span><span class="w"> </span>Name<span class="w">                             </span><span class="p">|</span><span class="w"> </span>Status<span class="w">   </span><span class="p">|</span><span class="w"> </span>Type<span class="w">               </span><span class="p">|</span><span class="w"> </span>Library<span class="w">             </span><span class="p">|</span><span class="w"> </span>License<span class="w"> </span><span class="p">|</span>
++----------------------------------+----------+--------------------+---------------------+---------+
+<span class="p">|</span><span class="w"> </span>binlog<span class="w">                           </span><span class="p">|</span><span class="w"> </span>ACTIVE<span class="w">   </span><span class="p">|</span><span class="w"> </span>STORAGE<span class="w"> </span>ENGINE<span class="w">     </span><span class="p">|</span><span class="w"> </span>NULL<span class="w">                </span><span class="p">|</span><span class="w"> </span>GPL<span class="w">     </span><span class="p">|</span>
+mysql&gt;<span class="w"> </span><span class="k">select</span><span class="w">  </span>*<span class="w">  </span>from<span class="w"> </span>INFORMATION_SCHEMA.PLUGINS
+</code></pre></div>
+<h3 id="_9">安装半同步插件</h3>
+<ul>
+<li>master</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">INSTALL</span><span class="w"> </span><span class="k">PLUGIN</span><span class="w"> </span><span class="n">rpl_semi_sync_source</span><span class="w"> </span><span class="k">SONAME</span><span class="w"> </span><span class="s1">&#39;semisync_source.so&#39;</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.05</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>slave</li>
+</ul>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>INSTALL<span class="w"> </span>PLUGIN<span class="w"> </span>rpl_semi_sync_replica<span class="w"> </span>SONAME<span class="w"> </span><span class="s1">&#39;semisync_replica.so&#39;</span><span class="p">;</span>
+Query<span class="w"> </span>OK,<span class="w"> </span><span class="m">0</span><span class="w"> </span>rows<span class="w"> </span>affected<span class="w"> </span><span class="o">(</span><span class="m">0</span>.04<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>检查查看是否安装成功</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>SELECT<span class="w"> </span>PLUGIN_NAME,<span class="w"> </span>PLUGIN_STATUS<span class="w"> </span>FROM<span class="w"> </span>INFORMATION_SCHEMA.PLUGINS<span class="w"> </span>WHERE<span class="w"> </span>PLUGIN_NAME<span class="w"> </span>LIKE<span class="w"> </span><span class="s1">&#39;%semi%&#39;</span><span class="p">;</span>
++----------------------+---------------+
+<span class="p">|</span><span class="w"> </span>PLUGIN_NAME<span class="w">          </span><span class="p">|</span><span class="w"> </span>PLUGIN_STATUS<span class="w"> </span><span class="p">|</span>
++----------------------+---------------+
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source<span class="w"> </span><span class="p">|</span><span class="w"> </span>ACTIVE<span class="w">        </span><span class="p">|</span>
++----------------------+---------------+
+<span class="m">1</span><span class="w"> </span>row<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+
+mysql&gt;<span class="w"> </span>show<span class="w">  </span>plugins<span class="p">;</span><span class="w"> </span>
++----------------------------------+----------+--------------------+--------------------+---------+
+<span class="p">|</span><span class="w"> </span>Name<span class="w">                             </span><span class="p">|</span><span class="w"> </span>Status<span class="w">   </span><span class="p">|</span><span class="w"> </span>Type<span class="w">               </span><span class="p">|</span><span class="w"> </span>Library<span class="w">            </span><span class="p">|</span><span class="w"> </span>License<span class="w"> </span><span class="p">|</span>
++----------------------------------+----------+--------------------+--------------------+---------+
+
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source<span class="w">             </span><span class="p">|</span><span class="w"> </span>ACTIVE<span class="w">   </span><span class="p">|</span><span class="w"> </span>REPLICATION<span class="w">        </span><span class="p">|</span><span class="w"> </span>semisync_source.so<span class="w"> </span><span class="p">|</span><span class="w"> </span>GPL<span class="w">     </span><span class="p">|</span>
++----------------------------------+----------+--------------------+--------------------+---------+
+<span class="m">49</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+
+<span class="c1">#查看半同步状态</span>
+mysql&gt;<span class="w"> </span>SHOW<span class="w">  </span>VARIABLES<span class="w"> </span>like<span class="w"> </span><span class="s1">&#39;%semi%&#39;</span><span class="p">;</span>
++---------------------------------------------+------------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w">                               </span><span class="p">|</span><span class="w"> </span>Value<span class="w">      </span><span class="p">|</span>
++---------------------------------------------+------------+
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_enabled<span class="w">                </span><span class="p">|</span><span class="w"> </span>OFF<span class="w">        </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_timeout<span class="w">                </span><span class="p">|</span><span class="w"> </span><span class="m">10000</span><span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_trace_level<span class="w">            </span><span class="p">|</span><span class="w"> </span><span class="m">32</span><span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_for_replica_count<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w">          </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_no_replica<span class="w">        </span><span class="p">|</span><span class="w"> </span>ON<span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_point<span class="w">             </span><span class="p">|</span><span class="w"> </span>AFTER_SYNC<span class="w"> </span><span class="p">|</span>
++---------------------------------------------+------------+
+<span class="m">6</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<h3 id="_10">启动插件</h3>
+<p>临时插件</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># master</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="k">GLOBAL</span><span class="w"> </span><span class="n">rpl_semi_sync_source_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+<span class="c1"># slave</span>
+<span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="k">GLOBAL</span><span class="w"> </span><span class="n">rpl_semi_sync_replica_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">Query</span><span class="w"> </span><span class="n">OK</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="p">(</span><span class="mf">0.00</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<p>永久开启(修改配置文件<code>my.cnf</code>)</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#master节点</span>
+<span class="nv">rpl_semi_sync_source_enabled</span><span class="o">=</span>ON
+<span class="c1">#从节点</span>
+<span class="nv">rpl_semi_sync_replica_enabled</span><span class="o">=</span>ON
+</code></pre></div>
+<blockquote>
+<p>重启</p>
+</blockquote>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#master</span>
+<span class="o">[</span>root@mysql-master<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mysql  -uroot -pRoot@123. -e  &quot;show variables like  &#39;%semi%&#39;&quot;</span>
+mysql:<span class="w"> </span><span class="o">[</span>Warning<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>a<span class="w"> </span>password<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>interface<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>insecure.
++---------------------------------------------+------------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w">                               </span><span class="p">|</span><span class="w"> </span>Value<span class="w">      </span><span class="p">|</span>
++---------------------------------------------+------------+
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_enabled<span class="w">                </span><span class="p">|</span><span class="w"> </span>ON<span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_timeout<span class="w">                </span><span class="p">|</span><span class="w"> </span><span class="m">10000</span><span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_trace_level<span class="w">            </span><span class="p">|</span><span class="w"> </span><span class="m">32</span><span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_for_replica_count<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w">          </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_no_replica<span class="w">        </span><span class="p">|</span><span class="w"> </span>ON<span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_source_wait_point<span class="w">             </span><span class="p">|</span><span class="w"> </span>AFTER_SYNC<span class="w"> </span><span class="p">|</span>
++---------------------------------------------+------------+
+
+
+<span class="c1">#slave </span>
+<span class="o">[</span>root@mysql-slave<span class="w"> </span>mysql8<span class="o">]</span><span class="c1"># mysql  -uroot -pRoot@123. -e  &quot;show variables like  &#39;%semi%&#39; &quot;</span>
+mysql:<span class="w"> </span><span class="o">[</span>Warning<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>a<span class="w"> </span>password<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>interface<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>insecure.
++-----------------------------------+-------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w">                     </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span>
++-----------------------------------+-------+
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_replica_enabled<span class="w">     </span><span class="p">|</span><span class="w"> </span>ON<span class="w">    </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>rpl_semi_sync_replica_trace_level<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">32</span><span class="w">    </span><span class="p">|</span>
++-----------------------------------+-------+
+</code></pre></div>
+<p>描述：如果主从复制在运行(在slave上停止一下I/O 线程)</p>
+<div class="highlight"><pre><span></span><code>STOP<span class="w"> </span>REPLICA<span class="w"> </span>IO_THREAD<span class="p">;</span>
+START<span class="w"> </span>REPLICA<span class="w"> </span>IO_THREAD<span class="p">;</span>
+</code></pre></div>
+<h3 id="master">查看是否开启半同步复制的(master)</h3>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SHOW</span><span class="w"> </span><span class="k">VARIABLES</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;rpl_semi_sync%&#39;</span><span class="p">;</span>
+<span class="o">+---------------------------------------------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Variable_name</span><span class="w">                               </span><span class="o">|</span><span class="w"> </span><span class="k">Value</span><span class="w">      </span><span class="o">|</span>
+<span class="o">+---------------------------------------------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_enabled</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">         </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_timeout</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="mi">10000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_trace_level</span><span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="mi">32</span><span class="w">         </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_wait_for_replica_count</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_wait_no_replica</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">         </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">rpl_semi_sync_source_wait_point</span><span class="w">             </span><span class="o">|</span><span class="w"> </span><span class="n">AFTER_SYNC</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+---------------------------------------------+------------+</span>
+<span class="mi">6</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>rpl_semi_sync_replica_trace_level<span class="w"> </span><span class="c1"># 主要用于控制从服务器（在半同步复制环境下常称为 “副本”，即replica）在参与半同步复制过程中的追踪（trace）详细程度，也就是日志记录的详细等级（level）。</span>
+rpl_semi_sync_source_enabled<span class="w">  </span><span class="c1"># 控制是否在源服务器上启用半同步复制。要启用或禁用插件，请将此变量分别设置为1或0。默认值为0（关闭）。</span>
+rpl_semi_sync_replica_enabled<span class="w"> </span><span class="c1"># 控制是否在副本上启用半同步复制。</span>
+rpl_semi_sync_source_timeout<span class="w">  </span><span class="c1"># 以毫秒为单位的值，用于控制源在超时并恢复到异步复制之前等待副本确认的提交时间。默认值为10000（10秒）。</span>
+rpl_semi_sync_source_wait_for_replica_count<span class="w"> </span><span class="c1"># 控制源在返回会话之前每个事务必须接收的副本确认数量。默认值为1，这意味着源只等待一个副本来确认收到事务事件。</span>
+rpl_semi_sync_source_wait_point<span class="w">  </span><span class="c1"># 系统变量控制半同步源服务器在向提交事务的客户端返回状态之前等待事务接收的副本确认的点。这些值是允许的：</span>
+rpl_semi_sync_source_wait_no_replica<span class="w"> </span><span class="c1"># 是 MySQL 半同步半同步复制（Semi-Sync Replication）** 中的一个系统变量，用于控制主库（Source）在没有从库（Replica）连接时的等待行为</span>
+
+ON（默认值）<span class="w"> </span>即使没有从库连接，主库仍会等待半同步复制的确认超时（由<span class="w"> </span>rpl_semi_sync_source_timeout<span class="w"> </span>控制，默认<span class="w"> </span><span class="m">10000</span><span class="w"> </span>毫秒，即<span class="w"> </span><span class="m">10</span><span class="w"> </span>秒）。超时后，主库会降级为异步复制，直接向客户端返回成功。
+OFF<span class="w"> </span>若没有从库连接，主库会立即跳过等待，直接以异步复制模式处理写操作（不等待超时），向客户端返回成功。
+
+AFTER_SYNC（默认）：源将每个事务写入其二进制日志和副本，并将二进制日志同步到磁盘。同步后，源等待交易数据的副本确认。收到确认后，源将事务提交给存储引擎，并将结果返回给客户端，然后客户端可以继续。
+
+AFTER_COMMIT：源将每个事务写入其二进制日志和副本，同步二进制日志，并将事务提交到存储引擎。提交后，源等待交易数据的副本确认。收到确认后，源将结果返回给客户端，然后客户端可以继续
+</code></pre></div>
+<h3 id="_11">查看半同步的状态</h3>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>show<span class="w"> </span>status<span class="w"> </span>like<span class="w"> </span><span class="s1">&#39;%semi_sync%&#39;</span><span class="p">;</span>
++--------------------------------------------+-------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w">                              </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span>
++--------------------------------------------+-------+
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_clients<span class="w">               </span><span class="p">|</span><span class="w"> </span><span class="m">1</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_net_avg_wait_time<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_net_wait_time<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_net_waits<span class="w">             </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_no_times<span class="w">              </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_no_tx<span class="w">                 </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_status<span class="w">                </span><span class="p">|</span><span class="w"> </span>ON<span class="w">    </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_timefunc_failures<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_tx_avg_wait_time<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_tx_wait_time<span class="w">          </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_tx_waits<span class="w">              </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_wait_pos_backtraverse<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_wait_sessions<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Rpl_semi_sync_source_yes_tx<span class="w">                </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">     </span><span class="p">|</span>
++--------------------------------------------+-------+
+<span class="m">14</span><span class="w"> </span>rows<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.01<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div>
+<p>解释含义：</p>
+<div class="highlight"><pre><span></span><code>Rpl_semi_sync_source_clients
+含义：表示当前连接到主服务器（在半同步复制场景下常称为<span class="w"> </span>“源”，即<span class="w"> </span>source）且参与半同步复制的从服务器（副本）的数量。
+示例中的值及说明：此处值为<span class="w"> </span><span class="m">1</span>，意味着有<span class="w"> </span><span class="m">1</span><span class="w"> </span>个从服务器正在与该主服务器以半同步复制的方式进行连接并同步数据，反映了当前参与半同步复制的从节点个数情况。
+
+
+Rpl_semi_sync_source_net_avg_wait_time
+含义：记录的是主服务器等待从服务器通过网络确认已接收并处理事务的平均等待时间（以毫秒为单位）。这个时间统计是针对网络传输确认环节的平均耗时情况。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>说明在当前统计阶段内，主服务器等待从服务器网络确认的平均耗时几乎可以忽略不计，可能是还没有足够多的事务操作发生来产生有意义的平均等待时间积累，或者从服务器响应非常及时，使得平均等待时间为零。
+
+Rpl_semi_sync_source_net_wait_time
+含义：表示主服务器等待从服务器通过网络确认已接收并处理事务的总等待时间（以毫秒为单位）。与平均等待时间不同，它是整体累计的等待时长。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>表明截至目前，主服务器在等待从服务器网络确认事务接收与处理这件事上，总的等待时长累计为零，同样可能是由于业务操作还较少等原因导致。
+
+Rpl_semi_sync_source_net_waits
+含义：统计主服务器等待从服务器通过网络确认已接收并处理事务的次数。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>意味着到目前为止，主服务器还未曾经历需要等待从服务器网络确认的情况，或者说相关等待情况还未发生过足够多的次数以体现出一个有别于零的统计值。
+
+Rpl_semi_sync_source_no_times
+含义：记录的是由于各种原因（比如从服务器没有及时响应等），主服务器无法进入半同步复制模式而不得不退回到异步复制模式的次数。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>表示截至当前，主服务器在进行复制操作时，尚未出现过因异常情况而被迫从半同步复制切换回异步复制的情形，体现了半同步复制过程的稳定性情况，没有发生这种降级切换的情况。
+
+Rpl_semi_sync_source_no_tx
+含义：表示在主服务器上，那些没有能够进入半同步复制状态的事务数量。也就是因为各种条件限制没能按照半同步复制要求完成相应流程的事务个数统计。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>说明目前主服务器执行的所有事务都顺利进入了半同步复制流程，不存在事务被排除在半同步复制之外的情况，侧面反映了半同步复制机制在事务处理方面目前运行良好。
+
+Rpl_semi_sync_source_status
+含义：显示主服务器当前半同步复制的状态，ON<span class="w"> </span>表示半同步复制处于开启状态，OFF<span class="w"> </span>则表示处于关闭状态。
+示例中的值及说明：此处状态为<span class="w"> </span>ON，表明当前主服务器的半同步复制功能是正常开启的，正在按照半同步复制的规则和机制来处理事务并与从服务器进行数据同步操作。
+
+Rpl_semi_sync_source_timefunc_failures
+含义：统计在半同步复制过程中，与时间相关的函数出现故障的次数。这些时间相关函数通常用于计时、判断超时等操作，若出现故障可能影响半同步复制中对时间相关流程的准确把控。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>表示在当前半同步复制的运行过程中，时间相关的函数都正常工作，没有出现过故障情况，意味着半同步复制在时间把控方面的基础机制是可靠的。
+
+Rpl_semi_sync_source_tx_avg_wait_time
+含义：主服务器等待从服务器确认事务（从发起事务到收到从服务器确认整个过程）的平均等待时间（以毫秒为单位）。它综合考量了整个事务在半同步复制流程中的等待情况来计算平均耗时。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>说明当前平均来看，主服务器在事务等待从服务器确认的这个环节，几乎没有花费额外的时间，整体的等待情况处于理想状态，不过也可能是还没有足够多有代表性的事务发生来产生有意义的平均耗时统计。
+
+Rpl_semi_sync_source_tx_wait_time
+含义：主服务器等待从服务器确认事务（从发起事务到收到从服务器确认整个过程）的总等待时间（以毫秒为单位）。它是对所有事务等待时间的累计统计值。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>表明截至目前，主服务器在等待从服务器确认事务这件事上，总的累计等待时长是零，和前面一些平均等待时间等指标为零的情况类似，可能是业务操作还未频繁到足以产生等待时长积累的程度。
+
+Rpl_semi_sync_source_tx_waits
+含义：统计主服务器等待从服务器确认事务的次数。也就是主服务器发起事务后，等待从服务器反馈确认信息的次数累计情况。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>意味着到现在为止，主服务器还没有经历过等待从服务器确认事务的情况，或者说相关情况发生次数过少尚未体现出有别于零的统计值。
+
+Rpl_semi_sync_source_wait_pos_backtraverse
+含义：这个变量涉及到半同步复制中主服务器等待从服务器确认时，在二进制日志位置回溯等相关操作的统计情况，具体来说，统计的是等待过程中需要回溯二进制日志位置的次数。通常用于更深入分析半同步复制过程中二进制日志相关的复杂操作情况。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>表示在当前半同步复制运行阶段，还没有出现过需要在等待从服务器确认时回溯二进制日志位置的情况，反映了半同步复制在二进制日志处理方面目前较为顺畅。
+
+Rpl_semi_sync_source_wait_sessions
+含义：统计主服务器等待从服务器确认事务时涉及到的会话数量情况，也就是有多少个会话在等待从服务器反馈确认信息，用于从会话角度来衡量半同步复制中的等待情况。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>说明截至目前，还不存在会话在等待从服务器确认事务的这种情况，体现了当前半同步复制在会话层面上的等待情况处于理想状态。
+
+Rpl_semi_sync_source_yes_tx
+含义：表示在主服务器上成功以半同步复制方式完成的事务数量。它统计的是按照半同步复制流程正常推进并最终成功的事务个数。
+示例中的值及说明：值为<span class="w"> </span><span class="m">0</span><span class="w"> </span>虽然说明目前成功通过半同步复制完成的事务数量还不多，但结合前面其他变量的值来看，目前整个半同步复制机制处于正常开启且尚未有过多业务操作产生有意义统计值的一种初始运行状态。
+</code></pre></div>
+<p>slave 节点</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">status</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%semi_sync%&#39;</span><span class="p">;</span>
+<span class="o">+------------------------------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Variable_name</span><span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="k">Value</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+------------------------------+-------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Rpl_semi_sync_replica_status</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">ON</span><span class="w">    </span><span class="o">|</span>
+<span class="o">+------------------------------+-------+</span>
+<span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">set</span><span class="w"> </span><span class="p">(</span><span class="mf">0.01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="_12">执行一个事务测试半同步</h4>
+<div class="highlight"><pre><span></span><code>在master节点上发起一个事务；然后再查看半同步的状态；确实是否使用了半同步模式
+</code></pre></div>
+<p>模拟半同步失效；是否有等待时间</p>
+<div class="highlight"><pre><span></span><code>stop<span class="w"> </span>slave<span class="p">;</span>
+再发起一个事务；是否有等待时间；
+</code></pre></div>
+<h2 id="_13">事务：</h2>
+<blockquote>
+<p>MySQL 事务（Transaction）是一组不可分割的数据库操作序列，这些操作要么全部成功执行，要么全部失败回滚，旨在保证数据库操作的<strong>原子性、一致性、隔离性和持久性</strong>（即 ACID 特性）。</p>
+</blockquote>
+<h3 id="acid">一、事务的 ACID 特性</h3>
+<ol>
+<li><strong>原子性（Atomicity）</strong><br />
+   事务中的所有操作要么全部完成，要么全部不执行。例如，转账操作中 “扣减 A 账户金额” 和 “增加 B 账户金额” 必须同时成功或同时失败，避免出现数据不一致。</li>
+<li><strong>一致性（Consistency）</strong><br />
+   事务执行前后，数据库从一个合法状态转换到另一个合法状态，满足预设的业务规则。例如，转账后 A 和 B 的总金额应与转账前相等。</li>
+<li><strong>隔离性（Isolation）</strong><br />
+   多个事务并发执行时，彼此的操作互不干扰，每个事务都感觉不到其他事务的存在。MySQL 通过隔离级别控制并发事务的相互影响（见下文）。</li>
+<li><strong>持久性（Durability）</strong><br />
+   事务一旦提交，其修改会永久保存到数据库中（即使系统崩溃也不会丢失）。MySQL 通过 redo 日志和刷盘机制实现持久性。</li>
+</ol>
+<h3 id="_14">二、事务的基本操作</h3>
+<h4 id="1">1. 开启事务</h4>
+<div class="highlight"><pre><span></span><code><span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span><span class="w">  </span><span class="c1">-- 或 BEGIN;</span>
+</code></pre></div>
+<h4 id="2">2. 执行操作</h4>
+<p>执行一系列 SQL 语句（如 <code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code> 等）：</p>
+<div class="highlight"><pre><span></span><code><span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">  </span><span class="c1">-- A账户扣减100</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">  </span><span class="c1">-- B账户增加100</span>
+</code></pre></div>
+<h4 id="3">3. 提交事务</h4>
+<p>所有操作成功后，提交事务（永久生效）：</p>
+<div class="highlight"><pre><span></span><code><span class="k">COMMIT</span><span class="p">;</span>
+</code></pre></div>
+<h4 id="4">4. 回滚事务</h4>
+<p>若执行中出现错误，回滚事务（撤销所有操作）：</p>
+<div class="highlight"><pre><span></span><code><span class="k">ROLLBACK</span><span class="p">;</span>
+</code></pre></div>
+<h4 id="5-savepoint">5. 保存点（Savepoint）</h4>
+<p>在事务中设置保存点，可回滚到指定位置（而非整个事务）：</p>
+<div class="highlight"><pre><span></span><code><span class="n">SAVEPOINT</span><span class="w"> </span><span class="n">sp1</span><span class="p">;</span><span class="w">  </span><span class="c1">-- 设置保存点sp1</span>
+<span class="c1">-- 执行部分操作...</span>
+<span class="k">ROLLBACK</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">sp1</span><span class="p">;</span><span class="w">  </span><span class="c1">-- 回滚到sp1，保存点之后的操作被撤销</span>
+</code></pre></div>
+<h3 id="_15">三、事务的隔离级别</h3>
+<p>当多个事务并发操作同一批数据时，可能出现<strong>脏读、不可重复读、幻读</strong>等问题。MySQL 提供了 4 种隔离级别（由低到高）：</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>含义</th>
+<th>解决的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>读未提交（Read Uncommitted）</strong></td>
+<td>一个事务可读取另一个未提交的事务数据。</td>
+<td>无（性能最高，一致性最差）</td>
+</tr>
+<tr>
+<td><strong>读已提交（Read Committed）</strong></td>
+<td>一个事务只能读取另一个已提交的事务数据，避免脏读。</td>
+<td>脏读</td>
+</tr>
+<tr>
+<td><strong>可重复读（Repeatable Read）</strong></td>
+<td>事务中多次读取同一数据的结果一致，避免不可重复读（MySQL 默认级别）。</td>
+<td>脏读、不可重复读</td>
+</tr>
+<tr>
+<td><strong>串行化（Serializable）</strong></td>
+<td>事务串行执行（不并发），避免所有并发问题。</td>
+<td>脏读、不可重复读、幻读</td>
+</tr>
+</tbody>
+</table>
+<h5 id="_16">隔离级别相关操作</h5>
+<ul>
+<li><strong>查看当前隔离级别</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="o">@@</span><span class="n">transaction_isolation</span><span class="p">;</span><span class="w">  </span><span class="c1">-- MySQL 8.0+</span>
+<span class="c1">-- 或 SELECT @@tx_isolation; （MySQL 5.x）</span>
+</code></pre></div>
+<ul>
+<li><strong>设置隔离级别</strong>（全局或会话级别）</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 全局生效（需重启会话）</span>
+<span class="k">SET</span><span class="w"> </span><span class="k">GLOBAL</span><span class="w"> </span><span class="n">transaction_isolation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;READ COMMITTED&#39;</span><span class="p">;</span>
+
+<span class="c1">-- 仅当前会话生效</span>
+<span class="k">SET</span><span class="w"> </span><span class="k">SESSION</span><span class="w"> </span><span class="n">transaction_isolation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;REPEATABLE READ&#39;</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="_17">四、并发问题示例</h3>
+<ol>
+<li><strong>脏读</strong>：事务 A 读取了事务 B 未提交的修改，若 B 回滚，A 读取的数据是 “无效的”。</li>
+<li><strong>不可重复读</strong>：事务 A 两次读取同一行数据，期间事务 B 修改并提交了该数据，导致 A 两次读取结果不一致。</li>
+<li><strong>幻读</strong>：事务 A 按条件查询数据，期间事务 B 插入了符合条件的新数据，A 再次查询时多了 “幻影” 行。</li>
+</ol>
+<h3 id="_18">五、事务的使用场景</h3>
+<ul>
+<li>金融交易（转账、支付）</li>
+<li>订单处理（创建订单 + 扣减库存）</li>
+<li>用户注册（插入用户 + 初始化关联数据）</li>
+</ul>
+<h3 id="_19">六、注意事项</h3>
+<ol>
+<li><strong>自动提交机制</strong>：MySQL 默认开启 <code>autocommit=ON</code>，每条 SQL 自动作为一个事务提交。开启显式事务后，需手动 <code>COMMIT</code> 或 <code>ROLLBACK</code>。<br />
+   可通过 <code>SET autocommit = OFF;</code> 关闭自动提交。</li>
+<li><strong>存储引擎支持</strong>：只有 InnoDB 引擎支持事务，MyISAM 等引擎不支持。</li>
+<li><strong>锁与性能</strong>：隔离级别越高，一致性越好，但并发性能越低（如串行化可能导致大量锁等待），需根据业务平衡选择。</li>
+<li><strong>长事务风险</strong>：长时间未提交的事务会占用锁资源，导致其他事务阻塞，建议事务尽可能短。</li>
+</ol>
+<p>通过合理使用事务，可确保数据库操作的安全性和一致性，是处理关键业务数据的核心机制。</p>
+<h3 id="example">Example：</h3>
+<p>假设银行数据库中有一个 <code>accounts</code> 表，存储用户账户信息。现在需要实现：用户 A（id=1）向用户 B（id=2）转账 100 元。<br />
+这个过程需要两个关键操作：</p>
+<ol>
+<li>从 A 的账户余额中扣减 100 元；</li>
+<li>向 B 的账户余额中增加 100 元。<br />
+   这两个操作必须在同一个事务中执行，确保原子性。</li>
+</ol>
+<p>步骤 1：创建测试表并插入数据</p>
+<p>首先创建 <code>accounts</code> 表并初始化测试数据：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 创建账户表</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="kt">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="k">AUTO_INCREMENT</span><span class="p">,</span>
+<span class="w">  </span><span class="k">name</span><span class="w"> </span><span class="kt">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">balance</span><span class="w"> </span><span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mf">0.00</span><span class="w">  </span><span class="c1">-- 账户余额</span>
+<span class="p">)</span><span class="w"> </span><span class="k">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span><span class="w">  </span><span class="c1">-- 必须使用 InnoDB 引擎（支持事务）</span>
+
+<span class="c1">-- 插入测试数据：A有200元，B有300元</span>
+<span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="p">(</span><span class="k">name</span><span class="p">,</span><span class="w"> </span><span class="n">balance</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span>
+<span class="p">(</span><span class="s1">&#39;用户A&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">200.00</span><span class="p">),</span>
+<span class="p">(</span><span class="s1">&#39;用户B&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">300.00</span><span class="p">);</span>
+</code></pre></div>
+<p>正常转账事务（成功案例）</p>
+<blockquote>
+<p>执行一个完整的事务，确保扣款和收款都成功：</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 开启事务</span>
+<span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span>
+
+<span class="c1">-- 1. 从用户A的账户扣减100元</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span>
+<span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="c1">-- 2. 向用户B的账户增加100元</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span>
+<span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">-- 检查操作结果（可选，实际业务中可通过程序判断）</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">accounts</span><span class="p">;</span>
+
+<span class="c1">-- 确认无误后提交事务（操作永久生效）</span>
+<span class="k">COMMIT</span><span class="p">;</span>
+</code></pre></div>
+<p>转账失败事务（回滚案例）</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 先重置数据（确保A有100元，B有400元）</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">400</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">-- 开启事务</span>
+<span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span>
+
+<span class="c1">-- 1. 尝试从用户A的账户扣减200元（此时A只有100元，操作会执行但余额会变为负数）</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span>
+<span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="c1">-- 2. 假设此时发现A余额不足（实际业务中可通过程序判断余额是否为负）</span>
+<span class="c1">-- 执行回滚，撤销所有操作</span>
+<span class="k">ROLLBACK</span><span class="p">;</span>
+
+<span class="c1">-- 检查结果：数据恢复到事务开始前的状态</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">accounts</span><span class="p">;</span>
+</code></pre></div>
+<p>使用保存点（部分回滚案例）</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- 开启事务</span>
+<span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span>
+
+<span class="c1">-- 1. 从A扣减50元</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="c1">-- 设置保存点sp1</span>
+<span class="k">SAVEPOINT</span><span class="w"> </span><span class="n">sp1</span><span class="p">;</span>
+
+<span class="c1">-- 2. 向B增加50元（假设这一步操作有误）</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w">  </span><span class="c1">-- id=3不存在，操作无效果</span>
+
+<span class="c1">-- 回滚到保存点sp1（仅撤销保存点后的操作，即步骤2的错误操作）</span>
+<span class="k">ROLLBACK</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">sp1</span><span class="p">;</span>
+
+<span class="c1">-- 重新执行正确的步骤2：向B增加50元</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="c1">-- 提交事务</span>
+<span class="k">COMMIT</span><span class="p">;</span>
+
+<span class="c1">-- 最终结果：A扣减50元，B增加50元，事务成功</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">accounts</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="_20">安装插件错误</h2>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>INSTALL<span class="w"> </span>PLUGIN<span class="w"> </span>rpl_semi_sync_source<span class="w"> </span>SONAME<span class="w"> </span><span class="s1">&#39;semisync_source.so&#39;</span><span class="p">;</span>
+<span class="c1">#在本地找不到library库文件</span>
+ERROR<span class="w"> </span><span class="m">1126</span><span class="w"> </span><span class="o">(</span>HY000<span class="o">)</span>:<span class="w"> </span>Can<span class="s1">&#39;t open shared library &#39;</span>/usr/local/mysql/lib/plugin/semisync_source.so<span class="err">&#39;</span><span class="w"> </span><span class="o">(</span>errno:<span class="w"> </span><span class="m">11</span><span class="w"> </span>/usr/local/mysql/lib/plugin/semisync_source.so:<span class="w"> </span>cannot<span class="w"> </span>open<span class="w"> </span>shared<span class="w"> </span>object<span class="w"> </span>file:<span class="w"> </span>No<span class="w"> </span>such<span class="w"> </span>file<span class="w"> </span>or<span class="w"> </span>directory<span class="o">)</span>
+</code></pre></div>
+<p>原因：</p>
+<blockquote>
+<p>我们基于预编译二进制安装的mysql数据库； 默认是从<code>/usr/local/mysql/</code>下找库文件；所有导入无法安装；</p>
+</blockquote>
+<p>解决：<code>修改配置文件；指定plugin的库文件位置</code></p>
+<div class="highlight"><pre><span></span><code><span class="nv">plugin_dir</span><span class="w"> </span><span class="o">=</span>/usr/local/mysql8/mysql/lib/plugin
+</code></pre></div>
+<blockquote>
+<p>修改配置文件一定重启</p>
+</blockquote>
+<p>验证：</p>
+<div class="highlight"><pre><span></span><code>mysql&gt;<span class="w"> </span>SHOW<span class="w"> </span>VARIABLES<span class="w"> </span>LIKE<span class="w"> </span><span class="s1">&#39;plugin_dir&#39;</span><span class="p">;</span>
++---------------+-------------------------------------+
+<span class="p">|</span><span class="w"> </span>Variable_name<span class="w"> </span><span class="p">|</span><span class="w"> </span>Value<span class="w">                               </span><span class="p">|</span>
++---------------+-------------------------------------+
+<span class="p">|</span><span class="w"> </span>plugin_dir<span class="w">    </span><span class="p">|</span><span class="w"> </span>/usr/local/mysql8/mysql/lib/plugin/<span class="w"> </span><span class="p">|</span>
++---------------+-------------------------------------+
+<span class="m">1</span><span class="w"> </span>row<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">(</span><span class="m">0</span>.00<span class="w"> </span>sec<span class="o">)</span>
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

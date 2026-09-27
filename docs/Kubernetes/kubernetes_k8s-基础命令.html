@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s 基础命令 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand"><a href="/"><span class="logo">⚡</span> DevOps 知识库</a></div>
+            <ul class="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="#topics">专题</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </nav>
+    </header>
+    <main>
+                <div class="doc-container">
+                    <div class="doc-sidebar">
+                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-k8s-管理命令-kubectl"># k8s 管理命令 `kubectl`</a></li><li class="toc-l2"><a href="#-帮助手册">## 帮助手册：</a></li><li class="toc-l2"><a href="#-获取集群中所有节点">## 获取集群中所有节点</a></li><li class="toc-l1"><a href="#可以使用别名">#可以使用别名</a></li><li class="toc-l2"><a href="#-获取所有的pod">## 获取所有的Pod</a></li></ul></nav>
+                    </div>
+                    <div class="doc-content"><h1 id="k8s-kubectl">k8s 管理命令 <code>kubectl</code></h1>
+<blockquote>
+<p>Kubernetes provides a command line tool for communicating with a Kubernetes cluster's <a href="https://kubernetes.io/docs/reference/glossary/?all=true#term-control-plane">control plane</a>, using the Kubernetes API.</p>
+</blockquote>
+<p>语法：</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="o">[</span>command<span class="o">]</span><span class="w"> </span><span class="o">[</span>TYPE<span class="o">]</span><span class="w"> </span><span class="o">[</span>NAME<span class="o">]</span><span class="w"> </span><span class="o">[</span>flags<span class="o">]</span>
+</code></pre></div>
+<h2 id="_1">帮助手册：</h2>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w">  </span>--help
+kubectl<span class="w">  </span><span class="o">[</span>command<span class="o">]</span><span class="w"> </span>--help
+</code></pre></div>
+<h2 id="_2">获取集群中所有节点</h2>
+<p>命令： <code>kubectl get</code></p>
+<p>示例：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get nodes  </span>
+NAME<span class="w">     </span>STATUS<span class="w">   </span>ROLES<span class="w">           </span>AGE<span class="w">     </span>VERSION
+master<span class="w">   </span>Ready<span class="w">    </span>control-plane<span class="w">   </span>3h58m<span class="w">   </span>v1.31.13
+work01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h25m<span class="w">   </span>v1.31.13
+work02<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h24m<span class="w">   </span>v1.31.13
+work03<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">          </span>3h24m<span class="w">   </span>v1.31.13
+<span class="c1">#可以使用别名</span>
+<span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get no</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAME</td>
+<td>节点的域名/主机名</td>
+</tr>
+<tr>
+<td>STATUS</td>
+<td>节点的状态 Ready/NoReady</td>
+</tr>
+<tr>
+<td>ROLES</td>
+<td>角色：标识节点的作用</td>
+</tr>
+<tr>
+<td>AGE</td>
+<td>运行时间</td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td>k8s 的版本</td>
+</tr>
+</tbody>
+</table>
+<p>获取节点详细信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   get  nodes -o  wide</span>
+</code></pre></div>
+<p><img alt="image-20251022143440164" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022143440164.png" /></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INTERNAL-IP</td>
+<td>内部IP  集群内部通信</td>
+</tr>
+<tr>
+<td>EXTERNAL-IP</td>
+<td>外部IP   loadblence</td>
+</tr>
+<tr>
+<td>OS-IMAGE</td>
+<td></td>
+</tr>
+<tr>
+<td>CONTAINER-RUNTIME</td>
+<td></td>
+</tr>
+<tr>
+<td>KERNEL-VERSION</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>指定查看节点信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   get  node master</span>
+NAME<span class="w">     </span>STATUS<span class="w">   </span>ROLES<span class="w">           </span>AGE<span class="w">     </span>VERSION
+master<span class="w">   </span>Ready<span class="w">    </span>control-plane<span class="w">   </span>4h32m<span class="w">   </span>v1.31.13
+</code></pre></div>
+<h2 id="pod">获取所有的Pod</h2>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get pods  </span>
+No<span class="w"> </span>resources<span class="w"> </span>found<span class="w"> </span><span class="k">in</span><span class="w"> </span>default<span class="w"> </span>namespace.
+</code></pre></div>
+<blockquote>
+<p>默认会在default名称空间下找资源对象</p>
+<p>-A:  所有名称空间下的Pod</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get pods -A</span>
+NAMESPACE<span class="w">     </span>NAME<span class="w">                 </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">       </span>AGE
+kube-system<span class="w">   </span>calico-kube<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">              </span>150m
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAMESPACE</td>
+<td>名称空间，作用应用隔离，环境隔离</td>
+</tr>
+<tr>
+<td>NAME</td>
+<td>Pod 名称</td>
+</tr>
+<tr>
+<td>READY</td>
+<td>Pod 是否准备完成 1/1     1/1</td>
+</tr>
+<tr>
+<td>STATUS</td>
+<td>Pod的运行状态</td>
+</tr>
+<tr>
+<td>RESTARTS</td>
+<td>重启次数</td>
+</tr>
+<tr>
+<td>AGE</td>
+<td>Pod 的运行时间</td>
+</tr>
+</tbody>
+</table>
+<p>查看<code>Pod</code> 运行在那个节点上</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   get pods  -A  -o wide </span>
+</code></pre></div>
+<p><img alt="image-20251022144632790" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022144632790.png" /></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NOMINATED NODE</td>
+<td>指定节点（Pod）亲和性</td>
+</tr>
+<tr>
+<td>READINESS GATES</td>
+<td>就绪状态</td>
+</tr>
+</tbody>
+</table>
+<p>指定某个名称空间的<code>pod</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get  pods  -n kube-system</span>
+</code></pre></div>
+<p>查看名称：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  get namespace</span>
+NAME<span class="w">              </span>STATUS<span class="w">   </span>AGE
+default<span class="w">           </span>Active<span class="w">   </span>4h36m
+kube-node-lease<span class="w">   </span>Active<span class="w">   </span>4h36m
+kube-public<span class="w">       </span>Active<span class="w">   </span>4h36m
+kube-system<span class="w">       </span>Active<span class="w">   </span>4h36m
+</code></pre></div>
+<p>查看Pod的详细信息：</p>
+<p>语法：<code>kubectl describe [资源类型]  [资源的名称]  [名称空间]</code></p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   describe  pods calico-node-rt5h7  -n kube-system </span>
+</code></pre></div>
+<p>查看版本：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   version</span>
+Client<span class="w"> </span>Version:<span class="w"> </span>v1.31.13
+Kustomize<span class="w"> </span>Version:<span class="w"> </span>v5.4.2
+Server<span class="w"> </span>Version:<span class="w"> </span>v1.31.13
+</code></pre></div>
+<p>查看集群状态：</p>
+<div class="highlight"><pre><span></span><code>[root@master ~]# kubectl   cluster-info
+</code></pre></div>
+<p><img alt="image-20251022150824397" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022150824397.png" /></p>
+<p>查看所有的api 资源</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  api-resources </span>
+</code></pre></div>
+<p><img alt="image-20251022151101883" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/assets/image-20251022151101883.png" /></p>
+<p>查看API 的版本信息</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl   api-versions</span>
+admissionregistration.k8s.io/v1
+</code></pre></div></div>
+                </div></main>
+    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+    <script src="/js/main.js"></script>
+</body>
+</html>

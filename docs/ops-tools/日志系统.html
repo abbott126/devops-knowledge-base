@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日志系统 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <title>日志系统 | 运维工具 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="日志系统 | 运维工具 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,32 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-日志系统"># 日志系统</a></li><li class="toc-l2"><a href="#-el/fk">## EL/FK</a></li><li class="toc-l3"><a href="#-elasticsearch">### Elasticsearch</a></li><li class="toc-l3"><a href="#-kibana">### Kibana</a></li><li class="toc-l3"><a href="#-logstash">### Logstash</a></li><li class="toc-l3"><a href="#-beats">### Beats</a></li><li class="toc-l3"><a href="#-采集日志的架构">### 采集日志的架构</a></li><li class="toc-l4"><a href="#-image-20250926095147136/images/image-20250926095147136.pnglogstash">#### !image-20250926095147136](/images/image-20250926095147136.png)Logstash</a></li><li class="toc-l3"><a href="#-inputs-filters-outputs">### Inputs, filters & outputs</a></li><li class="toc-l4"><a href="#-部署方式">#### 部署方式：</a></li><li class="toc-l4"><a href="#-elasticsearch">#### Elasticsearch</a></li><li class="toc-l4"><a href="#-部署kibana">#### 部署Kibana</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#-this-is-an-auto-generated-file-"># ** THIS IS AN AUTO-GENERATED FILE **</a></li><li class="toc-l1"><a href="#">#</a></li><li class="toc-l1"><a href="#-default-kibana-configuration-for-docker-target"># Default Kibana configuration for docker target</a></li><li class="toc-l1"><a href="#-指定es地址"># 指定es地址</a></li><li class="toc-l1"><a href="#elasticsearch.hosts-http//elasticsearch9200-">#elasticsearch.hosts: [ "http://elasticsearch:9200" ]</a></li><li class="toc-l1"><a href="#指定kibana连接es的用户">#指定kibana连接es的用户</a></li><li class="toc-l1"><a href="#指定kibana连接es的用户的密码">#指定kibana连接es的用户的密码</a></li><li class="toc-l1"><a href="#禁用ssl验证">#禁用SSL验证</a></li><li class="toc-l1"><a href="#持久化">#持久化</a></li><li class="toc-l1"><a href="#-type-messages"># type => "messages"</a></li><li class="toc-l1"><a href="#-user-elastic"># user => "elastic"</a></li><li class="toc-l1"><a href="#-password-zpfdn9b45d48eckxxuc"># password => "ZPFdn9B45d48ec=kxXuc"</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">日志系统</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/ops-tools/">专题</a> <span class="sep">›</span> <span>日志系统</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#elfk">## EL/FK</a></li>
+<li class="toc-l3"><a href="#elasticsearch">### Elasticsearch</a></li>
+<li class="toc-l3"><a href="#kibana">### Kibana</a></li>
+<li class="toc-l3"><a href="#logstash">### Logstash</a></li>
+<li class="toc-l3"><a href="#beats">### Beats</a></li>
+<li class="toc-l3"><a href="#采集日志的架构">### 采集日志的架构</a></li>
+<li class="toc-l4"><a href="#image-20250926095147136imagesimage-20250926095147136pnglogstash">#### !image-20250926095147136](/images/image-20250926095147136.png)Logstash</a></li>
+<li class="toc-l3"><a href="#inputs-filters-outputs">### Inputs, filters & outputs</a></li>
+<li class="toc-l4"><a href="#部署方式">#### 部署方式：</a></li>
+<li class="toc-l4"><a href="#elasticsearch">#### Elasticsearch</a></li>
+<li class="toc-l4"><a href="#部署kibana">#### 部署Kibana</a></li>
+<li class="toc-l2"><a href="#es">## Es</a></li>
+<li class="toc-l3"><a href="#kibana">### Kibana</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/ops-tools/" class="back-to-top">← 返回专题</a>
+            <h1>日志系统</h1>
+<h1 id="_1">日志系统</h1>
 <blockquote>
 <p>帮助我们很直观的分析日志  日志监控系统   </p>
 </blockquote>
@@ -399,9 +421,11 @@ docker.elastic.co/logstash/logstash<span class="w">   </span><span class="m">9</
 --name<span class="w"> </span>kibana<span class="w">  </span>-p<span class="w"> </span><span class="m">5601</span>:5601<span class="w"> </span><span class="se">\</span>
 -v<span class="w"> </span>/elk_data/kibana_data/config:/usr/share/kibana/config<span class="w"> </span><span class="se">\</span>
 kibana:9.1.4
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

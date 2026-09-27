@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomcat - Web 服务 - DevOps 知识库 - DevOps 知识库</title>
+    <title>Tomcat | Web 服务 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Tomcat | Web 服务 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,31 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-tomcat"># Tomcat</a></li><li class="toc-l2"><a href="#-目标">## 目标：</a></li><li class="toc-l2"><a href="#-二什么使用使用tomcat">## 二、什么使用使用Tomcat</a></li><li class="toc-l2"><a href="#-三-部署tomcat">## 三、 部署Tomcat</a></li><li class="toc-l1"><a href="#配置java">#配置Java</a></li><li class="toc-l1"><a href="#全局变量-所有用户都可以使用">#全局变量 所有用户都可以使用</a></li><li class="toc-l1"><a href="#局部变量-某个用户定义变量">#局部变量 某个用户定义变量</a></li><li class="toc-l1"><a href="#临时变量">#临时变量</a></li><li class="toc-l1"><a href="#-创建用户且加入wheel组"># 创建用户且加入wheel组</a></li><li class="toc-l2"><a href="#-allow-root-to-run-any-commands-anywhere">## Allow root to run any commands anywhere</a></li><li class="toc-l2"><a href="#-allows-people-in-group-wheel-to-run-all-commands">## Allows people in group wheel to run all commands</a></li><li class="toc-l1"><a href="#-.bashrc"># .bashrc</a></li><li class="toc-l1"><a href="#-source-global-definitions"># Source global definitions</a></li><li class="toc-l1"><a href="#-uncomment-the-following-line-if-you-dont-like-systemctls-auto-paging-feature"># Uncomment the following line if you don't like systemctl's auto-paging feature:</a></li><li class="toc-l1"><a href="#-export-systemd_pager"># export SYSTEMD_PAGER=</a></li><li class="toc-l1"><a href="#-user-specific-aliases-and-functions"># User specific aliases and functions</a></li><li class="toc-l3"><a href="#-端口">### 端口：</a></li><li class="toc-l3"><a href="#-tomcat-目录">### Tomcat 目录</a></li><li class="toc-l3"><a href="#-管理tomcat">### 管理Tomcat</a></li><li class="toc-l1"><a href="#依次将上面检索context.xml关于修改将127的地址修改.">#依次将上面检索`context.xml`关于修改将127的地址修改"^.*$"</a></li><li class="toc-l1"><a href="#重启服务">#重启服务</a></li><li class="toc-l3"><a href="#-发布应用-java">### 发布应用 Java：</a></li><li class="toc-l4"><a href="#-利用tomcat发布应用">####  利用`Tomcat`发布应用</a></li><li class="toc-l4"><a href="#-使用java命令管理应用">#### 使用Java命令管理应用</a></li><li class="toc-l1"><a href="#语法">#语法</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="tomcat">Tomcat</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/web-services/">专题</a> <span class="sep">›</span> <span>Tomcat</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#目标">## 目标：</a></li>
+<li class="toc-l2"><a href="#二什么使用使用tomcat">## 二、什么使用使用Tomcat</a></li>
+<li class="toc-l2"><a href="#三-部署tomcat">## 三、 部署Tomcat</a></li>
+<li class="toc-l2"><a href="#allow-root-to-run-any-commands-anywhere">## Allow root to run any commands anywhere</a></li>
+<li class="toc-l2"><a href="#allows-people-in-group-wheel-to-run-all-commands">## Allows people in group wheel to run all commands</a></li>
+<li class="toc-l3"><a href="#端口">### 端口：</a></li>
+<li class="toc-l3"><a href="#tomcat-目录">### Tomcat 目录</a></li>
+<li class="toc-l3"><a href="#管理tomcat">### 管理Tomcat</a></li>
+<li class="toc-l3"><a href="#发布应用-java">### 发布应用 Java：</a></li>
+<li class="toc-l4"><a href="#利用tomcat发布应用">####  利用`Tomcat`发布应用</a></li>
+<li class="toc-l4"><a href="#使用java命令管理应用">#### 使用Java命令管理应用</a></li>
+<li class="toc-l2"><a href="#最终实现结果">## 最终实现结果：</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/web-services/" class="back-to-top">← 返回专题</a>
+            <h1>Tomcat</h1>
+<h1 id="tomcat">Tomcat</h1>
 <blockquote>
 <p>httpd   nginx   Tomcat</p>
 </blockquote>
@@ -322,9 +343,11 @@ webroot:<span class="w"> </span>/root/.jenkins/war
 <span class="o">[</span>root@tomcat-server<span class="w"> </span>tomcat10<span class="o">]</span><span class="c1"># !116</span>
 
 ctrl+r<span class="w">   </span><span class="c1">#检索历史命令</span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自动化概览 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <title>自动化概览 | 自动化与 DevOps | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="自动化概览 | 自动化与 DevOps | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,36 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-自动化"># 自动化</a></li><li class="toc-l2"><a href="#-自动化工具">## 自动化工具：</a></li><li class="toc-l2"><a href="#-playbook">## playbook</a></li><li class="toc-l3"><a href="#-json-语言">### json  语言：</a></li><li class="toc-l4"><a href="#-应用场景">#### 应用场景</a></li><li class="toc-l4"><a href="#-语法规则">#### 语法规则</a></li><li class="toc-l2"><a href="#-yaml-语言">## yaml 语言</a></li><li class="toc-l4"><a href="#-yaml-书写格式">#### yaml 书写格式：</a></li><li class="toc-l1"><a href="#字典">#字典</a></li><li class="toc-l1"><a href="#-可以跨越多行"># 可以跨越多行</a></li><li class="toc-l1"><a href="#检查yaml文件语法是否正确">#检查yaml文件语法是否正确</a></li><li class="toc-l3"><a href="#-模版-template">### 模版 template</a></li><li class="toc-l3"><a href="#-jinja2-语法">### Jinja2 语法：</a></li><li class="toc-l1"><a href="#listen-80">#Listen 80</a></li><li class="toc-l3"><a href="#-条件语句when-">### 条件语句`when` ：</a></li><li class="toc-l3"><a href="#-handlers-running-operations-on-change">### Handlers: running operations on change</a></li><li class="toc-l3"><a href="#-loop-循环">### Loop 循环</a></li><li class="toc-l2"><a href="#-角色roles">## 角色roles</a></li><li class="toc-l4"><a href="#-创建一个角色-初始化">#### 创建一个角色 初始化</a></li><li class="toc-l1"><a href="#-/usr/share/ansible/roles"># /usr/share/ansible/roles</a></li><li class="toc-l1"><a href="#-/etc/ansible/roles"># /etc/ansible/roles</a></li><li class="toc-l4"><a href="#-获取官方维护的角色-有大佬通过角色实现的功能呢">#### 获取官方维护的角色 `有大佬通过角色实现的功能呢`</a></li><li class="toc-l3"><a href="#-ansible-加密">### ansible 加密</a></li><li class="toc-l1"><a href="#-手动输入密码"># 手动输入密码</a></li><li class="toc-l1"><a href="#-使用密码文件文件权限建议设为-0600"># 使用密码文件（文件权限建议设为 0600）</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">自动化</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/automation/">专题</a> <span class="sep">›</span> <span>自动化概览</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#自动化工具">## 自动化工具：</a></li>
+<li class="toc-l2"><a href="#playbook">## playbook</a></li>
+<li class="toc-l3"><a href="#json-语言">### json  语言：</a></li>
+<li class="toc-l4"><a href="#应用场景">#### 应用场景</a></li>
+<li class="toc-l4"><a href="#语法规则">#### 语法规则</a></li>
+<li class="toc-l2"><a href="#yaml-语言">## yaml 语言</a></li>
+<li class="toc-l4"><a href="#yaml-书写格式">#### yaml 书写格式：</a></li>
+<li class="toc-l3"><a href="#模版-template">### 模版 template</a></li>
+<li class="toc-l3"><a href="#jinja2-语法">### Jinja2 语法：</a></li>
+<li class="toc-l3"><a href="#条件语句when">### 条件语句`when` ：</a></li>
+<li class="toc-l3"><a href="#handlers-running-operations-on-change">### Handlers: running operations on change</a></li>
+<li class="toc-l3"><a href="#loop-循环">### Loop 循环</a></li>
+<li class="toc-l2"><a href="#角色roles">## 角色roles</a></li>
+<li class="toc-l4"><a href="#创建一个角色-初始化">#### 创建一个角色 初始化</a></li>
+<li class="toc-l4"><a href="#获取官方维护的角色-有大佬通过角色实现的功能呢">#### 获取官方维护的角色 `有大佬通过角色实现的功能呢`</a></li>
+<li class="toc-l3"><a href="#ansible-加密">### ansible 加密</a></li>
+<li class="toc-l3"><a href="#ansible-web-ui">### ansible web ui</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/automation/" class="back-to-top">← 返回专题</a>
+            <h1>自动化概览</h1>
+<h1 id="_1">自动化</h1>
 <blockquote>
 <p>一些基本概念 devOps AIOps GItOps</p>
 </blockquote>
@@ -418,9 +444,11 @@ ansible-playbook<span class="w"> </span>-i<span class="w"> </span>inventory<span
 <p>Ansible Tower 平台，是需要订阅</p>
 <p>awx 开源</p>
 </blockquote>
-<p>https://blog.csdn.net/radapp/article/details/140304357</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p>https://blog.csdn.net/radapp/article/details/140304357</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网络架构 - 概述 - DevOps 知识库 - DevOps 知识库</title>
+    <title>网络架构 | 概述 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="网络架构 | 概述 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,30 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-网络架构"># 网络架构</a></li><li class="toc-l3"><a href="#-早期网络模型架构c/s单体">### 早期网络模型架构(c/s)单体</a></li><li class="toc-l2"><a href="#-二代网络架构分布式架构">## 二代网络架构（分布式架构）</a></li><li class="toc-l3"><a href="#-三代网络微服务-容器化">### 三代网络（微服务-->容器化）</a></li><li class="toc-l2"><a href="#-单体架构">## 单体架构</a></li><li class="toc-l1"><a href="#创建用户">#创建用户</a></li><li class="toc-l1"><a href="#创建库">#创建库</a></li><li class="toc-l1"><a href="#授权">#授权</a></li><li class="toc-l1"><a href="#解压到/var/www/html/">#解压到`/var/www/html/`</a></li><li class="toc-l3"><a href="#-ltm-单体架构-blog">### LTM 单体架构 `blog`</a></li><li class="toc-l1"><a href="#修改主机名">#修改主机名</a></li><li class="toc-l1"><a href="#获取软件的地址">#获取软件的地址</a></li><li class="toc-l1"><a href="#-java-env"># java  env</a></li><li class="toc-l1"><a href="#刷新环境">#刷新环境</a></li><li class="toc-l1"><a href="#解压">#解压：</a></li><li class="toc-l1"><a href="#-分布式架构"># 分布式架构</a></li><li class="toc-l2"><a href="#-一-部署web-server">## 一、 部署web-server</a></li><li class="toc-l4"><a href="#-httpd服务引擎">#### httpd服务引擎</a></li><li class="toc-l3"><a href="#-关键说明">### 关键说明：</a></li><li class="toc-l2"><a href="#-二-部署mysql">## 二、 部署mysql</a></li><li class="toc-l1"><a href="#创建用户-mysql">#创建用户 mysql</a></li><li class="toc-l1"><a href="#修改权限">#修改权限</a></li><li class="toc-l1"><a href="#初始化">#初始化</a></li><li class="toc-l1"><a href="#启动">#启动</a></li><li class="toc-l1"><a href="#-mysql-env"># mysql  env</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">网络架构</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/overview/">专题</a> <span class="sep">›</span> <span>网络架构</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#早期网络模型架构cs单体">### 早期网络模型架构(c/s)单体</a></li>
+<li class="toc-l2"><a href="#二代网络架构分布式架构">## 二代网络架构（分布式架构）</a></li>
+<li class="toc-l3"><a href="#三代网络微服务-容器化">### 三代网络（微服务-->容器化）</a></li>
+<li class="toc-l2"><a href="#单体架构">## 单体架构</a></li>
+<li class="toc-l3"><a href="#ltm-单体架构-blog">### LTM 单体架构 `blog`</a></li>
+<li class="toc-l2"><a href="#一-部署web-server">## 一、 部署web-server</a></li>
+<li class="toc-l4"><a href="#httpd服务引擎">#### httpd服务引擎</a></li>
+<li class="toc-l3"><a href="#关键说明">### 关键说明：</a></li>
+<li class="toc-l2"><a href="#二-部署mysql">## 二、 部署mysql</a></li>
+<li class="toc-l2"><a href="#三-部署php">## 三、 部署PHP</a></li>
+<li class="toc-l2"><a href="#四测试所有组件的联动性">## 四、测试所有组件的联动性</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/overview/" class="back-to-top">← 返回专题</a>
+            <h1>网络架构</h1>
+<h1 id="_1">网络架构</h1>
 <blockquote>
 <p>web  数据库</p>
 <p>Lamp  lnmp  ltm   lnamp lnnmp  lntm </p>
@@ -666,9 +686,11 @@ try<span class="w"> </span><span class="o">{</span>
 <span class="w">    </span>ProxyPassMatch<span class="w"> </span>^/<span class="o">(</span>.*<span class="se">\.</span>php<span class="o">)</span>$<span class="w"> </span>fcgi://192.168.19.188:9000/usr/local/php8/vhosts/phpmyadmin.com/<span class="nv">$1</span>
 &lt;/VirtualHost&gt;
 </code></pre></div>
-<p>!image-20250826114759126](/images/image-20250826114759126.png)</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p>!image-20250826114759126](/images/image-20250826114759126.png)</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

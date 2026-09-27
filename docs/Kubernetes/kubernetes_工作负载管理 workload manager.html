@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工作负载管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>工作负载管理 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="工作负载管理 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,34 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-工作负载管理-workload-manager"># 工作负载管理 workload manager</a></li><li class="toc-l3"><a href="#-控制器的核心工作原理">### 控制器的核心工作原理</a></li><li class="toc-l3"><a href="#-k8s-中常用的核心控制器">### K8s 中常用的核心控制器</a></li><li class="toc-l4"><a href="#-1.-deployment部署控制器">#### 1. Deployment（部署控制器）</a></li><li class="toc-l4"><a href="#-2.-statefulset有状态集控制器">#### 2. StatefulSet（有状态集控制器）</a></li><li class="toc-l4"><a href="#-3.-daemonset守护进程集控制器">#### 3. DaemonSet（守护进程集控制器）</a></li><li class="toc-l4"><a href="#-4.-replicaset副本集控制器">#### 4. ReplicaSet（副本集控制器）</a></li><li class="toc-l4"><a href="#-5.-job任务控制器">#### 5. Job（任务控制器）</a></li><li class="toc-l4"><a href="#-6.-cronjob定时任务控制器">#### 6. CronJob（定时任务控制器）</a></li><li class="toc-l4"><a href="#-7.-horizontalpodautoscalerhpa水平-pod-自动扩缩容控制器">#### 7. HorizontalPodAutoscaler（HPA，水平 Pod 自动扩缩容控制器）</a></li><li class="toc-l3"><a href="#-控制器与-pod-的关系">### 控制器与 Pod 的关系</a></li><li class="toc-l3"><a href="#-总结">### 总结</a></li><li class="toc-l3"><a href="#-deployment部署控制器">### Deployment（部署控制器）</a></li><li class="toc-l1"><a href="#-apiversion指定-kubernetes-api-版本deployment-属于-apps-组版本为-v1"># apiVersion：指定 Kubernetes API 版本，Deployment 属于 apps 组，版本为 v1</a></li><li class="toc-l1"><a href="#-kind定义资源类型这里是-deployment部署控制器"># kind：定义资源类型，这里是 Deployment（部署控制器）</a></li><li class="toc-l1"><a href="#-metadata资源的元数据用于标识和描述-deployment"># metadata：资源的元数据，用于标识和描述 Deployment</a></li><li class="toc-l1"><a href="#-specdeployment-的核心配置定义期望状态"># spec：Deployment 的核心配置，定义期望状态</a></li><li class="toc-l1"><a href="#-replicas期望运行的-pod-副本数控制器会自动维持这个数量"># replicas：期望运行的 Pod 副本数（控制器会自动维持这个数量）</a></li><li class="toc-l1"><a href="#-selector选择器用于关联被管理的-pod通过标签匹配"># selector：选择器，用于关联被管理的 Pod（通过标签匹配）</a></li><li class="toc-l1"><a href="#-templatepod-模板定义要创建的-pod-的规格deployment-根据此模板生成-pod"># template：Pod 模板，定义要创建的 Pod 的规格（Deployment 根据此模板生成 Pod）</a></li><li class="toc-l1"><a href="#-metadatapod-的元数据"># metadata：Pod 的元数据</a></li><li class="toc-l1"><a href="#-specpod-的具体配置包含容器信息"># spec：Pod 的具体配置（包含容器信息）</a></li><li class="toc-l1"><a href="#-containerspod-中运行的容器列表这里只有一个-nginx-容器"># containers：Pod 中运行的容器列表（这里只有一个 Nginx 容器）</a></li><li class="toc-l3"><a href="#-更新资源">### 更新资源</a></li><li class="toc-l3"><a href="#-回滚deployment">### 回滚`deployment`</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="workload-manager">工作负载管理 workload manager</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>工作负载管理</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#控制器的核心工作原理">### 控制器的核心工作原理</a></li>
+<li class="toc-l3"><a href="#k8s-中常用的核心控制器">### K8s 中常用的核心控制器</a></li>
+<li class="toc-l4"><a href="#1-deployment部署控制器">#### 1. Deployment（部署控制器）</a></li>
+<li class="toc-l4"><a href="#2-statefulset有状态集控制器">#### 2. StatefulSet（有状态集控制器）</a></li>
+<li class="toc-l4"><a href="#3-daemonset守护进程集控制器">#### 3. DaemonSet（守护进程集控制器）</a></li>
+<li class="toc-l4"><a href="#4-replicaset副本集控制器">#### 4. ReplicaSet（副本集控制器）</a></li>
+<li class="toc-l4"><a href="#5-job任务控制器">#### 5. Job（任务控制器）</a></li>
+<li class="toc-l4"><a href="#6-cronjob定时任务控制器">#### 6. CronJob（定时任务控制器）</a></li>
+<li class="toc-l4"><a href="#7-horizontalpodautoscalerhpa水平-pod-自动扩缩容控制器">#### 7. HorizontalPodAutoscaler（HPA，水平 Pod 自动扩缩容控制器）</a></li>
+<li class="toc-l3"><a href="#控制器与-pod-的关系">### 控制器与 Pod 的关系</a></li>
+<li class="toc-l3"><a href="#总结">### 总结</a></li>
+<li class="toc-l3"><a href="#deployment部署控制器">### Deployment（部署控制器）</a></li>
+<li class="toc-l3"><a href="#更新资源">### 更新资源</a></li>
+<li class="toc-l3"><a href="#回滚deployment">### 回滚`deployment`</a></li>
+<li class="toc-l3"><a href="#扩缩容-scaling-a-deployment">### 扩/缩容 Scaling a Deployment</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>工作负载管理</h1>
+<h1 id="workload-manager">工作负载管理 workload manager</h1>
 <p>在 Kubernetes（K8s）中，<strong>控制器（Controller）</strong> 是实现集群状态自动化管理的核心组件，它遵循 “声明式 API” 理念：用户通过 YAML 定义资源的 “期望状态”，控制器持续监控集群的 “实际状态”，并通过一系列操作将实际状态向期望状态推进。</p>
 <p>简单来说，控制器就是 K8s 中的 “自动化运维工具”，负责 Pod 的创建、扩缩容、自愈、更新等核心操作，避免人工干预。</p>
 <h3 id="_1">控制器的核心工作原理</h3>
@@ -557,9 +581,11 @@ web-psr28<span class="w">   </span><span class="m">1</span>/1<span class="w">   
 
 <span class="o">[</span>root@master<span class="w"> </span>DaemonSet<span class="o">]</span><span class="c1"># kubectl  delete  ds  web   -n web-daemoset</span>
 daemonset.apps<span class="w"> </span><span class="s2">&quot;web&quot;</span><span class="w"> </span>deleted
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

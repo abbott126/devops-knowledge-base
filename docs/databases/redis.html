@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redis - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <title>Redis | 数据库 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Redis | 数据库 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,30 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#指定配置文件">#指定配置文件</a></li><li class="toc-l2"><a href="#-客户端工具">## 客户端工具</a></li><li class="toc-l1"><a href="#-redis管理"># Redis管理</a></li><li class="toc-l1"><a href="#修改监听地址">#修改监听地址</a></li><li class="toc-l1"><a href="#bind-127.0.0.1-1">#bind 127.0.0.1 -::1</a></li><li class="toc-l1"><a href="#修改以守护进程的方式运行">#修改以守护进程的方式运行</a></li><li class="toc-l1"><a href="#daemonize-no">#daemonize no</a></li><li class="toc-l1"><a href="#关闭安全模式">#关闭安全模式</a></li><li class="toc-l1"><a href="#监听端口号">#监听端口号</a></li><li class="toc-l2"><a href="#-redis-基本命令">## redis 基本命令</a></li><li class="toc-l1"><a href="#-登录验证"># 登录验证</a></li><li class="toc-l1"><a href="#验证成功">#验证成功</a></li><li class="toc-l1"><a href="#查看是否数据还在">#查看是否数据还在</a></li><li class="toc-l2"><a href="#-redis-数据库类型">## Redis **数据库类型**</a></li><li class="toc-l2"><a href="#-字符串数据类型">## 字符串数据类型</a></li><li class="toc-l1"><a href="#-设置key的值过期时间为30秒-如何值key的值不存在则不设置否则设置"># 设置key的值：过期时间为30秒 如何值key的值不存在则不设置否则设置</a></li><li class="toc-l2"><a href="#-整数类型-浮点数类型-字符串类型">## 整数类型 & 浮点数类型  & 字符串类型</a></li><li class="toc-l3"><a href="#-整数类型">### 整数类型</a></li><li class="toc-l3"><a href="#-浮点数类型">### 浮点数类型</a></li><li class="toc-l2"><a href="#-列表list">## 列表list</a></li><li class="toc-l2"><a href="#-数据持久化">## 数据持久化</a></li><li class="toc-l1"><a href="#快照的管理">#快照的管理</a></li><li class="toc-l32"><a href="#-snapshotting-">################################ SNAPSHOTTING   ################################</a></li><li class="toc-l1"><a href="#根据规则实现自动bgsave">#根据规则实现自动`bgsave`</a></li><li class="toc-l1"><a href="#最近一次后台保存操作失败redis-将停止接受写入请求">#最近一次后台保存操作失败，Redis 将停止接受写入请求。</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><p>部署：Redis</p>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/databases/">专题</a> <span class="sep">›</span> <span>Redis</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#客户端工具">## 客户端工具</a></li>
+<li class="toc-l2"><a href="#redis-基本命令">## redis 基本命令</a></li>
+<li class="toc-l2"><a href="#redis-数据库类型">## Redis **数据库类型**</a></li>
+<li class="toc-l2"><a href="#字符串数据类型">## 字符串数据类型</a></li>
+<li class="toc-l2"><a href="#整数类型-浮点数类型-字符串类型">## 整数类型 & 浮点数类型  & 字符串类型</a></li>
+<li class="toc-l3"><a href="#整数类型">### 整数类型</a></li>
+<li class="toc-l3"><a href="#浮点数类型">### 浮点数类型</a></li>
+<li class="toc-l2"><a href="#列表list">## 列表list</a></li>
+<li class="toc-l2"><a href="#数据持久化">## 数据持久化</a></li>
+<li class="toc-l32"><a href="#snapshotting">################################ SNAPSHOTTING   ################################</a></li>
+<li class="toc-l3"><a href="#在线设置查询">### 在线设置/查询</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/databases/" class="back-to-top">← 返回专题</a>
+            <h1>Redis</h1>
+<p>部署：Redis</p>
 <div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://download.redis.io/redis-stable.tar.gz
 </code></pre></div>
 <p>安装依赖</p>
@@ -664,9 +684,11 @@ a
 <span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>loaded<span class="w"> </span>from<span class="w"> </span>incr<span class="w"> </span>file<span class="w"> </span>appendonly.aof.1.incr.aof:<span class="w"> </span><span class="m">0</span>.000<span class="w"> </span>seconds
 <span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.352<span class="w"> </span>*<span class="w"> </span>DB<span class="w"> </span>loaded<span class="w"> </span>from<span class="w"> </span>append<span class="w"> </span>only<span class="w"> </span>file:<span class="w"> </span><span class="m">0</span>.001<span class="w"> </span>seconds
 <span class="m">20624</span>:M<span class="w"> </span><span class="m">02</span><span class="w"> </span>Sep<span class="w"> </span><span class="m">2025</span><span class="w"> </span><span class="m">00</span>:07:00.353<span class="w"> </span>*<span class="w"> </span>Opening<span class="w"> </span>AOF<span class="w"> </span>incr<span class="w"> </span>file<span class="w"> </span>appendonly.aof.1.incr.aof<span class="w"> </span>on<span class="w"> </span>server<span class="w"> </span>start
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>调度 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>调度 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="调度 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,32 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-调度抢占和驱逐"># 调度、抢占和驱逐</a></li><li class="toc-l2"><a href="#-kubernetes-调度器">## Kubernetes 调度器</a></li><li class="toc-l3"><a href="#-调度概览">### 调度概览</a></li><li class="toc-l3"><a href="#-kube-scheduler">### kube-scheduler</a></li><li class="toc-l3"><a href="#-kube-scheduler-中的节点选择">### kube-scheduler 中的节点选择</a></li><li class="toc-l1"><a href="#-将-pod-指派给节点"># 将 Pod 指派给节点</a></li><li class="toc-l3"><a href="#-nodelabel-节点标签">### nodelabel 节点标签</a></li><li class="toc-l1"><a href="#disktype-ssd">#disktype: ssd</a></li><li class="toc-l4"><a href="#-指定节点调度很少">#### 指定节点调度（很少）</a></li><li class="toc-l3"><a href="#-node亲和力">### `node`亲和力：</a></li><li class="toc-l1"><a href="#-定义亲和力"># 定义亲和力</a></li><li class="toc-l4"><a href="#-操作符">#### 操作符</a></li><li class="toc-l4"><a href="#-说明">#### 说明：</a></li><li class="toc-l4"><a href="#-调度策略">#### 调度策略</a></li><li class="toc-l4"><a href="#-调度器配置">#### 调度器配置</a></li><li class="toc-l1"><a href="#-污点和容忍度"># 污点和容忍度</a></li><li class="toc-l3"><a href="#-常用命令-kubectl-taint">### 常用命令： `kubectl  taint`</a></li><li class="toc-l4"><a href="#-effect匹配污点的效果">#### `effect`：匹配污点的效果</a></li><li class="toc-l1"><a href="#-定义-pod-的-api-版本和资源类型固定为-v1-和-pod"># 定义 Pod 的 API 版本和资源类型（固定为 v1 和 Pod）</a></li><li class="toc-l1"><a href="#-亲和力配置控制-pod-倾向于调度到哪些节点此处为节点亲和性"># 亲和力配置：控制 Pod 倾向于调度到哪些节点（此处为节点亲和性）</a></li><li class="toc-l1"><a href="#-调度时必须满足的条件硬亲和性忽略运行时变化"># 调度时必须满足的条件（硬亲和性），忽略运行时变化</a></li><li class="toc-l1"><a href="#-含义调度阶段必须满足以下节点选择条件否则-pod-无法调度运行中节点标签变化不影响已调度的-pod"># 含义：调度阶段必须满足以下节点选择条件，否则 Pod 无法调度；运行中节点标签变化不影响已调度的 Pod</a></li><li class="toc-l1"><a href="#-容器配置pod-中运行的容器列表"># 容器配置：Pod 中运行的容器列表</a></li><li class="toc-l1"><a href="#-容忍配置允许-pod-调度到带有特定污点的节点"># 容忍配置：允许 Pod 调度到带有特定污点的节点</a></li><li class="toc-l1"><a href="#-含义允许-pod-调度到带有污点-keyaeffectnoschedule-的节点无论该污点的-value-是什么"># 含义：允许 Pod 调度到带有污点 key=a、effect=NoSchedule 的节点（无论该污点的 value 是什么）</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">调度、抢占和驱逐</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>调度</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#kubernetes-调度器">## Kubernetes 调度器</a></li>
+<li class="toc-l3"><a href="#调度概览">### 调度概览</a></li>
+<li class="toc-l3"><a href="#kube-scheduler">### kube-scheduler</a></li>
+<li class="toc-l3"><a href="#kube-scheduler-中的节点选择">### kube-scheduler 中的节点选择</a></li>
+<li class="toc-l3"><a href="#nodelabel-节点标签">### nodelabel 节点标签</a></li>
+<li class="toc-l4"><a href="#指定节点调度很少">#### 指定节点调度（很少）</a></li>
+<li class="toc-l3"><a href="#node亲和力">### `node`亲和力：</a></li>
+<li class="toc-l4"><a href="#操作符">#### 操作符</a></li>
+<li class="toc-l4"><a href="#说明">#### 说明：</a></li>
+<li class="toc-l4"><a href="#调度策略">#### 调度策略</a></li>
+<li class="toc-l4"><a href="#调度器配置">#### 调度器配置</a></li>
+<li class="toc-l3"><a href="#常用命令-kubectl-taint">### 常用命令： `kubectl  taint`</a></li>
+<li class="toc-l4"><a href="#effect匹配污点的效果">#### `effect`：匹配污点的效果</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>调度</h1>
+<h1 id="_1">调度、抢占和驱逐</h1>
 <blockquote>
 <p>在 Kubernetes 中，调度（scheduling）指的是确保 <a href="https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/">Pod</a> 匹配到合适的<a href="https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/">节点</a>， 以便 <a href="https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet">kubelet</a> 能够运行它们。 抢占（Preemption）指的是终止低<a href="https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority">优先级</a>的 Pod 以便高优先级的 Pod 可以调度到 Node 上的过程。 驱逐（Eviction）是在资源匮乏的节点上，主动让一个或多个 Pod 失效的过程。</p>
 </blockquote>
@@ -377,9 +399,11 @@ spec:
 node/work03<span class="w"> </span>untainted
 </code></pre></div>
 <p>查看节点信息：</p>
-<p><img alt="image-20251103151732352" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151732352.png" /></p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p><img alt="image-20251103151732352" src="/Users/xiaobo/work_dir/gitee.com/114/kubernetes/Scheduling/assets/image-20251103151732352.png" /></p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

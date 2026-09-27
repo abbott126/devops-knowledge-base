@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevOps Git - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <title>DevOps Git | 自动化与 DevOps | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="DevOps Git | 自动化与 DevOps | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,46 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-devops"># DevOps</a></li><li class="toc-l2"><a href="#-前一天问题">## 前一天问题</a></li><li class="toc-l2"><a href="#-今日目标">## 今日目标</a></li><li class="toc-l2"><a href="#-自动化">## 自动化</a></li><li class="toc-l2"><a href="#-实现自动化的落地方式应用上线的一种文化">## 实现自动化的落地方式(应用上线的一种文化)</a></li><li class="toc-l2"><a href="#-devops-文化">## DevOps 文化</a></li><li class="toc-l2"><a href="#-版本控制系统">## 版本控制系统</a></li><li class="toc-l2"><a href="#-git-分布式版本控制系统">## git 分布式版本控制系统</a></li><li class="toc-l3"><a href="#-git-版本控制系统的工作原理">### Git 版本控制系统的工作原理</a></li><li class="toc-l4"><a href="#-初始化一个本地仓库-git-init">#### 初始化一个本地仓库 `git init`</a></li><li class="toc-l4"><a href="#-查看仓库的状态">#### 查看仓库的状态</a></li><li class="toc-l4"><a href="#-添加到暂存区">#### 添加到暂存区</a></li><li class="toc-l4"><a href="#-提交到本地仓库中">#### 提交到本地仓库中</a></li><li class="toc-l4"><a href="#-查看日志代码提交日志">#### 查看日志（代码提交日志）</a></li><li class="toc-l4"><a href="#-重置head">#### 重置`HEAD`</a></li><li class="toc-l4"><a href="#-回退到原来的初始版本">#### 回退到原来的初始版本</a></li><li class="toc-l3"><a href="#-分支">### 分支:</a></li><li class="toc-l4"><a href="#-创建分支">#### 创建分支</a></li><li class="toc-l4"><a href="#-查看分支">#### 查看分支</a></li><li class="toc-l4"><a href="#-切换分支">#### 切换分支：</a></li><li class="toc-l4"><a href="#-删除分支">#### 删除分支：</a></li><li class="toc-l4"><a href="#-example">#### Example:</a></li><li class="toc-l2"><a href="#-代码仓库">## 代码仓库</a></li><li class="toc-l3"><a href="#-私有仓库-gitlab">### 私有仓库 gitlab</a></li><li class="toc-l3"><a href="#-部署">### 部署</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="devops">DevOps</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/automation/">专题</a> <span class="sep">›</span> <span>DevOps Git</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#前一天问题">## 前一天问题</a></li>
+<li class="toc-l2"><a href="#今日目标">## 今日目标</a></li>
+<li class="toc-l2"><a href="#自动化">## 自动化</a></li>
+<li class="toc-l2"><a href="#实现自动化的落地方式应用上线的一种文化">## 实现自动化的落地方式(应用上线的一种文化)</a></li>
+<li class="toc-l2"><a href="#devops-文化">## DevOps 文化</a></li>
+<li class="toc-l2"><a href="#版本控制系统">## 版本控制系统</a></li>
+<li class="toc-l2"><a href="#git-分布式版本控制系统">## git 分布式版本控制系统</a></li>
+<li class="toc-l3"><a href="#git-版本控制系统的工作原理">### Git 版本控制系统的工作原理</a></li>
+<li class="toc-l4"><a href="#初始化一个本地仓库-git-init">#### 初始化一个本地仓库 `git init`</a></li>
+<li class="toc-l4"><a href="#查看仓库的状态">#### 查看仓库的状态</a></li>
+<li class="toc-l4"><a href="#添加到暂存区">#### 添加到暂存区</a></li>
+<li class="toc-l4"><a href="#提交到本地仓库中">#### 提交到本地仓库中</a></li>
+<li class="toc-l4"><a href="#查看日志代码提交日志">#### 查看日志（代码提交日志）</a></li>
+<li class="toc-l4"><a href="#重置head">#### 重置`HEAD`</a></li>
+<li class="toc-l4"><a href="#回退到原来的初始版本">#### 回退到原来的初始版本</a></li>
+<li class="toc-l3"><a href="#分支">### 分支:</a></li>
+<li class="toc-l4"><a href="#创建分支">#### 创建分支</a></li>
+<li class="toc-l4"><a href="#查看分支">#### 查看分支</a></li>
+<li class="toc-l4"><a href="#切换分支">#### 切换分支：</a></li>
+<li class="toc-l4"><a href="#删除分支">#### 删除分支：</a></li>
+<li class="toc-l4"><a href="#example">#### Example:</a></li>
+<li class="toc-l2"><a href="#代码仓库">## 代码仓库</a></li>
+<li class="toc-l3"><a href="#私有仓库-gitlab">### 私有仓库 gitlab</a></li>
+<li class="toc-l3"><a href="#部署">### 部署</a></li>
+<li class="toc-l4"><a href="#gitlab部署要求">#### gitlab部署要求：</a></li>
+<li class="toc-l4"><a href="#redhat-8-install">#### redhat  8 install</a></li>
+<li class="toc-l4"><a href="#install-gitlab-ce">#### install gitlab-ce</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/automation/" class="back-to-top">← 返回专题</a>
+            <h1>DevOps Git</h1>
+<h1 id="devops">DevOps</h1>
 <ul>
 <li>
 <p>[ ] 前一天问题</p>
@@ -345,9 +381,11 @@ external_url<span class="w"> </span><span class="s1">&#39;http://192.168.1.110&#
 <h3 id="gitlab_3">关于gitlab命令</h3>
 <div class="highlight"><pre><span></span><code>gitlab-ctl<span class="w"> </span>--help
 gitlab<span class="w"> </span>--&gt;<span class="w"> </span>tab<span class="w"> </span>补全
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

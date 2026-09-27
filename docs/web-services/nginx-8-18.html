@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nginx - Web 服务 - DevOps 知识库 - DevOps 知识库</title>
+    <title>Nginx | Web 服务 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Nginx | Web 服务 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,29 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-8-18"># 8-18</a></li><li class="toc-l2"><a href="#-nginx概述">## nginx概述</a></li><li class="toc-l2"><a href="#-nginx-基本使用及配置">## Nginx 基本使用及配置</a></li><li class="toc-l3"><a href="#-部署nginx">### 部署Nginx</a></li><li class="toc-l1"><a href="#验证">#验证</a></li><li class="toc-l3"><a href="#-理解配置文件">### 理解配置文件</a></li><li class="toc-l1"><a href="#全局定义的模块">#全局定义的模块</a></li><li class="toc-l1"><a href="#事件定义定义模块">#事件定义定义模块</a></li><li class="toc-l1"><a href="#http服务定义的模块">#http服务定义的模块</a></li><li class="toc-l1"><a href="#日志格式">#日志格式</a></li><li class="toc-l1"><a href="#访问日志">#访问日志</a></li><li class="toc-l1"><a href="#发送文件-开启">#发送文件 开启</a></li><li class="toc-l1"><a href="#tcp_nopush-on">#tcp_nopush     on;</a></li><li class="toc-l1"><a href="#连接超时时间-65-单位秒">#连接超时时间 65 单位秒</a></li><li class="toc-l1"><a href="#gzip-on-发送是否压缩">#gzip  on;  #发送是否压缩</a></li><li class="toc-l1"><a href="#定义server主机">#定义server主机</a></li><li class="toc-l1"><a href="#匹配规则">#匹配规则</a></li><li class="toc-l1"><a href="#-include-/usr/local/nginx128/conf/vhosts/.conf-引入conf.d下的所有以.conf文件结尾的文件">#    include  /usr/local/nginx128/conf/vhosts/*.conf;  #引入conf.d下的所有以.conf文件结尾的文件</a></li><li class="toc-l1"><a href="#默认请求">#默认请求</a></li><li class="toc-l1"><a href="#根据二级目录匹配">#根据二级目录匹配</a></li><li class="toc-l1"><a href="#根据二级目录匹配">#根据二级目录匹配</a></li><li class="toc-l1"><a href="#获取nginx-状态">#获取nginx 状态</a></li><li class="toc-l1"><a href="#-allow-127.0.0.1-192.168.19.19">#    allow 127.0.0.1;  192.168.19.19</a></li><li class="toc-l1"><a href="#-deny-all">#    deny all;</a></li><li class="toc-l2"><a href="#-nginx-代理">## Nginx 代理</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="8-18">8-18</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/web-services/">专题</a> <span class="sep">›</span> <span>Nginx</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#nginx概述">## nginx概述</a></li>
+<li class="toc-l2"><a href="#nginx-基本使用及配置">## Nginx 基本使用及配置</a></li>
+<li class="toc-l3"><a href="#部署nginx">### 部署Nginx</a></li>
+<li class="toc-l3"><a href="#理解配置文件">### 理解配置文件</a></li>
+<li class="toc-l2"><a href="#nginx-代理">## Nginx 代理</a></li>
+<li class="toc-l3"><a href="#正向代理">### 正向代理</a></li>
+<li class="toc-l3"><a href="#反向代理">### 反向代理</a></li>
+<li class="toc-l2"><a href="#实现步骤">## 实现步骤：</a></li>
+<li class="toc-l2"><a href="#在原有的基础上进阶使用访问后服务location">## 在原有的基础上进阶使用访问后服务`location`</a></li>
+<li class="toc-l3"><a href="#准备虚拟机主机">### 准备虚拟机主机</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/web-services/" class="back-to-top">← 返回专题</a>
+            <h1>Nginx</h1>
+<h1 id="8-18">8-18</h1>
 <p>目标：</p>
 <ul>
 <li>[x] 解决问题及补充知识点</li>
@@ -609,9 +628,11 @@ mv<span class="w">  </span>certificate.crt<span class="w"> </span>private.key<sp
 <span class="w">    </span><span class="o">}</span>
 </code></pre></div>
 <p>!image-20250819160331573](/images/image-20250819160331573.png)</p>
-<h2 id="nginx_7">Nginx 添加模块及热更新</h2></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<h2 id="nginx_7">Nginx 添加模块及热更新</h2>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

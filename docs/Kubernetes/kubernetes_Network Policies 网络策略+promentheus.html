@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网络策略 Prometheus - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>网络策略 Prometheus | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="网络策略 Prometheus | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,35 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-network-policies-网络策略"># Network Policies 网络策略</a></li><li class="toc-l3"><a href="#-一核心概念与默认行为">### 一、核心概念与默认行为</a></li><li class="toc-l3"><a href="#-二network-policy-关键字段解析">### 二、Network Policy 关键字段解析</a></li><li class="toc-l3"><a href="#-三常见-network-policy-场景示例">### 三、常见 Network Policy 场景示例</a></li><li class="toc-l4"><a href="#-场景-1拒绝所有入站流量默认拒绝">#### 场景 1：拒绝所有入站流量（默认拒绝）</a></li><li class="toc-l4"><a href="#-场景-2允许特定-pod-间的双向通信">#### 场景 2：允许特定 Pod 间的双向通信</a></li><li class="toc-l1"><a href="#-1.-允许-backend-接收-frontend-的入站流量"># 1. 允许 backend 接收 frontend 的入站流量</a></li><li class="toc-l1"><a href="#-2.-允许-frontend-接收-backend-的入站流量若需双向"># 2. 允许 frontend 接收 backend 的入站流量（若需双向）</a></li><li class="toc-l4"><a href="#-场景-3限制-pod-出站流量仅允许访问特定服务">#### 场景 3：限制 Pod 出站流量（仅允许访问特定服务）</a></li><li class="toc-l1"><a href="#-允许访问同一命名空间内-appapi-的-8080-端口"># 允许访问同一命名空间内 app=api 的 8080 端口</a></li><li class="toc-l1"><a href="#-允许访问外部-192.168.1.0/24-网段如本地数据库"># 允许访问外部 192.168.1.0/24 网段（如本地数据库）</a></li><li class="toc-l3"><a href="#-四策略优先级与生效逻辑">### 四、策略优先级与生效逻辑</a></li><li class="toc-l3"><a href="#-五验证与调试方法">### 五、验证与调试方法</a></li><li class="toc-l1"><a href="#-查看指定命名空间的所有-network-policy"># 查看指定命名空间的所有 Network Policy</a></li><li class="toc-l1"><a href="#-查看策略详情含规则"># 查看策略详情（含规则）</a></li><li class="toc-l1"><a href="#-进入-frontend-pod测试访问-backend-的-db-pod3306-端口"># 进入 frontend Pod，测试访问 backend 的 db Pod（3306 端口）</a></li><li class="toc-l1"><a href="#-查看-calico-节点日志以-calico-为例"># 查看 Calico 节点日志（以 Calico 为例）</a></li><li class="toc-l3"><a href="#-六注意事项">### 六、注意事项</a></li><li class="toc-l2"><a href="#-案例-监控系统-prometheus">## 案例： 监控系统 Prometheus</a></li><li class="toc-l3"><a href="#-功能">### 功能</a></li><li class="toc-l4"><a href="#-prometheus-架构">#### Prometheus 架构</a></li><li class="toc-l3"><a href="#-部署方案">### 部署方案</a></li><li class="toc-l4"><a href="#-基于二进制裸金属实现方式">#### 基于二进制（裸金属）实现方式</a></li><li class="toc-l1"><a href="#-the-job-name-is-added-as-a-label-job-to-any-timeseries-scraped-from-this-config."># The job name is added as a label `job=` to any timeseries scraped from this config.</a></li><li class="toc-l1"><a href="#-metrics_path-defaults-to-/metrics"># metrics_path defaults to '/metrics'</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="network-policies">Network Policies 网络策略</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>网络策略 Prometheus</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#一核心概念与默认行为">### 一、核心概念与默认行为</a></li>
+<li class="toc-l3"><a href="#二network-policy-关键字段解析">### 二、Network Policy 关键字段解析</a></li>
+<li class="toc-l3"><a href="#三常见-network-policy-场景示例">### 三、常见 Network Policy 场景示例</a></li>
+<li class="toc-l4"><a href="#场景-1拒绝所有入站流量默认拒绝">#### 场景 1：拒绝所有入站流量（默认拒绝）</a></li>
+<li class="toc-l4"><a href="#场景-2允许特定-pod-间的双向通信">#### 场景 2：允许特定 Pod 间的双向通信</a></li>
+<li class="toc-l4"><a href="#场景-3限制-pod-出站流量仅允许访问特定服务">#### 场景 3：限制 Pod 出站流量（仅允许访问特定服务）</a></li>
+<li class="toc-l3"><a href="#四策略优先级与生效逻辑">### 四、策略优先级与生效逻辑</a></li>
+<li class="toc-l3"><a href="#五验证与调试方法">### 五、验证与调试方法</a></li>
+<li class="toc-l3"><a href="#六注意事项">### 六、注意事项</a></li>
+<li class="toc-l2"><a href="#案例-监控系统-prometheus">## 案例： 监控系统 Prometheus</a></li>
+<li class="toc-l3"><a href="#功能">### 功能</a></li>
+<li class="toc-l4"><a href="#prometheus-架构">#### Prometheus 架构</a></li>
+<li class="toc-l3"><a href="#部署方案">### 部署方案</a></li>
+<li class="toc-l4"><a href="#基于二进制裸金属实现方式">#### 基于二进制（裸金属）实现方式</a></li>
+<li class="toc-l2"><a href="#grafana-webui">## grafana  webui</a></li>
+<li class="toc-l4"><a href="#基于yum部署">#### 基于YUM部署</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>网络策略 Prometheus</h1>
+<h1 id="network-policies">Network Policies 网络策略</h1>
 <p>Kubernetes <strong>Network Policies（网络策略）</strong> 是用于<strong>控制集群内 Pod 间网络流量</strong>的 API 资源，支持通过标签（Label）精准定义 “允许哪些 Pod 与哪些 Pod 通信”，默认拒绝所有未授权流量，可实现微服务间的网络隔离与安全访问控制。</p>
 <h3 id="_1">一、核心概念与默认行为</h3>
 <ol>
@@ -420,9 +445,11 @@ LICENSE<span class="w">  </span>node_exporter<span class="w">  </span>NOTICE
 <td>✔</td>
 </tr>
 </tbody>
-</table></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</table>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

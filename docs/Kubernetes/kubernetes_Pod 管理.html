@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pod 管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>Pod 管理 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Pod 管理 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,43 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-pod-管理"># Pod 管理</a></li><li class="toc-l2"><a href="#-pod的生命周期">## Pod的生命周期</a></li><li class="toc-l3"><a href="#-pod-生命期">### Pod 生命期</a></li><li class="toc-l2"><a href="#-pod-阶段">## Pod 阶段</a></li><li class="toc-l3"><a href="#-容器运行状态">### 容器运行状态</a></li><li class="toc-l3"><a href="#-terminated已终止">### `Terminated`（已终止）</a></li><li class="toc-l2"><a href="#-容器的重启策略">## 容器的重启策略</a></li><li class="toc-l3"><a href="#-容器的拉取策略">### 容器的拉取策略</a></li><li class="toc-l2"><a href="#-容器探针container-probes">## 容器探针Container probes</a></li><li class="toc-l3"><a href="#-探针的类型">### 探针的类型</a></li><li class="toc-l4"><a href="#-1.-存活探针liveness-probe">#### 1. **存活探针（Liveness Probe）**</a></li><li class="toc-l4"><a href="#-2.-就绪探针readiness-probe">#### 2. **就绪探针（Readiness Probe）**</a></li><li class="toc-l4"><a href="#-3.-启动探针startup-probek8s-1.16-新增">#### 3. **启动探针（Startup Probe，K8s 1.16+ 新增）**</a></li><li class="toc-l3"><a href="#-探针的检测方式">### 探针的检测方式</a></li><li class="toc-l4"><a href="#-1.-http-检测http-get">#### 1. **HTTP 检测（HTTP GET）**</a></li><li class="toc-l4"><a href="#-2.-命令检测exec">#### 2. **命令检测（Exec）**</a></li><li class="toc-l4"><a href="#-3.-tcp-检测tcp-socket">#### 3. **TCP 检测（TCP Socket）**</a></li><li class="toc-l3"><a href="#-探针的配置参数">### 探针的配置参数</a></li><li class="toc-l2"><a href="#-名称空间-namespaces">## 名称空间 namespaces</a></li><li class="toc-l3"><a href="#-一namespace-的核心作用">### 一、Namespace 的核心作用</a></li><li class="toc-l3"><a href="#-二kubernetes-内置的默认命名空间">### 二、Kubernetes 内置的默认命名空间</a></li><li class="toc-l3"><a href="#-三namespace-的关键特性">### 三、Namespace 的关键特性</a></li><li class="toc-l3"><a href="#-四-基本命令">### 四、 基本命令：</a></li><li class="toc-l4"><a href="#-使用场景示例">#### 使用场景示例</a></li><li class="toc-l4"><a href="#-总结">#### 总结</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="pod">Pod 管理</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>Pod 管理</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#pod的生命周期">## Pod的生命周期</a></li>
+<li class="toc-l3"><a href="#pod-生命期">### Pod 生命期</a></li>
+<li class="toc-l2"><a href="#pod-阶段">## Pod 阶段</a></li>
+<li class="toc-l3"><a href="#容器运行状态">### 容器运行状态</a></li>
+<li class="toc-l3"><a href="#terminated已终止">### `Terminated`（已终止）</a></li>
+<li class="toc-l2"><a href="#容器的重启策略">## 容器的重启策略</a></li>
+<li class="toc-l3"><a href="#容器的拉取策略">### 容器的拉取策略</a></li>
+<li class="toc-l2"><a href="#容器探针container-probes">## 容器探针Container probes</a></li>
+<li class="toc-l3"><a href="#探针的类型">### 探针的类型</a></li>
+<li class="toc-l4"><a href="#1-存活探针liveness-probe">#### 1. **存活探针（Liveness Probe）**</a></li>
+<li class="toc-l4"><a href="#2-就绪探针readiness-probe">#### 2. **就绪探针（Readiness Probe）**</a></li>
+<li class="toc-l4"><a href="#3-启动探针startup-probek8s-116-新增">#### 3. **启动探针（Startup Probe，K8s 1.16+ 新增）**</a></li>
+<li class="toc-l3"><a href="#探针的检测方式">### 探针的检测方式</a></li>
+<li class="toc-l4"><a href="#1-http-检测http-get">#### 1. **HTTP 检测（HTTP GET）**</a></li>
+<li class="toc-l4"><a href="#2-命令检测exec">#### 2. **命令检测（Exec）**</a></li>
+<li class="toc-l4"><a href="#3-tcp-检测tcp-socket">#### 3. **TCP 检测（TCP Socket）**</a></li>
+<li class="toc-l3"><a href="#探针的配置参数">### 探针的配置参数</a></li>
+<li class="toc-l2"><a href="#名称空间-namespaces">## 名称空间 namespaces</a></li>
+<li class="toc-l3"><a href="#一namespace-的核心作用">### 一、Namespace 的核心作用</a></li>
+<li class="toc-l3"><a href="#二kubernetes-内置的默认命名空间">### 二、Kubernetes 内置的默认命名空间</a></li>
+<li class="toc-l3"><a href="#三namespace-的关键特性">### 三、Namespace 的关键特性</a></li>
+<li class="toc-l3"><a href="#四-基本命令">### 四、 基本命令：</a></li>
+<li class="toc-l4"><a href="#使用场景示例">#### 使用场景示例</a></li>
+<li class="toc-l4"><a href="#总结">#### 总结</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>Pod 管理</h1>
+<h1 id="pod">Pod 管理</h1>
 <blockquote>
 <p>Pod 是kubernetes 中最小单元，Pod  容器</p>
 <p>Pod 就是🫛，每一颗小豆豆称作为：<code>container</code></p>
@@ -393,9 +426,11 @@ nginx-pod<span class="w">   </span><span class="m">0</span>/1<span class="w">   
 <li><strong>资源配额控制</strong>：为 <code>dev</code> 命名空间设置 CPU 上限 4 核、内存上限 8GB，防止开发环境资源占用过多影响生产环境。</li>
 </ol>
 <h4 id="_9">总结</h4>
-<p>Namespace 是 Kubernetes 中实现资源隔离与精细化管理的基础，通过合理划分命名空间，可有效提升集群的安全性、可维护性，适配多团队、多环境的复杂部署场景。实际使用中，建议避免使用 <code>default</code> 命名空间部署正式服务，而是根据业务需求规划专属命名空间。</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p>Namespace 是 Kubernetes 中实现资源隔离与精细化管理的基础，通过合理划分命名空间，可有效提升集群的安全性、可维护性，适配多团队、多环境的复杂部署场景。实际使用中，建议避免使用 <code>default</code> 命名空间部署正式服务，而是根据业务需求规划专属命名空间。</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docker 容器 - 容器与编排 - DevOps 知识库 - DevOps 知识库</title>
+    <title>Docker 容器 | 容器与编排 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Docker 容器 | 容器与编排 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,31 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-容器"># 容器</a></li><li class="toc-l2"><a href="#-容器">## 容器</a></li><li class="toc-l2"><a href="#-容器的产品">## 容器的产品：</a></li><li class="toc-l2"><a href="#-容器的架构">## 容器的架构：</a></li><li class="toc-l1"><a href="#-step-1-安装必要的一些系统工具"># step 1: 安装必要的一些系统工具</a></li><li class="toc-l1"><a href="#-step-2-信任-docker-的-gpg-公钥"># step 2: 信任 Docker 的 GPG 公钥</a></li><li class="toc-l1"><a href="#-step-3-写入软件源信息"># Step 3: 写入软件源信息</a></li><li class="toc-l1"><a href="#-step-4-安装docker"># Step 4: 安装Docker</a></li><li class="toc-l1"><a href="#-安装指定版本的docker-ce"># 安装指定版本的Docker-CE:</a></li><li class="toc-l1"><a href="#-step-1-查找docker-ce的版本"># Step 1: 查找Docker-CE的版本:</a></li><li class="toc-l1"><a href="#-apt-cache-madison-docker-ce"># apt-cache madison docker-ce</a></li><li class="toc-l1"><a href="#-docker-ce-17.03.1ce-0ubuntu-xenial-https//mirrors.aliyun.com/docker-ce/linux/ubuntu-xenial/stable-amd64-packages">#   docker-ce | 17.03.1~ce-0~ubuntu-xenial | https://mirrors.aliyun.com/docker-ce/linux/ubuntu xenial/stable amd64 Packages</a></li><li class="toc-l1"><a href="#-docker-ce-17.03.0ce-0ubuntu-xenial-https//mirrors.aliyun.com/docker-ce/linux/ubuntu-xenial/stable-amd64-packages">#   docker-ce | 17.03.0~ce-0~ubuntu-xenial | https://mirrors.aliyun.com/docker-ce/linux/ubuntu xenial/stable amd64 Packages</a></li><li class="toc-l1"><a href="#-step-2-安装指定版本的docker-ce-version例如上面的17.03.1ce-0ubuntu-xenial"># Step 2: 安装指定版本的Docker-CE: (VERSION例如上面的17.03.1~ce-0~ubuntu-xenial)</a></li><li class="toc-l1"><a href="#-sudo-apt-get-y-install-docker-ceversion"># sudo apt-get -y install docker-ce=[VERSION]</a></li><li class="toc-l1"><a href="#配置加速器">#配置加速器</a></li><li class="toc-l3"><a href="#-docker-基础命令">### docker 基础命令</a></li><li class="toc-l2"><a href="#-示例">## 示例</a></li><li class="toc-l4"><a href="#-镜像管理">#### 镜像管理</a></li><li class="toc-l1"><a href="#仓库名称-镜像版本-镜像id-镜像创建的时间-镜像的大小">#仓库名称		#镜像版本      #镜像ID       #镜像创建的时间  #镜像的大小</a></li><li class="toc-l4"><a href="#-容器管理">#### 容器管理</a></li><li class="toc-l1"><a href="#显示所有的容器">#显示所有的容器</a></li><li class="toc-l1"><a href="#显示运行的容器">#显示运行的容器</a></li><li class="toc-l1"><a href="#-指定端口"># 指定端口</a></li><li class="toc-l1"><a href="#随机映射端口">#随机映射端口</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">容器</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/containers/">专题</a> <span class="sep">›</span> <span>Docker 容器</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#容器">## 容器</a></li>
+<li class="toc-l2"><a href="#容器的产品">## 容器的产品：</a></li>
+<li class="toc-l2"><a href="#容器的架构">## 容器的架构：</a></li>
+<li class="toc-l3"><a href="#docker-基础命令">### docker 基础命令</a></li>
+<li class="toc-l2"><a href="#示例">## 示例</a></li>
+<li class="toc-l4"><a href="#镜像管理">#### 镜像管理</a></li>
+<li class="toc-l4"><a href="#容器管理">#### 容器管理</a></li>
+<li class="toc-l2"><a href="#docker-网络">## docker 网络</a></li>
+<li class="toc-l3"><a href="#volume-数据卷">### volume 数据卷</a></li>
+<li class="toc-l4"><a href="#何时使用卷">#### 何时使用卷</a></li>
+<li class="toc-l4"><a href="#卷的生命周期">#### 卷的生命周期</a></li>
+<li class="toc-l4"><a href="#命名卷和匿名卷">#### 命名卷和匿名卷</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/containers/" class="back-to-top">← 返回专题</a>
+            <h1>Docker 容器</h1>
+<h1 id="_1">容器</h1>
 <p>云计算的底座是基于虚拟产品；</p>
 <blockquote>
 <p>硬件层 网络层面 存储层</p>
@@ -801,9 +822,11 @@ b((http-container02))
 n{nginx}
 h(harbor)
 a &amp; b &amp; n -.上传镜像.-&gt; h
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ansible 自动化工具 - 自动化与 DevOps - DevOps 知识库 - DevOps 知识库</title>
+    <title>Ansible 自动化工具 | 自动化与 DevOps | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Ansible 自动化工具 | 自动化与 DevOps | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,25 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-自动化工具-ansible"># 自动化工具 Ansible</a></li><li class="toc-l2"><a href="#-部署ansible">## 部署Ansible</a></li><li class="toc-l3"><a href="#-ansible-配置文件">### ansible 配置文件</a></li><li class="toc-l1"><a href="#定义ansible-默认内容">#定义ansible 默认内容</a></li><li class="toc-l1"><a href="#inventory-/etc/ansible/hosts-主机清单文件">#inventory      = /etc/ansible/hosts   #主机清单文件</a></li><li class="toc-l1"><a href="#library-/usr/share/my_modules/-关于模块的库">#library        = /usr/share/my_modules/  #关于模块的库</a></li><li class="toc-l1"><a href="#module_utils-/usr/share/my_module_utils/">#module_utils   = /usr/share/my_module_utils/</a></li><li class="toc-l1"><a href="#remote_tmp-/.ansible/tmp">#remote_tmp     = ~/.ansible/tmp</a></li><li class="toc-l1"><a href="#local_tmp-/.ansible/tmp">#local_tmp      = ~/.ansible/tmp</a></li><li class="toc-l1"><a href="#plugin_filters_cfg-/etc/ansible/plugin_filters.yml">#plugin_filters_cfg = /etc/ansible/plugin_filters.yml</a></li><li class="toc-l1"><a href="#forks-5">#forks          = 5</a></li><li class="toc-l1"><a href="#poll_interval-15">#poll_interval  = 15</a></li><li class="toc-l1"><a href="#sudo_user-root">#sudo_user      = root</a></li><li class="toc-l1"><a href="#ask_sudo_pass-true">#ask_sudo_pass = True</a></li><li class="toc-l1"><a href="#ask_pass-true">#ask_pass      = True</a></li><li class="toc-l1"><a href="#transport-smart">#transport      = smart</a></li><li class="toc-l1"><a href="#remote_port-22">#remote_port    = 22</a></li><li class="toc-l1"><a href="#module_lang-c">#module_lang    = C</a></li><li class="toc-l1"><a href="#module_set_locale-false">#module_set_locale = False</a></li><li class="toc-l1"><a href="#主机清单配置文件的位置">#主机清单配置文件的位置</a></li><li class="toc-l1"><a href="#定义关于ssh连接的位置">#定义关于SSH连接的位置</a></li><li class="toc-l1"><a href="#-关于selinux"># 关于seLinux</a></li><li class="toc-l1"><a href="#定义颜色">#定义颜色</a></li><li class="toc-l1"><a href="#对比文件">#对比文件</a></li><li class="toc-l1"><a href="#-ex-1-ungrouped-hosts-specify-before-any-group-headers."># Ex 1: Ungrouped hosts, specify before any group headers.</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="ansible">自动化工具 Ansible</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/automation/">专题</a> <span class="sep">›</span> <span>Ansible 自动化工具</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#部署ansible">## 部署Ansible</a></li>
+<li class="toc-l3"><a href="#ansible-配置文件">### ansible 配置文件</a></li>
+<li class="toc-l2"><a href="#greenexamplecom">## green.example.com</a></li>
+<li class="toc-l2"><a href="#blueexamplecom">## blue.example.com</a></li>
+<li class="toc-l2"><a href="#1921681001">## 192.168.100.1</a></li>
+<li class="toc-l2"><a href="#19216810010">## 192.168.100.10</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/automation/" class="back-to-top">← 返回专题</a>
+            <h1>Ansible 自动化工具</h1>
+<h1 id="ansible">自动化工具 Ansible</h1>
 <p>!image-20250911165502048](/images/image-20250911165502048.png)</p>
 <h2 id="ansible_1">部署Ansible</h2>
 <blockquote>
@@ -183,9 +198,11 @@ root@fedora:~#<span class="w"> </span>
 <span class="w">  </span>Operating<span class="w"> </span>System:<span class="w"> </span>Red<span class="w"> </span>Hat<span class="w"> </span>Enterprise<span class="w"> </span>Linux<span class="w"> </span>Server<span class="w"> </span><span class="m">7</span>.9<span class="w"> </span><span class="o">(</span>Maipo<span class="o">)</span>
 <span class="w">       </span>CPE<span class="w"> </span>OS<span class="w"> </span>Name:<span class="w"> </span>cpe:/o:redhat:enterprise_linux:7.9:GA:server
 <span class="w">            </span>Kernel:<span class="w"> </span>Linux<span class="w"> </span><span class="m">3</span>.10.0-1160.el7.x86_64
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

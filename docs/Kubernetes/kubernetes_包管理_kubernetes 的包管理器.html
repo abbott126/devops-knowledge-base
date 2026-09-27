@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>包管理器 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>包管理器 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="包管理器 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,24 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-kubernetes-的包管理器"># kubernetes 的包管理器</a></li><li class="toc-l3"><a href="#-一helm-的核心价值解决-k8s-应用管理痛点">### 一、Helm 的核心价值：解决 K8s 应用管理痛点</a></li><li class="toc-l3"><a href="#-二helm-的核心概念">### 二、Helm 的核心概念</a></li><li class="toc-l3"><a href="#-用二进制版本安装">### 用二进制版本安装</a></li><li class="toc-l3"><a href="#-三helm-3-常用命令核心操作">### 三、Helm 3 常用命令（核心操作）</a></li><li class="toc-l4"><a href="#-1.-基础配置添加仓库">#### 1. 基础配置：添加仓库</a></li><li class="toc-l1"><a href="#-添加-nginx-官方-chart-仓库"># 添加 Nginx 官方 Chart 仓库</a></li><li class="toc-l1"><a href="#-更新仓库"># 更新仓库</a></li><li class="toc-l1"><a href="#-列出仓库"># 列出仓库</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="kubernetes">kubernetes 的包管理器</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>包管理器</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#一helm-的核心价值解决-k8s-应用管理痛点">### 一、Helm 的核心价值：解决 K8s 应用管理痛点</a></li>
+<li class="toc-l3"><a href="#二helm-的核心概念">### 二、Helm 的核心概念</a></li>
+<li class="toc-l3"><a href="#用二进制版本安装">### 用二进制版本安装</a></li>
+<li class="toc-l3"><a href="#三helm-3-常用命令核心操作">### 三、Helm 3 常用命令（核心操作）</a></li>
+<li class="toc-l4"><a href="#1-基础配置添加仓库">#### 1. 基础配置：添加仓库</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>包管理器</h1>
+<h1 id="kubernetes">kubernetes 的包管理器</h1>
 <p><strong>Helm</strong> 是 Kubernetes 生态中最核心的<strong>包管理器</strong>，它能将 Kubernetes 应用的所有资源（如 Deployment、Service、ConfigMap 等）打包成统一的 “Chart”，实现应用的快速部署、版本管理、升级与回滚，极大简化了 K8s 应用的运维流程。</p>
 <h3 id="helm-k8s">一、Helm 的核心价值：解决 K8s 应用管理痛点</h3>
 <p>在没有 Helm 时，部署一个复杂 K8s 应用（如 Nginx + MySQL + Redis）需要手动编写多个 YAML 文件，存在以下问题：</p>
@@ -120,9 +134,11 @@ nginx-stable/nginx-devportal<span class="w">                    </span><span cla
 <li>安装<code>traefik</code></li>
 </ol>
 <div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>traefik<span class="o">]</span><span class="c1"># helm install my-release stable/traefik --namespace kube-system</span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

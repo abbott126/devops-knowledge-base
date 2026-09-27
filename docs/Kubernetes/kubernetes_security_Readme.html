@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>安全 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>安全 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="安全 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,22 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-secrets-密钥"># Secrets 密钥</a></li><li class="toc-l2"><a href="#-案例">## 案例：</a></li><li class="toc-l1"><a href="#-redis-pod.yaml"># redis-pod.yaml</a></li><li class="toc-l1"><a href="#-从-secret-中读取环境变量用户名和密码"># 从 Secret 中读取环境变量（用户名和密码）</a></li><li class="toc-l1"><a href="#-启动-redis-时配置密码认证通过命令行参数"># 启动 Redis 时配置密码认证（通过命令行参数）</a></li><li class="toc-l1"><a href="#-可选挂载-secret-为文件如需通过文件读取密码"># 可选：挂载 Secret 为文件（如需通过文件读取密码）</a></li><li class="toc-l1"><a href="#-定义-secret-卷用于文件挂载方式"># 定义 Secret 卷（用于文件挂载方式）</a></li><li class="toc-l2"><a href="#-部署dashboard管理k8s-集群">## 部署Dashboard管理k8s 集群</a></li><li class="toc-l3"><a href="#-安全的章节">### 安全的章节</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="secrets">Secrets 密钥</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>安全</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#案例">## 案例：</a></li>
+<li class="toc-l2"><a href="#部署dashboard管理k8s-集群">## 部署Dashboard管理k8s 集群</a></li>
+<li class="toc-l3"><a href="#安全的章节">### 安全的章节</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>安全</h1>
+<h1 id="secrets">Secrets 密钥</h1>
 <p>A Secret is an object that contains a small amount of sensitive data such as a password, a token, or a key. Such information might otherwise be put in a <a href="https://kubernetes.io/docs/concepts/workloads/pods/">Pod</a> specification or in a<a href="https://kubernetes.io/docs/reference/glossary/?all=true#term-image">container image</a>. Using a Secret means that you don't need to include confidential data in your application code.<br />
 秘密对象是指包含少量敏感数据的对象，例如： 密码、令牌或密钥。此类信息也可能被放入……<a href="https://kubernetes.io/docs/concepts/workloads/pods/">Pod</a> 规格或在 <a href="https://kubernetes.io/docs/reference/glossary/?all=true#term-image">容器镜像 </a>。使用密钥意味着您无需在应用程序代码中包含机密数据。</p>
 <p>由于 Secret 的创建可以独立于使用它们的 Pod，因此在创建、查看和编辑 Pod 的工作流程中，Secret（及其数据）泄露的风险更低。Kubernetes 以及在集群中运行的应用程序还可以对 Secret 采取额外的预防措施，例如避免将敏感数据写入非易失性存储。</p>
@@ -156,9 +168,11 @@ data:
 <blockquote>
 <p>https://kubernetes.io/docs/concepts/security/rbac-good-practices/</p>
 </blockquote>
-<p><code>ServiceAccount rbac</code> 访问控制</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p><code>ServiceAccount rbac</code> 访问控制</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

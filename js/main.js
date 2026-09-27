@@ -2,7 +2,6 @@
 const themeToggle = document.getElementById('themeToggle');
 const html = document.documentElement;
 
-// Check saved theme
 const saved = localStorage.getItem('theme');
 if (saved) {
   html.setAttribute('data-theme', saved);
@@ -17,11 +16,52 @@ themeToggle.addEventListener('click', () => {
   themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
 });
 
-// Smooth scroll
+// Mobile menu
+const menuToggle = document.querySelector('.menu-toggle');
+const navLinks = document.querySelector('.nav-links');
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+}
+
+// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
-    e.preventDefault();
     const target = document.querySelector(this.getAttribute('href'));
-    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 });
+
+// Active TOC tracking
+const tocLinks = document.querySelectorAll('.toc a');
+const headings = document.querySelectorAll('.doc-content h1, .doc-content h2, .doc-content h3');
+
+function updateActiveToc() {
+  let current = '';
+  headings.forEach(h => {
+    const rect = h.getBoundingClientRect();
+    if (rect.top <= 100) current = h.id;
+  });
+  tocLinks.forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+}
+
+window.addEventListener('scroll', updateActiveToc, { passive: true });
+updateActiveToc();
+
+// Search functionality (simple)
+const searchInput = document.querySelector('.hero-search input');
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll('.topic-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = query === '' || text.includes(query) ? '' : 'none';
+    });
+  });
+}

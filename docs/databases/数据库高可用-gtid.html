@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据库高可用 GTID - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <title>数据库高可用 GTID | 数据库 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="数据库高可用 GTID | 数据库 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,33 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-数据库高可用"># 数据库高可用</a></li><li class="toc-l2"><a href="#-延迟复制">## 延迟复制：</a></li><li class="toc-l1"><a href="#-停止sql线程"># 停止SQL线程</a></li><li class="toc-l1"><a href="#-这是延迟"># 这是延迟</a></li><li class="toc-l1"><a href="#-运行sql-线程"># 运行SQL 线程</a></li><li class="toc-l3"><a href="#-warning-gtid-replication-with-global-transaction-identifiers">### :warning: GTID Replication with Global Transaction Identifiers</a></li><li class="toc-l4"><a href="#-gtid-格式和存储">#### GTID 格式和存储</a></li><li class="toc-l4"><a href="#-临时开启gtid">#### 临时开启GTID</a></li><li class="toc-l3"><a href="#-永久配置所有节点都需要开启">### 永久配置(所有节点都需要开启)</a></li><li class="toc-l1"><a href="#执行事务">#执行事务</a></li><li class="toc-l4"><a href="#-查看主从复制">#### 查看主从复制</a></li><li class="toc-l2"><a href="#-时间服务器chrony">## 时间服务器（chrony）</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#-allow-ntp-client-access-from-local-network."># Allow NTP client access from local network.</a></li><li class="toc-l2"><a href="#-下午">## 下午</a></li><li class="toc-l3"><a href="#-数据库备份">### 数据库备份：</a></li><li class="toc-l4"><a href="#-备份的类型">#### 备份的类型</a></li><li class="toc-l4"><a href="#-备份的策略">#### 备份的策略</a></li><li class="toc-l4"><a href="#-备份工具">#### 备份工具</a></li><li class="toc-l1"><a href="#这一步会完成所有未提交事务的回滚确保备份处于可恢复状态">#这一步会完成所有未提交事务的回滚，确保备份处于可恢复状态</a></li><li class="toc-l1"><a href="#-合并日志"># 合并日志</a></li><li class="toc-l4"><a href="#-如何无法还原再次执行命令-提示log-问题">#### 如何无法还原：再次执行命令 提示·log· 问题#####</a></li><li class="toc-l1"><a href="#-xtrabackup-prepare-target-dir/opt/back"># xtrabackup --prepare  --target-dir=/opt/back</a></li><li class="toc-l2"><a href="#-还原库工具">## 还原库工具</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">数据库高可用</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/databases/">专题</a> <span class="sep">›</span> <span>数据库高可用 GTID</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#延迟复制">## 延迟复制：</a></li>
+<li class="toc-l3"><a href="#warning-gtid-replication-with-global-transaction-identifiers">### :warning: GTID Replication with Global Transaction Identifiers</a></li>
+<li class="toc-l4"><a href="#gtid-格式和存储">#### GTID 格式和存储</a></li>
+<li class="toc-l4"><a href="#临时开启gtid">#### 临时开启GTID</a></li>
+<li class="toc-l3"><a href="#永久配置所有节点都需要开启">### 永久配置(所有节点都需要开启)</a></li>
+<li class="toc-l4"><a href="#查看主从复制">#### 查看主从复制</a></li>
+<li class="toc-l2"><a href="#时间服务器chrony">## 时间服务器（chrony）</a></li>
+<li class="toc-l2"><a href="#下午">## 下午</a></li>
+<li class="toc-l3"><a href="#数据库备份">### 数据库备份：</a></li>
+<li class="toc-l4"><a href="#备份的类型">#### 备份的类型</a></li>
+<li class="toc-l4"><a href="#备份的策略">#### 备份的策略</a></li>
+<li class="toc-l4"><a href="#备份工具">#### 备份工具</a></li>
+<li class="toc-l4"><a href="#如何无法还原再次执行命令-提示log-问题">#### 如何无法还原：再次执行命令 提示·log· 问题#####</a></li>
+<li class="toc-l2"><a href="#还原库工具">## 还原库工具</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/databases/" class="back-to-top">← 返回专题</a>
+            <h1>数据库高可用 GTID</h1>
+<h1 id="_1">数据库高可用</h1>
 <ul>
 <li>默认异步复制（基于二进制日志）</li>
 <li>半同步（基于二进制日志）</li>
@@ -341,9 +364,11 @@ mysql&gt;<span class="w"> </span><span class="nb">source</span><span class="w"> 
 <p>Example 2: <code>在命令行中恢复</code></p>
 <div class="highlight"><pre><span></span><code><span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql  -uroot  -pRoot@123. &lt; all_databases.sql</span>
 <span class="o">[</span>root@mysql-master<span class="w"> </span>~<span class="o">]</span><span class="c1"># mysql   -uroot -p -e &quot;source /root/all_databases.sql&quot;</span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

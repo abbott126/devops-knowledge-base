@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ceph 简化版 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <title>Ceph 简化版 | 运维工具 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Ceph 简化版 | 运维工具 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,43 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-ceph-分布式存储"># ceph 分布式存储</a></li><li class="toc-l2"><a href="#-前言">## 前言</a></li><li class="toc-l2"><a href="#-一环境说明">## 一、环境说明</a></li><li class="toc-l2"><a href="#-二实现步骤">## 二、实现步骤</a></li><li class="toc-l3"><a href="#-准备主机">### 准备主机</a></li><li class="toc-l1"><a href="#-allow-ntp-client-access-from-local-network."># Allow NTP client access from local network.</a></li><li class="toc-l1"><a href="#allow-192.168.0.0/16">#allow 192.168.0.0/16</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#pool-2.pool.ntp.org-iburst">#pool 2.pool.ntp.org iburst</a></li><li class="toc-l3"><a href="#-安装cephadm的管理命令">### 安装cephadm的管理命令</a></li><li class="toc-l3"><a href="#-通过-cephadm-引导">### 通过 cephadm 引导</a></li><li class="toc-l3"><a href="#-ceph-客户端命令">### ceph 客户端命令</a></li><li class="toc-l3"><a href="#-管理主机">### 管理主机</a></li><li class="toc-l3"><a href="#-管理-osd">### 管理 OSD</a></li><li class="toc-l4"><a href="#-1.-添加osd">#### 1. 添加OSD</a></li><li class="toc-l4"><a href="#-2移除osd">#### 2、移除OSD</a></li><li class="toc-l2"><a href="#-三ceph-存储类型与使用">## 三、Ceph 存储类型与使用</a></li><li class="toc-l3"><a href="#-1.-ceph-的三大存储类型">### 1. Ceph 的三大存储类型</a></li><li class="toc-l3"><a href="#-块存储rbd">### 块存储（RBD）</a></li><li class="toc-l4"><a href="#-rbd-原理与使用场景">#### **RBD 原理与使用场景**</a></li><li class="toc-l4"><a href="#-rbd-核心原理架构">#### RBD 核心原理&架构</a></li><li class="toc-l3"><a href="#-核心组成">### **核心组成**</a></li><li class="toc-l2"><a href="#-三导出为-nfs-服务">## 三、导出为 NFS 服务</a></li><li class="toc-l3"><a href="#-实现步骤">### 实现步骤：</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="ceph">ceph 分布式存储</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/ops-tools/">专题</a> <span class="sep">›</span> <span>Ceph 简化版</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#前言">## 前言</a></li>
+<li class="toc-l2"><a href="#一环境说明">## 一、环境说明</a></li>
+<li class="toc-l2"><a href="#二实现步骤">## 二、实现步骤</a></li>
+<li class="toc-l3"><a href="#准备主机">### 准备主机</a></li>
+<li class="toc-l3"><a href="#安装cephadm的管理命令">### 安装cephadm的管理命令</a></li>
+<li class="toc-l3"><a href="#通过-cephadm-引导">### 通过 cephadm 引导</a></li>
+<li class="toc-l3"><a href="#ceph-客户端命令">### ceph 客户端命令</a></li>
+<li class="toc-l3"><a href="#管理主机">### 管理主机</a></li>
+<li class="toc-l3"><a href="#管理-osd">### 管理 OSD</a></li>
+<li class="toc-l4"><a href="#1-添加osd">#### 1. 添加OSD</a></li>
+<li class="toc-l4"><a href="#2移除osd">#### 2、移除OSD</a></li>
+<li class="toc-l2"><a href="#三ceph-存储类型与使用">## 三、Ceph 存储类型与使用</a></li>
+<li class="toc-l3"><a href="#1-ceph-的三大存储类型">### 1. Ceph 的三大存储类型</a></li>
+<li class="toc-l3"><a href="#块存储rbd">### 块存储（RBD）</a></li>
+<li class="toc-l4"><a href="#rbd-原理与使用场景">#### **RBD 原理与使用场景**</a></li>
+<li class="toc-l4"><a href="#rbd-核心原理架构">#### RBD 核心原理&架构</a></li>
+<li class="toc-l3"><a href="#核心组成">### **核心组成**</a></li>
+<li class="toc-l2"><a href="#三导出为-nfs-服务">## 三、导出为 NFS 服务</a></li>
+<li class="toc-l3"><a href="#实现步骤">### 实现步骤：</a></li>
+<li class="toc-l4"><a href="#新建文件系统-cephfs">#### 新建文件系统 CephFS</a></li>
+<li class="toc-l4"><a href="#新建存储池">#### 新建存储池</a></li>
+<li class="toc-l4"><a href="#在存储池上开启-nfs-应用">#### 在存储池上开启 nfs 应用</a></li>
+<li class="toc-l4"><a href="#新建-nfs-集群">#### 新建 NFS 集群</a></li>
+<li class="toc-l4"><a href="#新建-cephfs-的-nfs-导出">#### 新建 CephFS 的 nfs 导出</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/ops-tools/" class="back-to-top">← 返回专题</a>
+            <h1>Ceph 简化版</h1>
+<h1 id="ceph">ceph 分布式存储</h1>
 <h2 id="_1">前言</h2>
 <div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 10px; border-radius: 5px;">
   Ceph 是一款分布式存储系统，支持三种存储方式：对象存储、块存储和文件存储。Ceph 的部署工具有很多，但是 Ceph v15.2 (Octopus) 开始，推荐使用 cephadm 和 rook。其中 rook 是针对 kubernetes 的 ceph 部署工具，不在本例范围。</p>
@@ -1009,9 +1042,11 @@ Removed service nfs.mynfs
 卸掉挂载
 
 <div class="highlight"><pre><span></span><code>[root@cephclient1 ~]# umount /mnt
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LVS 负载均衡 - 运维工具 - DevOps 知识库 - DevOps 知识库</title>
+    <title>LVS 负载均衡 | 运维工具 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="LVS 负载均衡 | 运维工具 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,41 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#-nfs-网络文件系统共享存储组件">## NFS  网络文件系统（共享存储组件）</a></li><li class="toc-l3"><a href="#-部署">### 部署</a></li><li class="toc-l2"><a href="#-负载均衡及高可用">## 负载均衡及高可用</a></li><li class="toc-l3"><a href="#-负载均衡">### 负载均衡</a></li><li class="toc-l4"><a href="#-一核心定义与本质">#### 一、核心定义与本质</a></li><li class="toc-l4"><a href="#-二负载均衡的核心作用">#### 二、负载均衡的核心作用</a></li><li class="toc-l4"><a href="#-架构图">#### 架构图</a></li><li class="toc-l4"><a href="#-负载均衡的分类">#### 负载均衡的分类</a></li><li class="toc-l4"><a href="#-常见负载均衡算法">#### 常见负载均衡算法</a></li><li class="toc-l4"><a href="#-负载均衡的部署架构四层-vs-七层">#### 负载均衡的部署架构（四层 vs 七层）</a></li><li class="toc-l4"><a href="#-网络模型">#### 网络模型</a></li><li class="toc-l3"><a href="#-lvs">### LVS</a></li><li class="toc-l3"><a href="#-what-is-the-linux-virtual-server">### What is the Linux Virtual Server</a></li><li class="toc-l3"><a href="#-调度算法">### 调度算法：</a></li><li class="toc-l2"><a href="#-example">## Example:</a></li><li class="toc-l3"><a href="#-部署lvs">### 部署LVS</a></li><li class="toc-l3"><a href="#-后端真实主机">### 后端真实主机</a></li><li class="toc-l3"><a href="#-配置lvs">### 配置LVS</a></li><li class="toc-l1"><a href="#协议虚拟服务地址端口调度算法标志">#协议、虚拟服务地址:端口、调度算法、标志</a></li><li class="toc-l1"><a href="#后端服务器地址端口转发方式权重活跃连接数非活跃连接数">#后端服务器地址:端口、转发方式、权重、活跃连接数、非活跃连接数</a></li><li class="toc-l1"><a href="#-临时修改"># 临时修改</a></li><li class="toc-l3"><a href="#-常用命令">### 常用命令：</a></li><li class="toc-l1"><a href="#添加规则">#添加规则</a></li><li class="toc-l1"><a href="#-保存规则"># 保存规则</a></li><li class="toc-l1"><a href="#清楚规则">#清楚规则</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><div class="highlight"><pre><span></span><code>graph  LR 
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/ops-tools/">专题</a> <span class="sep">›</span> <span>LVS 负载均衡</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#nfs-网络文件系统共享存储组件">## NFS  网络文件系统（共享存储组件）</a></li>
+<li class="toc-l3"><a href="#部署">### 部署</a></li>
+<li class="toc-l2"><a href="#负载均衡及高可用">## 负载均衡及高可用</a></li>
+<li class="toc-l3"><a href="#负载均衡">### 负载均衡</a></li>
+<li class="toc-l4"><a href="#一核心定义与本质">#### 一、核心定义与本质</a></li>
+<li class="toc-l4"><a href="#二负载均衡的核心作用">#### 二、负载均衡的核心作用</a></li>
+<li class="toc-l4"><a href="#架构图">#### 架构图</a></li>
+<li class="toc-l4"><a href="#负载均衡的分类">#### 负载均衡的分类</a></li>
+<li class="toc-l4"><a href="#常见负载均衡算法">#### 常见负载均衡算法</a></li>
+<li class="toc-l4"><a href="#负载均衡的部署架构四层-vs-七层">#### 负载均衡的部署架构（四层 vs 七层）</a></li>
+<li class="toc-l4"><a href="#网络模型">#### 网络模型</a></li>
+<li class="toc-l3"><a href="#lvs">### LVS</a></li>
+<li class="toc-l3"><a href="#what-is-the-linux-virtual-server">### What is the Linux Virtual Server</a></li>
+<li class="toc-l3"><a href="#调度算法">### 调度算法：</a></li>
+<li class="toc-l2"><a href="#example">## Example:</a></li>
+<li class="toc-l3"><a href="#部署lvs">### 部署LVS</a></li>
+<li class="toc-l3"><a href="#后端真实主机">### 后端真实主机</a></li>
+<li class="toc-l3"><a href="#配置lvs">### 配置LVS</a></li>
+<li class="toc-l3"><a href="#常用命令">### 常用命令：</a></li>
+<li class="toc-l2"><a href="#example-2">## Example 2:</a></li>
+<li class="toc-l4"><a href="#一-配置基础环境所有节点">#### 一、 配置基础环境（所有节点）</a></li>
+<li class="toc-l3"><a href="#二安装应用组件中间件">### 二、安装应用组件(中间件)</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/ops-tools/" class="back-to-top">← 返回专题</a>
+            <h1>LVS 负载均衡</h1>
+<div class="highlight"><pre><span></span><code>graph  LR 
 
 subgraph proxy
 end
@@ -1089,9 +1120,11 @@ virtual_server<span class="w"> </span><span class="m">192</span>.168.18.100<span
 <ul>
 <li>通过查看IP地址是否绑定VIP</li>
 </ul>
-<p>!image-20250829155112739](/images/image-20250829155112739.png)</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p>!image-20250829155112739](/images/image-20250829155112739.png)</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

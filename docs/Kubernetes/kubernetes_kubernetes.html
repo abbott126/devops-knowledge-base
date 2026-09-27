@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kubernetes 概述 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>Kubernetes 概述 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Kubernetes 概述 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,27 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-kubernetes"># kubernetes</a></li><li class="toc-l3"><a href="#-单体架构">### 单体架构：</a></li><li class="toc-l3"><a href="#-高可用架构">### 高可用架构</a></li><li class="toc-l2"><a href="#-部署模式">## 部署模式：</a></li><li class="toc-l2"><a href="#-部署k8s">## 部署k8s</a></li><li class="toc-l1"><a href="#-dnf-y-install-vim-chrony-gcc-gcc-c-wget-net-tools"># dnf  -y install  vim chrony gcc gcc-c++  wget  net-tools</a></li><li class="toc-l1"><a href="#-设置所需的-sysctl-参数参数在重新启动后保持不变"># 设置所需的 sysctl 参数，参数在重新启动后保持不变</a></li><li class="toc-l1"><a href="#-应-sysctl-参数不重新启动"># 应⽤ sysctl 参数⽽不重新启动</a></li><li class="toc-l2"><a href="#-安装容器运行时docker">## 安装容器运行时(docker)</a></li><li class="toc-l1"><a href="#-dnf-config-manager-add-repo-https//mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo"># dnf  config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</a></li><li class="toc-l1"><a href="#-dnf-install-docker-ce-docker-ce-cli-containerd.io-docker-buildx-plugin-docker-compose-plugin-y"># dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y</a></li><li class="toc-l1"><a href="#-systemctl-enable-now-docker"># systemctl  enable  --now  docker</a></li><li class="toc-l1"><a href="#-dnf-localinstall-cri-dockerd-0.3.14-3.el8.x86_64.rpm"># dnf  localinstall  cri-dockerd-0.3.14-3.el8.x86_64.rpm</a></li><li class="toc-l1"><a href="#-systemctl-enable-now-cri-docker"># systemctl  enable --now cri-docker</a></li><li class="toc-l2"><a href="#-安装-kubeadmkubelet-和-kubectl">## 安装 kubeadm、kubelet 和 kubectl</a></li><li class="toc-l1"><a href="#-dnf-install-y-kubelet-kubectl-kubeadm-disableexcludeskubernetes"># dnf  install   -y  kubelet kubectl     kubeadm --disableexcludes=kubernetes</a></li><li class="toc-l2"><a href="#-初始化集群">## 初始化集群</a></li><li class="toc-l1"><a href="#-错误信息"># 错误信息：</a></li><li class="toc-l3"><a href="#-拉取镜像的问题">### 拉取镜像的问题</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="kubernetes">kubernetes</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>Kubernetes 概述</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#单体架构">### 单体架构：</a></li>
+<li class="toc-l3"><a href="#高可用架构">### 高可用架构</a></li>
+<li class="toc-l2"><a href="#部署模式">## 部署模式：</a></li>
+<li class="toc-l2"><a href="#部署k8s">## 部署k8s</a></li>
+<li class="toc-l2"><a href="#安装容器运行时docker">## 安装容器运行时(docker)</a></li>
+<li class="toc-l2"><a href="#安装-kubeadmkubelet-和-kubectl">## 安装 kubeadm、kubelet 和 kubectl</a></li>
+<li class="toc-l2"><a href="#初始化集群">## 初始化集群</a></li>
+<li class="toc-l3"><a href="#拉取镜像的问题">### 拉取镜像的问题</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>Kubernetes 概述</h1>
+<h1 id="kubernetes">kubernetes</h1>
 <p>一、 什么是<code>kubernetes</code></p>
 <blockquote>
 <p>kubernetes 是一个工具，管理容器的工具，<code>一套开源容器编排系统</code>  Google   </p>
@@ -449,9 +466,11 @@ Error<span class="w"> </span>response<span class="w"> </span>from<span class="w"
 <span class="w">  </span><span class="m">189</span><span class="w">  </span>docker<span class="w">  </span>load<span class="w">   </span>-i<span class="w"> </span>scheduler.tar<span class="w"> </span>
 <span class="w">  </span><span class="m">190</span><span class="w">  </span>docker<span class="w"> </span>images
 <span class="w">  </span><span class="m">191</span><span class="w">  </span><span class="nb">history</span><span class="w"> </span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

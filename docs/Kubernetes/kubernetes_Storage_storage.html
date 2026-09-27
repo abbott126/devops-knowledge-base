@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>存储管理 - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>存储管理 | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="存储管理 | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,36 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-storage-存储"># Storage 存储</a></li><li class="toc-l2"><a href="#-volumes-卷">## Volumes 卷</a></li><li class="toc-l3"><a href="#-1.-为什么需要卷">### 1. 为什么需要卷</a></li><li class="toc-l3"><a href="#-2.-how-volumes-work-卷的工作原理">### 2. How volumes work 卷的工作原理</a></li><li class="toc-l3"><a href="#-3.-types-of-volumes-卷类型">### 3. Types of volumes 卷类型</a></li><li class="toc-l4"><a href="#-configmap-配置映射">#### configMap 配置映射</a></li><li class="toc-l4"><a href="#-emptydir-空目录">#### emptyDir 空目录</a></li><li class="toc-l5"><a href="#-emptydir-的核心特性">##### **emptyDir 的核心特性**</a></li><li class="toc-l1"><a href="#-指定-kubernetes-api-版本pod-资源属于-v1-核心组"># 指定 Kubernetes API 版本，Pod 资源属于 v1 核心组</a></li><li class="toc-l1"><a href="#-定义资源类型为-pod"># 定义资源类型为 Pod</a></li><li class="toc-l1"><a href="#-pod-的名称在命名空间内唯一"># Pod 的名称，在命名空间内唯一</a></li><li class="toc-l1"><a href="#-定义-pod-中的容器列表"># 定义 Pod 中的容器列表</a></li><li class="toc-l1"><a href="#-容器的名称在-pod-内唯一"># 容器的名称，在 Pod 内唯一</a></li><li class="toc-l1"><a href="#-定义容器需要挂载的卷"># 定义容器需要挂载的卷</a></li><li class="toc-l1"><a href="#-要挂载的卷名称需与下面-volumes-中定义的卷名一致"># 要挂载的卷名称（需与下面 volumes 中定义的卷名一致）</a></li><li class="toc-l1"><a href="#-定义-pod-可用的卷列表"># 定义 Pod 可用的卷列表</a></li><li class="toc-l1"><a href="#-定义卷类型为-emptydir临时空目录卷"># 定义卷类型为 emptyDir（临时空目录卷）</a></li><li class="toc-l1"><a href="#-限制-emptydir-的最大存储空间为-500mib"># 限制 emptyDir 的最大存储空间为 500MiB</a></li><li class="toc-l1"><a href="#-超出此限制时pod-可能会被-kubernetes-标记为失败"># 超出此限制时，Pod 可能会被 Kubernetes 标记为失败</a></li><li class="toc-l4"><a href="#-hostpath-主机路径">#### hostPath 主机路径</a></li><li class="toc-l5"><a href="#-hostpath-路径卷类型">##### `hostPath` 路径卷类型</a></li><li class="toc-l3"><a href="#-iscsi">### iscsi</a></li><li class="toc-l3"><a href="#-local-本地卷">### local 本地卷</a></li><li class="toc-l3"><a href="#-nfs">### nfs</a></li><li class="toc-l2"><a href="#-persistent-volumes-持久卷-pv">## Persistent Volumes 持久卷 pv</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="storage">Storage 存储</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>存储管理</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#volumes-卷">## Volumes 卷</a></li>
+<li class="toc-l3"><a href="#1-为什么需要卷">### 1. 为什么需要卷</a></li>
+<li class="toc-l3"><a href="#2-how-volumes-work-卷的工作原理">### 2. How volumes work 卷的工作原理</a></li>
+<li class="toc-l3"><a href="#3-types-of-volumes-卷类型">### 3. Types of volumes 卷类型</a></li>
+<li class="toc-l4"><a href="#configmap-配置映射">#### configMap 配置映射</a></li>
+<li class="toc-l4"><a href="#emptydir-空目录">#### emptyDir 空目录</a></li>
+<li class="toc-l5"><a href="#emptydir-的核心特性">##### **emptyDir 的核心特性**</a></li>
+<li class="toc-l4"><a href="#hostpath-主机路径">#### hostPath 主机路径</a></li>
+<li class="toc-l5"><a href="#hostpath-路径卷类型">##### `hostPath` 路径卷类型</a></li>
+<li class="toc-l3"><a href="#iscsi">### iscsi</a></li>
+<li class="toc-l3"><a href="#local-本地卷">### local 本地卷</a></li>
+<li class="toc-l3"><a href="#nfs">### nfs</a></li>
+<li class="toc-l2"><a href="#persistent-volumes-持久卷-pv">## Persistent Volumes 持久卷 pv</a></li>
+<li class="toc-l2"><a href="#lifecycle-of-a-volume-and-claim">## Lifecycle of a volume and claim</a></li>
+<li class="toc-l3"><a href="#provisioning">### Provisioning：</a></li>
+<li class="toc-l3"><a href="#pv的常用命令">### PV的常用命令</a></li>
+<li class="toc-l2"><a href="#storageclass存储类">## StorageClass（存储类)</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>存储管理</h1>
+<h1 id="storage">Storage 存储</h1>
 <h2 id="volumes">Volumes 卷</h2>
 <h3 id="1">1. 为什么需要卷</h3>
 <h3 id="2-how-volumes-work">2. How volumes work 卷的工作原理</h3>
@@ -471,9 +497,11 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>kube-system<span class=
 <span class="nb">cd</span><span class="w"> </span>csi-driver-nfs
 git<span class="w"> </span>checkout<span class="w"> </span>v4.12.1
 ./deploy/uninstall-driver.sh<span class="w"> </span>v4.12.1<span class="w"> </span><span class="nb">local</span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

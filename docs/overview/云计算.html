@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云计算 - 概述 - DevOps 知识库 - DevOps 知识库</title>
+    <title>云计算 | 概述 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="云计算 | 概述 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,30 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-云计算"># 云计算</a></li><li class="toc-l2"><a href="#-一云计算的基本概念">## 一、云计算的基本概念</a></li><li class="toc-l2"><a href="#-二-云计算的构建/存储方案">## 二、 云计算的构建/存储方案</a></li><li class="toc-l2"><a href="#-三-云计算的部署模式openstack">## 三、 云计算的部署模式(openstack)</a></li><li class="toc-l2"><a href="#-四云计算的服务模式">## 四、云计算的服务模式</a></li><li class="toc-l2"><a href="#-五云计算服务的提供商">## 五、云计算服务的提供商</a></li><li class="toc-l2"><a href="#-六-虚拟化">## 六、 虚拟化</a></li><li class="toc-l2"><a href="#-虚拟化kvm">## 虚拟化KVM</a></li><li class="toc-l2"><a href="#-概述">## 概述</a></li><li class="toc-l2"><a href="#-安装kvm">## 安装KVM</a></li><li class="toc-l3"><a href="#-kvm-虚拟化常用命令">### KVM  虚拟化常用命令</a></li><li class="toc-l1"><a href="#创建快照">#创建快照</a></li><li class="toc-l1"><a href="#-在线编辑快照文件"># 在线编辑快照文件</a></li><li class="toc-l1"><a href="#-删除快照"># 删除快照</a></li><li class="toc-l3"><a href="#-kvm-网络">### KVM 网络</a></li><li class="toc-l1"><a href="#-批量部署服务器"># 批量部署服务器</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">云计算</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/overview/">专题</a> <span class="sep">›</span> <span>云计算</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#一云计算的基本概念">## 一、云计算的基本概念</a></li>
+<li class="toc-l2"><a href="#二-云计算的构建存储方案">## 二、 云计算的构建/存储方案</a></li>
+<li class="toc-l2"><a href="#三-云计算的部署模式openstack">## 三、 云计算的部署模式(openstack)</a></li>
+<li class="toc-l2"><a href="#四云计算的服务模式">## 四、云计算的服务模式</a></li>
+<li class="toc-l2"><a href="#五云计算服务的提供商">## 五、云计算服务的提供商</a></li>
+<li class="toc-l2"><a href="#六-虚拟化">## 六、 虚拟化</a></li>
+<li class="toc-l2"><a href="#虚拟化kvm">## 虚拟化KVM</a></li>
+<li class="toc-l2"><a href="#概述">## 概述</a></li>
+<li class="toc-l2"><a href="#安装kvm">## 安装KVM</a></li>
+<li class="toc-l3"><a href="#kvm-虚拟化常用命令">### KVM  虚拟化常用命令</a></li>
+<li class="toc-l3"><a href="#kvm-网络">### KVM 网络</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/overview/" class="back-to-top">← 返回专题</a>
+            <h1>云计算</h1>
+<h1 id="_1">云计算</h1>
 <h2 id="_2">一、云计算的基本概念</h2>
 <p>云计算是一种基于互联网的计算模式，它通过将大量的计算资源（包括服务器、存储、网络、软件等）进行整合并集中部署在数据中心，然后以服务的形式提供给用户使用。用户无需关心这些资源的具体物理位置、底层架构以及运维管理等细节，只需通过网络按需获取所需的计算能力、存储空间、软件应用等资源，并按照使用量或时长来支付相应费用，就如同使用水电等公共服务一样便捷。</p>
 <p><img alt="云计算详解：定义、部署模式与服务类型-CSDN博客" src="https://i-blog.csdnimg.cn/blog_migrate/dc15979c77530b1f726edc707d4a3be5.png" /></p>
@@ -159,9 +179,11 @@ root@fedora:~#<span class="w"> </span>virsh<span class="w">   </span>snapshot-li
 <li>DHCP 服务</li>
 <li>应答文件 <code>ks</code>  系统所在位置；分区密码用户</li>
 <li>web server </li>
-</ul></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</ul>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

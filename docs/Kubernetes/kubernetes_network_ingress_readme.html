@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ingress - Kubernetes - DevOps 知识库 - DevOps 知识库</title>
+    <title>Ingress | Kubernetes | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="Ingress | Kubernetes | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,20 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-官网-文档地址"># 官网 文档地址</a></li><li class="toc-l1"><a href="#-install-方式"># install 方式</a></li><li class="toc-l1"><a href="#-install"># install</a></li><li class="toc-l2"><a href="#-查看ingress">## 查看ingress</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">官网 文档地址</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/kubernetes/">专题</a> <span class="sep">›</span> <span>Ingress</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#查看ingress">## 查看ingress</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/kubernetes/" class="back-to-top">← 返回专题</a>
+            <h1>Ingress</h1>
+<h1 id="_1">官网 文档地址</h1>
 <p>https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters</p>
 <h1 id="install">install 方式</h1>
 <ul>
@@ -49,9 +59,11 @@ service/ingress-nginx-controller-admission<span class="w">   </span>ClusterIP<sp
 <p><img alt="alt text" src="image.png" /></p>
 <p>查看ingress 的service</p>
 <div class="highlight"><pre><span></span><code><span class="o">[</span>root@master<span class="w"> </span>~<span class="o">]</span><span class="c1"># kubectl  describe    service  ingress-nginx-controller  -n ingress-nginx</span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

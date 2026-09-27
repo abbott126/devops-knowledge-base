@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenStack - 其他资源 - DevOps 知识库 - DevOps 知识库</title>
+    <title>OpenStack | 其他资源 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="OpenStack | 其他资源 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,31 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-openstack-victoria"># OpenStack-victoria</a></li><li class="toc-l2"><a href="#-openstack-简介">## OpenStack 简介</a></li><li class="toc-l2"><a href="#-核心特点">## 核心特点</a></li><li class="toc-l4"><a href="#-逻辑架构">#### 逻辑架构</a></li><li class="toc-l1"><a href="#-部署openstack"># 部署openstack</a></li><li class="toc-l3"><a href="#-一基础环境配置">### 一、基础环境配置</a></li><li class="toc-l4"><a href="#-1基础环境配置">#### 1、基础环境配置</a></li><li class="toc-l5"><a href="#-1.1-节点硬件规划官方">##### 1.1 节点硬件规划（官方）</a></li><li class="toc-l5"><a href="#-1.2-节点网络规划">##### 1.2 节点网络规划</a></li><li class="toc-l4"><a href="#-2所有节点配置">#### 2、所有节点配置</a></li><li class="toc-l1"><a href="#-controller"># controller</a></li><li class="toc-l1"><a href="#-compute01"># compute01</a></li><li class="toc-l1"><a href="#-compute02"># compute02</a></li><li class="toc-l1"><a href="#allow-192.168.0.0/16">#allow 192.168.0.0/16</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#-node-01"># node 01</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l1"><a href="#node-02">#node 02</a></li><li class="toc-l1"><a href="#-use-public-servers-from-the-pool.ntp.org-project."># Use public servers from the pool.ntp.org project.</a></li><li class="toc-l1"><a href="#-please-consider-joining-the-pool-http//www.pool.ntp.org/join.html."># Please consider joining the pool (http://www.pool.ntp.org/join.html).</a></li><li class="toc-l3"><a href="#-二安装openstack-源所有节点">### 二、安装openstack 源(所有节点)</a></li><li class="toc-l1"><a href="#修改openstack的所有源">#修改openstack的所有源</a></li><li class="toc-l1"><a href="#-安装-openstack-客户端工具"># 安装 openstack 客户端工具</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="openstack-victoria">OpenStack-victoria</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/others/">专题</a> <span class="sep">›</span> <span>OpenStack</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#openstack-简介">## OpenStack 简介</a></li>
+<li class="toc-l2"><a href="#核心特点">## 核心特点</a></li>
+<li class="toc-l4"><a href="#逻辑架构">#### 逻辑架构</a></li>
+<li class="toc-l3"><a href="#一基础环境配置">### 一、基础环境配置</a></li>
+<li class="toc-l4"><a href="#1基础环境配置">#### 1、基础环境配置</a></li>
+<li class="toc-l5"><a href="#11-节点硬件规划官方">##### 1.1 节点硬件规划（官方）</a></li>
+<li class="toc-l5"><a href="#12-节点网络规划">##### 1.2 节点网络规划</a></li>
+<li class="toc-l4"><a href="#2所有节点配置">#### 2、所有节点配置</a></li>
+<li class="toc-l3"><a href="#二安装openstack-源所有节点">### 二、安装openstack 源(所有节点)</a></li>
+<li class="toc-l3"><a href="#三数据库controller">### 三、数据库(controller)</a></li>
+<li class="toc-l3"><a href="#四消息队列rabbitmqcontroller">### 四、消息队列`rabbitmq`(controller)</a></li>
+<li class="toc-l3"><a href="#五缓存memcached">### 五、缓存Memcached</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/others/" class="back-to-top">← 返回专题</a>
+            <h1>OpenStack</h1>
+<h1 id="openstack-victoria">OpenStack-victoria</h1>
 <h2 id="openstack">OpenStack 简介</h2>
 <p><strong>OpenStack</strong> 是一个开源的云计算平台，主要用于构建和管理<strong>公有云</strong>和<strong>私有云</strong>环境。它由一系列相互关联的服务组件组成，可以管理大量的计算资源、存储资源和网络资源。</p>
 <h2 id="_1">核心特点</h2>
@@ -2625,9 +2646,11 @@ Alias<span class="w"> </span>/static<span class="w"> </span>/usr/share/openstack
 <span class="w">    </span>AllowOverride<span class="w"> </span>All
 <span class="w">    </span>Require<span class="w"> </span>all<span class="w"> </span>granted
 &lt;/Directory&gt;
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

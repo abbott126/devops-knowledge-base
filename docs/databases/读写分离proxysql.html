@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>读写分离 ProxySQL - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <title>读写分离 ProxySQL | 数据库 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="读写分离 ProxySQL | 数据库 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,30 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-读写分离"># 读写分离</a></li><li class="toc-l2"><a href="#-组件">## 组件：</a></li><li class="toc-l2"><a href="#-proxysql">## proxySQL</a></li><li class="toc-l3"><a href="#-部署proxysql">### 部署proxySQL</a></li><li class="toc-l1"><a href="#-使用service-管理服务6-"># 使用service 管理服务（6-）</a></li><li class="toc-l1"><a href="#-使用systemctl管理服务7"># 使用systemctl管理服务(7+)</a></li><li class="toc-l3"><a href="#-use-proxysql">### use proxysql</a></li><li class="toc-l3"><a href="#-添加后端mysql集群">### 添加后端mysql集群</a></li><li class="toc-l3"><a href="#-配置监控信息">### 配置监控信息</a></li><li class="toc-l3"><a href="#-配置应用连接账号mysql_users">### 配置应用连接账号（mysql_users）</a></li><li class="toc-l1"><a href="#proxysql">#proxySQL</a></li><li class="toc-l1"><a href="#mysql数据库上创建用户">#mysql数据库上创建用户</a></li><li class="toc-l1"><a href="#授权">#授权</a></li><li class="toc-l1"><a href="#刷新表">#刷新表</a></li><li class="toc-l3"><a href="#-添加路由规则">### 添加路由规则</a></li><li class="toc-l1"><a href="#查询的规则">#查询的规则</a></li><li class="toc-l1"><a href="#写入规则">#写入规则</a></li><li class="toc-l1"><a href="#将规则添加到运行时">#将规则添加到运行时</a></li><li class="toc-l1"><a href="#将规则保存的磁盘中">#将规则保存的磁盘中</a></li><li class="toc-l4"><a href="#-查询连接池">#### 查询连接池</a></li><li class="toc-l3"><a href="#-查看连接信息">### 查看连接信息</a></li><li class="toc-l3"><a href="#-web-管理">### Web 管理</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">读写分离</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/databases/">专题</a> <span class="sep">›</span> <span>读写分离 ProxySQL</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l2"><a href="#组件">## 组件：</a></li>
+<li class="toc-l2"><a href="#proxysql">## proxySQL</a></li>
+<li class="toc-l3"><a href="#部署proxysql">### 部署proxySQL</a></li>
+<li class="toc-l3"><a href="#use-proxysql">### use proxysql</a></li>
+<li class="toc-l3"><a href="#添加后端mysql集群">### 添加后端mysql集群</a></li>
+<li class="toc-l3"><a href="#配置监控信息">### 配置监控信息</a></li>
+<li class="toc-l3"><a href="#配置应用连接账号mysql_users">### 配置应用连接账号（mysql_users）</a></li>
+<li class="toc-l3"><a href="#添加路由规则">### 添加路由规则</a></li>
+<li class="toc-l4"><a href="#查询连接池">#### 查询连接池</a></li>
+<li class="toc-l3"><a href="#查看连接信息">### 查看连接信息</a></li>
+<li class="toc-l3"><a href="#web-管理">### Web 管理</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/databases/" class="back-to-top">← 返回专题</a>
+            <h1>读写分离 ProxySQL</h1>
+<h1 id="_1">读写分离</h1>
 <blockquote>
 <p>原则： 对主数据数据库分档压力</p>
 <p>12306   AI  </p>
@@ -319,9 +339,11 @@ LOAD<span class="w"> </span>ADMIN<span class="w"> </span>VARIABLES<span class="w
 </code></pre></div>
 <p>用户：</p>
 <div class="highlight"><pre><span></span><code>stats:stats<span class="w"> </span>
-</code></pre></div></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+</code></pre></div>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

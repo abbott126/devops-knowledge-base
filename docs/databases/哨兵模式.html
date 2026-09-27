@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>哨兵模式 - 数据库 - DevOps 知识库 - DevOps 知识库</title>
+    <title>哨兵模式 | 数据库 | DevOps 知识库 | DevOps 知识库</title>
+    <meta name="description" content="哨兵模式 | 数据库 | DevOps 知识库 - DevOps 知识库">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,11 +20,28 @@
         </nav>
     </header>
     <main>
-                <div class="doc-container">
-                    <div class="doc-sidebar">
-                        <nav><h3>目录</h3><ul class="toc"><li class="toc-l1"><a href="#-哨兵模式"># 哨兵模式</a></li><li class="toc-l3"><a href="#-一哨兵模式概述">### 一、哨兵模式概述</a></li><li class="toc-l4"><a href="#-1.1为什么要启动哨兵模式">#### 1.1、为什么要启动哨兵模式</a></li><li class="toc-l4"><a href="#-1.2什么是哨兵模式">#### 1.2、什么是哨兵模式</a></li><li class="toc-l3"><a href="#-一个哨兵">### 一个哨兵</a></li><li class="toc-l1"><a href="#-sentinel"># Sentinel</a></li><li class="toc-l3"><a href="#-多个哨兵自己实现">### 多个哨兵(自己实现）</a></li><li class="toc-l1"><a href="#-cluster-集群"># cluster 集群</a></li><li class="toc-l4"><a href="#-核心特性与概念">#### 核心特性与概念</a></li><li class="toc-l5"><a href="#-1.-数据分片-sharding">##### 1. 数据分片 (Sharding)</a></li><li class="toc-l5"><a href="#-2.-高可用性-high-availability">##### 2. 高可用性 (High Availability)</a></li><li class="toc-l5"><a href="#-3.-去中心化架构-decentralized">##### 3. 去中心化架构 (Decentralized)</a></li></ul></nav>
-                    </div>
-                    <div class="doc-content"><h1 id="_1">哨兵模式</h1>
+        
+    <div class="doc-layout">
+        
+    <div class="doc-sidebar">
+        <div class="sidebar-card"><div class="breadcrumb"><a href="/">首页</a> <span class="sep">›</span> <a href="/docs/databases/">专题</a> <span class="sep">›</span> <span>哨兵模式</span></div></div>
+        <div class="sidebar-card">
+            <nav><h3>目录</h3><ul class="toc"><li class="toc-l3"><a href="#一哨兵模式概述">### 一、哨兵模式概述</a></li>
+<li class="toc-l4"><a href="#11为什么要启动哨兵模式">#### 1.1、为什么要启动哨兵模式</a></li>
+<li class="toc-l4"><a href="#12什么是哨兵模式">#### 1.2、什么是哨兵模式</a></li>
+<li class="toc-l3"><a href="#一个哨兵">### 一个哨兵</a></li>
+<li class="toc-l3"><a href="#多个哨兵自己实现">### 多个哨兵(自己实现）</a></li>
+<li class="toc-l4"><a href="#核心特性与概念">#### 核心特性与概念</a></li>
+<li class="toc-l5"><a href="#1-数据分片-sharding">##### 1. 数据分片 (Sharding)</a></li>
+<li class="toc-l5"><a href="#2-高可用性-high-availability">##### 2. 高可用性 (High Availability)</a></li>
+<li class="toc-l5"><a href="#3-去中心化架构-decentralized">##### 3. 去中心化架构 (Decentralized)</a></li>
+</ul></nav>
+        </div>
+    </div>
+        <div class="doc-content">
+            <a href="/docs/databases/" class="back-to-top">← 返回专题</a>
+            <h1>哨兵模式</h1>
+<h1 id="_1">哨兵模式</h1>
 <blockquote>
 <p>哨兵是一个分布式系统，你可以在一个架构中运行多个哨兵进程，这些进程使用流言协议来接收关于Master主服务器是否下线的信息，并使用投票协议来决定是否执行自动故障迁移，以及选择哪个Slave作为新的Master。</p>
 </blockquote>
@@ -220,9 +238,11 @@ ss<span class="w"> </span>-luntp<span class="w"> </span><span class="p">|</span>
 <span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="s2">&quot;name&quot;</span>
 <span class="m">127</span>.0.0.1:6381&gt;<span class="w"> </span>SHUTDOWN
 </code></pre></div>
-<p>七、客户端连接(集群中的IP地址)</p></div>
-                </div></main>
-    <footer><p>DevOps 知识库 | 基于 Gitee 项目整理</p></footer>
+<p>七、客户端连接(集群中的IP地址)</p>
+        </div>
+    </div>
+    </main>
+    <footer><p>DevOps 知识库 &copy; 2025 | 基于 Gitee 项目整理</p></footer>
     <script src="/js/main.js"></script>
 </body>
 </html>

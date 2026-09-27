@@ -163,7 +163,6 @@ nav {
   right: 0;
   height: 48px;
   background: var(--bg-page);
-  clip-path: ellipse(55% 100% at 50% 100%);
 }
 .hero > * { position: relative; z-index: 1; }
 .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.03em; line-height: 1.2; }
@@ -182,7 +181,6 @@ nav {
   font-size: 1rem;
   outline: none;
   transition: all 0.3s;
-  backdrop-filter: blur(4px);
 }
 .hero-search input::placeholder { color: rgba(255,255,255,0.5); }
 .hero-search input:focus { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
@@ -297,7 +295,6 @@ nav {
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s;
-  backdrop-filter: blur(4px);
 }
 .topic-header .hero-search input::placeholder { color: rgba(255,255,255,0.45); }
 .topic-header .hero-search input:focus { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15); }

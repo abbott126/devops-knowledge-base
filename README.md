@@ -45,4 +45,4 @@ npx serve .
 
 ## 部署
 
-本项目使用 GitHub Pages 自动部署。每次推送到 `main` 分支会自动更新在线文档。
+GitHub Pages 已启用（Settings → Pages）。推送到 `main` 分支后自动更新。站点地址：https://abbott126.github.io/devops-knowledge-base/
